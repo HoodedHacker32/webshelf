@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview: Genre Bands</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Alegreya:ital,wght@0,400;1,400&display=block">
+<style>
+:root { --ink:#161616; --ink2:#4a4a4a; --meta:#6b6b6b; --line:#e3e3e3; --shelf:#bc754a; --link:#0e3f73;
+  --web:#67c1ff; --topic:#52da5a; --tool:#ffb843; }
+* { box-sizing:border-box; margin:0; }
+body { font-family:"Alegreya Sans",sans-serif; color:var(--ink); background:#fff; }
+.band { background:var(--g); padding:22px 40px 20px; display:grid; grid-template-columns:auto minmax(0,640px) 1fr; gap:28px; align-items:center; }
+.mark { width:58px; height:58px; }
+.mark svg { width:100%; height:100%; }
+.field { display:flex; align-items:center; height:52px; background:#fff; border:2px solid var(--ink); padding:0 6px 0 18px; font-size:20px; }
+.field span { flex:1; }
+.field button { height:38px; padding:0 16px; border:0; background:var(--ink); color:#fff; font:700 15px "Alegreya Sans"; letter-spacing:.02em; }
+.genre { justify-self:end; font-weight:800; font-size:15px; letter-spacing:.14em; text-transform:uppercase; }
+.shelf { height:7px; background:var(--shelf); }
+main { display:grid; grid-template-columns:minmax(0,640px) 340px; gap:56px; padding:26px 40px 0 126px; }
+.count { color:var(--meta); font-size:15px; margin-bottom:22px; }
+.r { margin-bottom:26px; }
+.r a { font-weight:700; font-size:21px; color:var(--link); text-decoration:none; line-height:1.25; }
+.r cite { display:block; font:italic 15px "Alegreya",serif; color:var(--meta); margin:3px 0 4px; }
+.r p { font:16px/1.5 "Alegreya",serif; color:var(--ink2); }
+.r b { color:var(--ink); }
+.panel { border:1px solid var(--line); }
+.panel .top { height:14px; background:var(--g); }
+.panel img { display:block; width:100%; height:168px; object-fit:cover; }
+.panel .body { padding:16px 18px 18px; }
+.panel h2 { font-size:30px; font-weight:800; line-height:1.1; }
+.panel .sub { font:italic 16px "Alegreya",serif; color:var(--meta); margin:4px 0 12px; }
+.panel p { font:15px/1.5 "Alegreya",serif; color:var(--ink2); }
+.panel dl { margin-top:12px; font-size:15px; line-height:1.6; }
+.panel dt { display:inline; font-weight:700; } .panel dd { display:inline; margin:0; }
+.foot { position:fixed; left:0; right:0; bottom:0; height:12px; background:var(--g); }
+/* phone */
+body.phone .band { grid-template-columns:auto 1fr; padding:14px 16px; gap:12px; }
+body.phone .mark { width:44px; height:44px; }
+body.phone .genre { grid-column:2; grid-row:1; font-size:13px; }
+body.phone .field { grid-column:1 / -1; height:48px; font-size:18px; }
+body.phone main { display:block; padding:18px 16px 0; }
+.tool { border:1px solid var(--line); margin-bottom:24px; }
+.tool .top { height:14px; background:var(--g); }
+.tool .body { padding:14px 16px 16px; }
+.tool .eq { display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center; margin:10px 0 10px; }
+.tool .box { border:2px solid var(--ink); padding:8px 10px; }
+.tool .box b { display:block; font-size:28px; font-weight:800; }
+.tool .box span { font-size:14px; color:var(--meta); }
+.tool .hint { font:italic 15px "Alegreya",serif; color:var(--ink2); }
+</style></head>
+<body>
+<script>
+  const phone = new URLSearchParams(location.search).has('phone');
+  document.body.classList.toggle('phone', phone);
+  document.documentElement.style.setProperty('--g', phone ? 'var(--tool)' : 'var(--topic)');
+</script>
+<header class="band">
+  <div class="mark" data-logo="logo"></div>
+  <div class="field"><span id="q">eiffel tower</span><button>Search</button></div>
+  <div class="genre" id="genre">Topic</div>
+</header>
+<div class="shelf"></div>
+<main id="main">
+  <div>
+    <div id="toolslot"></div>
+    <p class="count">24 results</p>
+    <div class="r"><a href="#">Eiffel Tower</a><cite>en.wikipedia.org › wiki › Eiffel_Tower</cite><p>The <b>Eiffel Tower</b> is a wrought-iron lattice tower on the Champ de Mars in Paris, named after the engineer Gustave Eiffel …</p></div>
+    <div class="r"><a href="#">Official website of the Eiffel Tower</a><cite>toureiffel.paris › en</cite><p>Tickets, opening hours and access to the summit. Plan your visit to the <b>Eiffel Tower</b> …</p></div>
+    <div class="r"><a href="#">Eiffel Tower | History, Height, &amp; Facts</a><cite>britannica.com › topic › Eiffel-Tower-Paris-France</cite><p>The <b>Eiffel Tower</b> was built for the 1889 Exposition Universelle and stood as the world's tallest structure until 1930 …</p></div>
+    <div class="r"><a href="#">How the Eiffel Tower was built</a><cite>engineering-history.org › structures › eiffel</cite><p>Some 18,000 iron parts, 2.5 million rivets and two years of work …</p></div>
+  </div>
+  <aside class="panel" id="panel"><div class="top"></div>
+    <img alt="" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg/500px-Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg">
+    <div class="body"><h2>Eiffel Tower</h2><p class="sub">Tower in Paris, France</p>
+      <p>A wrought-iron lattice tower on the Champ de Mars, built between 1887 and 1889 as the entrance to the World's Fair.</p>
+      <dl><div><dt>Opened: </dt><dd>31 March 1889</dd></div><div><dt>Height: </dt><dd>330 m</dd></div><div><dt>Architect: </dt><dd>Stephen Sauvestre</dd></div></dl>
+    </div></aside>
+</main>
+<div class="foot"></div>
+<script>
+  if (phone) {
+    document.getElementById('q').textContent = '5 miles in km';
+    document.getElementById('genre').textContent = 'Tool';
+    document.getElementById('panel').remove();
+    document.getElementById('toolslot').innerHTML = `<section class="tool"><div class="top"></div><div class="body">
+      <div class="eq"><div class="box"><b>5</b><span>Miles</span></div><span>=</span><div class="box"><b>8.04672</b><span>Kilometres</span></div></div>
+      <p class="hint">Multiply the length by 1.609</p></div></section>`;
+    document.querySelector('.count').textContent = '31 results';
+  }
+</script>
+<script src="inline-logo.js"></script>
+</body></html>

@@ -1,0 +1,27 @@
+/* Homepage: the owner's lockup, large and centred, with the search below. */
+
+.home-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(56px, 20vh, 190px) var(--page-margin) 12vh;
+}
+
+.home-logo { width: min(380px, 78vw); margin: 0; }
+
+.home-search { width: 100%; max-width: 620px; margin-top: 44px; }
+.home-search .searchbox-input { font-size: var(--text-lg); min-height: 44px; }
+.home-search .btn { min-height: 44px; padding: 0 22px; font-size: var(--text-md); }
+.home-search .btn:active:not(:disabled) { padding: 1px 21px 0 23px; }
+
+.home-note {
+  margin-top: 18px;
+  color: var(--meta);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 520px) {
+  .home-search .searchbox { flex-direction: column; }
+  .home-search .btn { align-self: center; min-width: 140px; }
+}

@@ -1,0 +1,15 @@
+.claude/settings.local.json
+research/tools/__pycache__/
+*.pyc
+.impeccable/config.local.json
+
+# Archived Google pages and screenshots: reference only, never publish.
+research/
+# Saved Google result pages: reference only, never publish.
+* - Google Search.html
+* - Google Search_files/
+
+# Working screenshots from design reviews; regenerated each pass.
+.impeccable/review/
+# Decision-page server state; runtime only.
+.impeccable/questions/

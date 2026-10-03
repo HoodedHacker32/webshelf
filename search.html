@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Webshelf</title>
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function () {
+      var t = 'auto';
+      try { t = JSON.parse(localStorage.getItem('webshelf:settings') || '{}').theme || 'auto'; } catch (e) {}
+      var dark = t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+  <link rel="icon" href="logos/logo.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/redaction-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/redaction-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/redaction-35-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/courier-prime-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/serp.css">
+  <link rel="stylesheet" href="assets/css/answers.css">
+  <script type="module" src="assets/js/serp.js"></script>
+</head>
+<body class="serp">
+  <a class="skip-link" href="#results">Skip to results</a>
+
+  <header class="toolbar" id="toolbar">
+    <a class="toolbar-logo logo" href="index.html" data-logo="lockup" data-label="Webshelf home">
+      <img src="logos/lockup.svg" alt="Webshelf home" width="186" height="86">
+    </a>
+    <div class="toolbar-search" id="serp-search"></div>
+    <nav class="toolbar-links" aria-label="Site"><a href="settings.html">Settings</a></nav>
+    <nav class="toolbar-tabs" id="serp-tabs" aria-label="Search type">
+      <a class="tab" href="search.html" data-page="search.html" aria-current="page">All</a>
+      <a class="tab" href="images.html" data-page="images.html">Images</a>
+      <a class="tab" href="videos.html" data-page="videos.html">Videos</a>
+    </nav>
+  </header>
+
+  <main class="serp-main" id="main">
+    <div class="serp-grid">
+      <h1 class="visually-hidden" id="serp-h1">Search results</h1>
+      <p class="serp-status" id="serp-status" aria-live="polite"></p>
+      <section class="entity" id="serp-entity" hidden aria-labelledby="entity-title"></section>
+      <div class="serp-center">
+        <div id="serp-spell"></div>
+        <div id="serp-answer"></div>
+        <h2 class="visually-hidden">Web results</h2>
+        <ol class="results" id="results" tabindex="-1"></ol>
+        <div id="serp-more"></div>
+        <section class="image-strip" id="serp-images" hidden aria-label="Images"></section>
+        <section class="related" id="serp-related" hidden aria-labelledby="related-title">
+          <h2 class="related-title" id="related-title">Related searches</h2>
+          <ul class="related-list"></ul>
+        </section>
+        <p class="elsewhere" id="serp-elsewhere" hidden></p>
+      </div>
+      <aside class="serp-rhs" id="serp-rhs" aria-label="About this topic"></aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-row">
+      <p id="serp-source-note"></p>
+      <div class="site-footer-links">
+        <a href="settings.html#privacy">Privacy</a>
+        <a href="settings.html">Settings</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

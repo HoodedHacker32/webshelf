@@ -1,0 +1,117 @@
+{
+  "title": "Choose Webshelf's visual world",
+  "question": "The roll assigned the Field Guide. Build it, take an alternate, or re-roll. Every option keeps the four behaviours you chose: one scannable list, tools inline, topic panel beside results, bare homepage.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Field Guide to the Web",
+      "kicker": "THE ROLL",
+      "lineage": "pocket naturalist field guides: Peterson's identification system, Audubon's colour-keyed plates",
+      "thesis": "Webshelf as a pocket field guide to the web: every result an identified entry, every source named like a species, the words you searched for marked as field marks.",
+      "palette": ["#173b2b", "#f6f8f4", "#1557a0", "#ffb843", "#bc754a"],
+      "materials": ["flat printed plates on white stock", "a deep green cover band", "your brown shelf as the rule under it"],
+      "viewport": "A deep green cover band holds your cobweb mark at left and the search field; it rests on your brown shelf, drawn as the page's main rule. Below, results are numbered entries: name in bold, source set in italic like a species name, a two-line note, and the matched words underlined in amber field marks. On wide screens the topic panel sits right as a species account (plate image, field notes, source). Phones get the same entries full-width with the panel after the first result. Dark mode is the same guide at dusk: pine-black ground, the green and amber unchanged.",
+      "risk": "Nature-guide associations tip into twee if illustration creeps in. The build holds the world to type, colour, density and the field-mark move: no leaves, no bird drawings, no texture.",
+      "raised": [
+        {"from": "challenger-reference-rail", "raise": "Every rule is one device pixel, and each theme holds to three ink values plus your logo's specimen colours."},
+        {"from": "challenger-jcard", "raise": "All text sits on a 4px baseline rhythm; every entry is a whole number of lines."},
+        {"from": "challenger-streaming", "raise": "Keyboard focus marks one entry in amber and reveals its full address; everything else stays quiet."},
+        {"from": "challenger-splitflap", "raise": "The entry grid (number gutter, entry body) never shifts between loading, loaded, visited and focused states."}
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "The Index",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "the back-of-book index",
+      "thesis": "A search engine is an index, so Webshelf is set like one: headwords, hanging indents, run-in subentries and locators.",
+      "palette": ["#111111", "#ffffff", "#c8102e", "#67c1ff"],
+      "materials": ["set type on white", "hanging indents"],
+      "viewport": "A plain white page; the query as a bold headword, results as hanging-indent entries with the site as a run-in subentry and the address as the locator. Your books appear only as small section markers.",
+      "risk": "The closest to what text-heavy search pages already look like; refined and calm, but the most familiar card on the table."
+    },
+    {
+      "id": "challenger-airport",
+      "label": "Airport Wayfinding",
+      "verdict": "competitive",
+      "lineage": "international airport sign systems",
+      "thesis": "Search as wayfinding: a yellow sign band, one clear message per line, and the next decision always obvious.",
+      "palette": ["#ffcc00", "#0b0b0b", "#ffffff", "#e6e6e6"],
+      "materials": ["sign-panel yellow band", "black inset pictogram squares"],
+      "viewport": "A yellow band carries the search field and your mark in a black inset square; results are destination rows with the site set large and the page title beside an edge-locked arrow.",
+      "case": "Fuses cleanly and wins on clarity, but loses on audience: nothing about it says the web, a shelf, or the old web people miss.",
+      "risk": "Generic transport branding if the band is the only idea; yellow also competes with your amber book.",
+      "hero": "https://impeccable.style/worlds/cards/wayfinding-cartography-signage-terminal-yellow-wayfinding-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/wayfinding-cartography-signage-terminal-yellow-wayfinding.webp"
+    },
+    {
+      "id": "challenger-bitmap",
+      "label": "Bitmap Specimen",
+      "verdict": "competitive",
+      "lineage": "Emigre's 1980s bitmap type specimens",
+      "thesis": "The early-computer web, set proudly: coarse pixel display type over fine text, one red accent.",
+      "palette": ["#f2f0eb", "#0a0a0a", "#e5011a"],
+      "materials": ["pixel display type", "halftone fields"],
+      "viewport": "A pixel-type query heading over crisp result entries; red marks the live state; your books sit in a halftone band.",
+      "case": "Holds on audience (old-web nostalgia is real) but loses on clarity: pixel display type slows scanning and fights your wordmark.",
+      "risk": "Reads as retro costume if the pixel type leaks into the results.",
+      "hero": "https://impeccable.style/worlds/cards/emigre-bitmap-specimen-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/emigre-bitmap-specimen.webp"
+    },
+    {
+      "id": "challenger-reference-rail",
+      "label": "Centre-Rail Reference Page",
+      "verdict": "declined",
+      "lineage": "wide-margin reference editions",
+      "palette": ["#141414", "#a8321e"],
+      "materials": ["ruling-engine hairlines"],
+      "case": "Loses both axes: two short columns break the scannable list, and its bone paper is the reflexive cream ground.",
+      "kept": "One-device-pixel rule discipline and a three-value ink system.",
+      "hero": "https://impeccable.style/worlds/cards/rw-centre-rail-reference-setting-hero.webp"
+    },
+    {
+      "id": "challenger-jcard",
+      "label": "Mixtape J-Card",
+      "verdict": "declined",
+      "lineage": "hand-lettered cassette inlays",
+      "palette": ["#1f3fa8", "#ffffff"],
+      "materials": ["ballpoint on ruled inlay"],
+      "case": "Loses both axes: handwriting slows scanning and the tracklist metaphor says music, not search.",
+      "kept": "Ruled-line rhythm: everything sits on the baseline grid.",
+      "hero": "https://impeccable.style/worlds/cards/vernacular-ephemera-cassette-j-card-hero.webp"
+    },
+    {
+      "id": "challenger-streaming",
+      "label": "Streaming Title Wall",
+      "verdict": "declined",
+      "lineage": "streaming-service poster rows",
+      "palette": ["#141414", "#e50914"],
+      "materials": ["poster tiles"],
+      "case": "Loses both axes: horizontal poster rows replace the scannable list you asked to keep.",
+      "kept": "The focused item says what it is while everything else gets out of the way.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-streaming-title-card-wall-hero.webp"
+    },
+    {
+      "id": "challenger-splitflap",
+      "label": "Split-Flap Concourse",
+      "verdict": "declined",
+      "lineage": "rail departure boards",
+      "palette": ["#111111", "#f5a623"],
+      "materials": ["matte flaps"],
+      "case": "Loses both axes: it's a costume of an instrument, and flipping characters fight reading.",
+      "kept": "Columns never move; state restyles a row without breaking the grid.",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-split-flap-concourse-hero.webp"
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "What search engines ship, executed impeccably: white page, centred pill, blue links.",
+    "palette": ["#ffffff", "#202124", "#1a0dab"],
+    "materials": ["clean grid"],
+    "viewport": "The arrangement every visitor expects, at full craft.",
+    "risk": "Indistinguishable from the competition by design; this is close to the version you called rubbish."
+  },
+  "steer": true
+}

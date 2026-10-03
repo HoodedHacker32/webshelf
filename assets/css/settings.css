@@ -1,0 +1,73 @@
+/* Settings: one column under the search field, in the same browser grammar. */
+
+.settings-page .toolbar { position: static; }
+
+.settings {
+  width: 100%;
+  max-width: calc(var(--lead-in) + var(--center-width));
+  padding: 24px var(--page-margin) 24px var(--lead-in);
+}
+
+.settings-title { font-size: var(--text-2xl); font-weight: 700; line-height: 1.2; }
+.settings-intro { margin-top: 4px; color: var(--meta); }
+
+.settings-section { margin-top: 30px; }
+.settings-section h2 {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--bevel-lo);
+  box-shadow: 0 1px 0 var(--bevel-hi);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.setting { margin: 0; padding: 14px 0 6px; border: 0; min-width: 0; }
+.setting-label { display: block; padding: 0; font-weight: 700; }
+.setting-help { margin-top: 2px; color: var(--meta); max-width: 62ch; }
+.setting-options { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.setting-inline { flex-direction: row; flex-wrap: wrap; gap: 8px 24px; }
+.setting-current { margin-top: 8px; color: var(--ink-2); }
+.setting-current strong { color: var(--ink); }
+.setting-location { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.setting-location .field { flex: 1 1 200px; }
+.setting-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 10px; }
+.setting-status { color: var(--ink-2); font-family: var(--font-ui); font-size: var(--text-sm); }
+p.setting-status { min-height: 22px; margin-top: 8px; }
+
+.radio, .check { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; cursor: pointer; }
+.radio input, .check input { flex: none; width: 18px; height: 18px; margin: 0; }
+.radio-block { align-items: flex-start; }
+.radio-block input { margin-top: 4px; }
+.radio-block > span { display: flex; flex-direction: column; }
+.radio-title { color: var(--ink); }
+.radio-help { color: var(--meta); }
+
+.settings-prose { margin-top: 12px; color: var(--ink-2); max-width: 62ch; }
+.privacy-list { margin-top: 8px; }
+.privacy-item { padding: 8px 0; border-bottom: 1px solid var(--bevel-lo); }
+.privacy-item dt { font-weight: 700; }
+.privacy-item dd { margin: 2px 0 0; color: var(--ink-2); }
+
+.settings-saved {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 30;
+  max-width: calc(100vw - 32px);
+  padding: 10px 16px;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+}
+.settings-saved.is-visible { opacity: 1; transform: translate(-50%, 0); }
+.settings-saved.is-error { color: var(--danger); }
+
+@media (pointer: coarse) {
+  .radio, .check { min-height: 44px; }
+}
+
+/* Legends sit flush like any other label. */
+legend.setting-label { float: left; width: 100%; }
+legend.setting-label + * { clear: both; }

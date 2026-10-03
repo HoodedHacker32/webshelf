@@ -1,0 +1,206 @@
+{
+  "title": "Choose Webshelf's visual world",
+  "question": "Previews added for the roll, the pick and Midnight Line Map: each shows a desktop results page (a topic search) and a phone (a tool search). They are quick code sketches with sample results, not the final build. Every option keeps your four behaviours.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Genre Bands",
+      "kicker": "THE ROLL",
+      "lineage": "Edward Young's 1935 three-band paperback covers, colour-coded by genre",
+      "thesis": "Every results page is a paperback cover coded by genre: the band's colour tells you what kind of answer is waiting before you read a word. Your three books are the three genres.",
+      "palette": [
+        "#67c1ff",
+        "#52da5a",
+        "#ffb843",
+        "#bc754a",
+        "#ffffff",
+        "#161616"
+      ],
+      "materials": [
+        "flat printed colour bands",
+        "a white middle band for reading",
+        "your brown shelf as the rule between them"
+      ],
+      "viewport": "A full-width colour band holds your mark (recoloured where needed) and the search field; it sits on your brown shelf. The band takes the genre of the search: sky blue for web results, green when there's a topic panel, amber when a tool answers (calculator, weather, converter). In the mark, the book for that genre stands upright while the others lean. Below, the white reading band: results as a single scannable list, titles in a confident humanist sans, notes in a book serif, the topic panel at right on wide screens and after the first result on phones. A thin bottom band closes the page. Dark mode keeps the band colours and turns the reading band to ink-black.",
+      "risk": "The three-band grid is famous; set too literally (Gill-alike caps, a cartouche, cover pastiche) it reads as homage costume. The build takes the grid and the genre code only, never the publisher's furniture.",
+      "raised": [
+        {
+          "from": "challenger-ikeda",
+          "raise": "Dark mode is a true negative: identical structure and spacing, only the values change."
+        },
+        {
+          "from": "challenger-atlas",
+          "raise": "Hierarchy rides one ramp, type size; no stacking of weight, colour and boxes to say the same thing."
+        },
+        {
+          "from": "challenger-warm-app",
+          "raise": "The genre colour never decorates; only things you can press or that tell you the genre carry it, and every touch target is at least 44px."
+        },
+        {
+          "from": "challenger-feed",
+          "raise": "The next results are already loaded before you reach the end of the list."
+        }
+      ],
+      "comp": ".impeccable/mocks/decision/bands.webp"
+    },
+    {
+      "id": "model-pick",
+      "label": "The First Web Page",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "the 1991 hypertext documents that started the web",
+      "thesis": "Webshelf set like the first web: plain document type, underlined links, horizontal rules, and nothing that isn't text or a link.",
+      "palette": [
+        "#ffffff",
+        "#000000",
+        "#0000ee",
+        "#551a8b"
+      ],
+      "materials": [
+        "default document type",
+        "rule lines"
+      ],
+      "viewport": "Your lockup small at top left; the search field as a plain bordered input; results as a numbered list of underlined titles with the address beneath; rules separate sections.",
+      "risk": "The most familiar card here: many 'old web' projects already use default-document styling, and it can read as unfinished rather than chosen.",
+      "comp": ".impeccable/mocks/decision/web.webp"
+    },
+    {
+      "id": "challenger-transit",
+      "label": "Midnight Line Map",
+      "verdict": "competitive",
+      "lineage": "metropolitan rail maps fired in enamel",
+      "thesis": "Your four book colours become four lines on a midnight ground; every search is a route, every kind of answer a line.",
+      "palette": [
+        "#0b1230",
+        "#ffffff",
+        "#67c1ff",
+        "#52da5a",
+        "#ffb843",
+        "#bc754a"
+      ],
+      "materials": [
+        "midnight enamel ground",
+        "porcelain white ticks"
+      ],
+      "viewport": "Midnight header with the search field; result kinds marked by coloured line bullets; the topic panel as an interchange circle where lines meet.",
+      "case": "Holds on audience, because your four book colours map onto four lines almost exactly, but loses on clarity: a route map is a stretch for a list of results.",
+      "risk": "Becomes a transit costume (stations, interchanges) the moment the metaphor goes past colour and line bullets.",
+      "hero": "https://impeccable.style/worlds/cards/wayfinding-cartography-signage-midnight-transit-diagram-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/wayfinding-cartography-signage-midnight-transit-diagram.webp",
+      "comp": ".impeccable/mocks/decision/transit.webp"
+    },
+    {
+      "id": "challenger-crouwel",
+      "label": "Gridded Specimen",
+      "verdict": "competitive",
+      "lineage": "Wim Crouwel's grid-constructed type specimens",
+      "thesis": "The web as a grid made visible: faint construction lines, monumental grid-built type on the homepage, neutral grotesk for everything you read.",
+      "palette": [
+        "#ffffff",
+        "#111111",
+        "#0057ff",
+        "#e6ebf2"
+      ],
+      "materials": [
+        "visible construction grid",
+        "one diagonal accent"
+      ],
+      "viewport": "A faint grid under the whole page; the query set large on the grid; results snapped to whole cells; your lockup placed on the grid like a specimen.",
+      "case": "Holds on audience for design-literate people (you included) and on 'properly minimalist', but loses on clarity: a visible grid adds noise to a page people scan in seconds.",
+      "risk": "The visible grid turns decorative fast; the detector flags decorative grid backgrounds.",
+      "hero": "https://impeccable.style/worlds/cards/crouwel-grid-specimen-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/crouwel-grid-specimen.webp"
+    },
+    {
+      "id": "challenger-ikeda",
+      "label": "Datamatics",
+      "verdict": "declined",
+      "lineage": "black-and-white data-sublime installations",
+      "palette": [
+        "#000000",
+        "#ffffff"
+      ],
+      "materials": [
+        "barcode fields",
+        "monospace numerals"
+      ],
+      "case": "Loses both axes: strobing data fields and monospace columns fight reading and say nothing about search.",
+      "kept": "Dark mode as a true negative of the light theme.",
+      "hero": "https://impeccable.style/worlds/cards/ikeda-datamatics-hero.webp"
+    },
+    {
+      "id": "challenger-atlas",
+      "label": "Star Atlas",
+      "verdict": "declined",
+      "lineage": "celestial star charts",
+      "palette": [
+        "#0d1b3a",
+        "#f4f1e8",
+        "#e2513a"
+      ],
+      "materials": [
+        "navy chart ground",
+        "magnitude dots"
+      ],
+      "case": "Loses both axes: dot-size hierarchy doesn't fit a list of links, and the night sky says nothing about the web.",
+      "kept": "One ramp carries all hierarchy.",
+      "hero": "https://impeccable.style/worlds/cards/notation-diagram-systems-star-atlas-hero.webp"
+    },
+    {
+      "id": "challenger-warm-app",
+      "label": "Warm Consumer App",
+      "verdict": "declined",
+      "lineage": "friendly consumer app surfaces",
+      "palette": [
+        "#f6efe6",
+        "#ffffff",
+        "#ff5a36"
+      ],
+      "materials": [
+        "soft cards",
+        "warm ground"
+      ],
+      "case": "Loses both axes: it's the generic app default, and its warm ground is the reflexive beige.",
+      "kept": "Colour only where something can be pressed; generous touch targets.",
+      "hero": "https://impeccable.style/worlds/cards/digital-design-canon-warm-consumer-app-surface-hero.webp"
+    },
+    {
+      "id": "challenger-feed",
+      "label": "Vertical Feed",
+      "verdict": "declined",
+      "lineage": "full-screen vertical video feeds",
+      "palette": [
+        "#000000",
+        "#ffffff"
+      ],
+      "materials": [
+        "full-bleed media"
+      ],
+      "case": "Loses both axes: one item per screen destroys the scannable list.",
+      "kept": "The next thing is already loaded.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-vertical-video-feed-surface-hero.webp"
+    }
+  ],
+  "reroll": {
+    "registers": [
+      "safer",
+      "bolder"
+    ]
+  },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "What search engines ship, executed impeccably: white page, centred pill, blue links.",
+    "palette": [
+      "#ffffff",
+      "#202124",
+      "#1a0dab"
+    ],
+    "materials": [
+      "clean grid"
+    ],
+    "viewport": "The arrangement every visitor expects, at full craft.",
+    "risk": "Indistinguishable from the competition by design; this is close to the version you called rubbish."
+  },
+  "steer": true,
+  "followup": true
+}

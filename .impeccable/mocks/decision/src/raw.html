@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview: Raw HTML, Loud</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction/400-italic.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/courier-prime/400.css">
+<style>
+:root { --ground:#ffffff; --ink:#000000; --ink2:#262626; --meta:#5a5a5a; --link:#0000ee; --visited:#551a8b; --mark:#fff200; --markink:#000; }
+body.dark { --ground:#000000; --ink:#ffffff; --ink2:#dcdcdc; --meta:#a3a3a3; --link:#7d9bff; --visited:#c39bff; --mark:#fff200; --markink:#000; }
+* { box-sizing:border-box; margin:0; }
+body { background:var(--ground); color:var(--ink); font:19px/1.45 Redaction, "Times New Roman", serif; padding:24px 40px; }
+.top { display:flex; align-items:center; gap:32px; }
+.lockup { width:156px; color:var(--ink); }
+.lockup svg { width:100%; height:auto; display:block; }
+.lockup svg :is(path,rect):not([style*="fill:rgb"]) { fill:currentColor; }
+form { display:flex; flex:1; max-width:700px; }
+.in { flex:1; border:3px solid var(--ink); border-right:0; padding:8px 12px; font-size:22px; }
+.btn { border:3px solid var(--ink); background:var(--ink); color:var(--ground); padding:0 22px; font:700 18px Redaction, serif; display:grid; place-items:center; }
+hr { border:0; border-top:4px solid var(--ink); margin:20px 0 0; }
+.qline { display:flex; justify-content:space-between; align-items:baseline; padding:14px 0 18px; border-bottom:1px solid var(--ink); margin-bottom:22px; }
+.qline h1 { font-size:40px; font-weight:700; line-height:1.1; }
+.qline span { font:15px "Courier Prime", monospace; color:var(--meta); }
+main { display:grid; grid-template-columns:minmax(0,680px) 330px; gap:60px; }
+.r { margin-bottom:26px; }
+.r a { color:var(--link); font-size:23px; text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:4px; }
+.r a.v { color:var(--visited); }
+.r cite { display:block; font:15px "Courier Prime", monospace; font-style:normal; color:var(--meta); margin:4px 0 2px; }
+.r p { color:var(--ink2); max-width:62ch; }
+mark { background:var(--mark); color:var(--markink); padding:0 2px; }
+aside { border:3px solid var(--ink); }
+aside img { display:block; width:100%; height:170px; object-fit:cover; border-bottom:3px solid var(--ink); filter:grayscale(1) contrast(1.15); }
+aside .b { padding:14px 16px 16px; }
+aside h2 { font-size:32px; line-height:1.05; }
+aside .sub { font-style:italic; color:var(--meta); margin-bottom:8px; }
+aside p { font-size:17px; color:var(--ink2); }
+aside dl { margin-top:10px; font-size:16px; } aside dt { display:inline; font-weight:700; } aside dd { display:inline; margin:0; }
+aside a { color:var(--link); }
+.tool { border:3px solid var(--ink); padding:14px 16px; margin-bottom:26px; }
+.tool .eq { font-size:38px; font-weight:700; line-height:1.1; }
+.tool .eq small { font:16px "Courier Prime", monospace; font-weight:400; color:var(--meta); }
+.tool p { font:15px "Courier Prime", monospace; color:var(--meta); margin-top:6px; }
+body.phone { padding:14px 16px; font-size:18px; }
+body.phone .top { flex-direction:column; align-items:stretch; gap:14px; }
+body.phone .lockup { width:124px; }
+body.phone .qline { flex-direction:column; gap:4px; }
+body.phone .qline h1 { font-size:30px; }
+body.phone main { display:block; }
+body.phone .r a { font-size:21px; }
+</style></head>
+<body>
+<script>const P=new URLSearchParams(location.search); document.body.classList.toggle('phone',P.has('phone')); document.body.classList.toggle('dark',P.has('dark'));</script>
+<header class="top">
+  <div class="lockup" data-logo="lockup"></div>
+  <form><div class="in" id="q">eiffel tower</div><div class="btn">Search</div></form>
+</header>
+<hr>
+<div class="qline"><h1 id="h">eiffel tower</h1><span id="c">24 results · 0.31 s · via Mwmbl</span></div>
+<main>
+  <div>
+    <div id="toolslot"></div>
+    <div class="r"><a href="#">Eiffel Tower</a><cite>en.wikipedia.org/wiki/Eiffel_Tower</cite><p>The <mark>Eiffel Tower</mark> is a wrought-iron lattice tower on the Champ de Mars in Paris, named after the engineer Gustave Eiffel.</p></div>
+    <div class="r"><a href="#" class="v">Official website of the Eiffel Tower</a><cite>toureiffel.paris/en</cite><p>Tickets, opening hours and access to the summit of the <mark>Eiffel Tower</mark>.</p></div>
+    <div class="r"><a href="#">Eiffel Tower: History, Height and Facts</a><cite>britannica.com/topic/Eiffel-Tower</cite><p>Built for the 1889 Exposition Universelle, the world's tallest structure until 1930.</p></div>
+    <div class="r"><a href="#">How the Eiffel Tower was built</a><cite>engineering-history.org/structures/eiffel</cite><p>Some 18,000 iron parts and 2.5 million rivets.</p></div>
+  </div>
+  <aside id="panel">
+    <img alt="" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg/500px-Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg">
+    <div class="b"><h2>Eiffel Tower</h2><p class="sub">Tower in Paris, France</p>
+    <p>A wrought-iron lattice tower on the Champ de Mars, built 1887–89 as the entrance to the World's Fair. <a href="#">Wikipedia</a></p>
+    <dl><div><dt>Opened: </dt><dd>31 March 1889</dd></div><div><dt>Height: </dt><dd>330 m</dd></div></dl></div>
+  </aside>
+</main>
+<script>
+if (document.body.classList.contains('phone')) {
+  document.getElementById('q').textContent = '5 miles in km';
+  document.getElementById('h').textContent = '5 miles in km';
+  document.getElementById('c').textContent = '31 results · 0.28 s · via Mwmbl';
+  document.getElementById('panel').remove();
+  document.getElementById('toolslot').innerHTML = '<section class="tool"><div class="eq">5 <small>mi</small> = 8.047 <small>km</small></div><p>multiply the length by 1.609</p></section>';
+}
+</script>
+<script src="inline-logo.js"></script>
+</body></html>

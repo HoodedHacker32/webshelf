@@ -1,0 +1,98 @@
+{
+  "title": "Webshelf: the early web, done deliberately",
+  "question": "Your steer pinned the direction: the First Web Page idea and its use of your logo, but properly styled, with a real dark mode and a palette free of the logo's colours. Three takes on it. Each preview shows a desktop results page in light mode and a phone in dark mode, with sample results.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Dithered Press",
+      "kicker": "YOUR STEER",
+      "lineage": "solar-powered and low-tech web publications: one ink, dithered pictures, a pixel-cut serif",
+      "thesis": "Webshelf printed in one ink. Pictures are dithered into the page's two colours, display type uses a pixel-cut cut of the same serif, and the words you searched for carry an ultramarine underline.",
+      "palette": [
+        "#ffffff",
+        "#111111",
+        "#1f1fd6",
+        "#0d0d10",
+        "#ecebe4",
+        "#9a9aff"
+      ],
+      "materials": [
+        "one ink on white (or light ink on near-black)",
+        "error-diffusion dithered images",
+        "Redaction serif with its pixel cuts"
+      ],
+      "viewport": "Your lockup in one ink at top left, the three books turned into three tints; the query set large in the pixel cut on a single heavy rule; numbered results with big pixel numerals in the margin; the topic panel's photo dithered into the page's inks.",
+      "risk": "One ink is austere; it relies on the type and the dithering being done well everywhere, including weather and colour-picker cards that need real colour.",
+      "comp": ".impeccable/mocks/decision/dither.webp"
+    },
+    {
+      "id": "steer-raw",
+      "label": "Raw HTML, Loud",
+      "kicker": "YOUR STEER",
+      "lineage": "brutalist websites: raw HTML elements at confident sizes",
+      "thesis": "The browser's own vocabulary, turned up: underlined link blue, visited purple, the yellow highlighter of the HTML mark element, black rules and boxed fields, set big enough to look chosen.",
+      "palette": [
+        "#ffffff",
+        "#000000",
+        "#0000ee",
+        "#551a8b",
+        "#fff200",
+        "#7d9bff"
+      ],
+      "materials": [
+        "4px black rules",
+        "boxed square fields",
+        "the mark element's yellow"
+      ],
+      "viewport": "Your full-colour lockup beside a boxed search field and a black Search block; a heavy rule; the query restated large with a monospace status line; underlined blue results with highlighted matches; the topic panel in a black box with a greyscale photo.",
+      "risk": "Loud by design: the heavy rules and yellow need restraint on dense pages so it stays fast to scan.",
+      "comp": ".impeccable/mocks/decision/raw.webp"
+    },
+    {
+      "id": "steer-grey",
+      "label": "Browser Grey",
+      "kicker": "YOUR STEER",
+      "lineage": "1994 browsers: grey page, bevelled fields, grooved rules",
+      "thesis": "The web as it first looked in a browser: the grey page, sunken fields, raised buttons, grooved rules and Times-style type, done with today's spacing and a proper dark version.",
+      "palette": [
+        "#c0c0c0",
+        "#000000",
+        "#0000ee",
+        "#551a8b",
+        "#26262b",
+        "#8ab0ff"
+      ],
+      "materials": [
+        "browser grey",
+        "sunken and raised bevels",
+        "grooved horizontal rules"
+      ],
+      "viewport": "Your full-colour lockup on the grey page beside a sunken search field and a raised Search button; a grooved rule; a numbered list of underlined results; the topic panel as a raised plate with a sunken photo frame.",
+      "risk": "The most nostalgic of the three; bevels everywhere can tip into a costume of an old operating system.",
+      "comp": ".impeccable/mocks/decision/grey.webp"
+    }
+  ],
+  "reroll": {
+    "registers": [
+      "safer",
+      "bolder"
+    ]
+  },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "What search engines ship, executed impeccably: white page, centred pill, blue links.",
+    "palette": [
+      "#ffffff",
+      "#202124",
+      "#1a0dab"
+    ],
+    "materials": [
+      "clean grid"
+    ],
+    "viewport": "The arrangement every visitor expects, at full craft.",
+    "risk": "Indistinguishable from the competition by design; close to the version you called rubbish."
+  },
+  "steer": true,
+  "followup": true
+}

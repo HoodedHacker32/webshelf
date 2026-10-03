@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Webshelf</title>
+  <meta name="description" content="Search the web the way it used to work: results first, no AI.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search).get('q');
+      if (q && q.trim()) { location.replace('search.html?q=' + encodeURIComponent(q)); return; }
+      var t = 'auto';
+      try { t = JSON.parse(localStorage.getItem('webshelf:settings') || '{}').theme || 'auto'; } catch (e) {}
+      var dark = t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+  <link rel="icon" href="logos/logo.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/redaction-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/home.css">
+  <script type="module" src="assets/js/home.js"></script>
+</head>
+<body class="home">
+
+  <main class="home-main">
+    <h1 class="home-logo logo" data-logo="lockup" data-label="Webshelf">
+      <img src="logos/lockup.svg" alt="Webshelf" width="380" height="176">
+    </h1>
+    <div class="home-search" id="home-search">
+      <noscript>
+        <form action="search.html" method="get" role="search" class="searchbox">
+          <div class="searchbox-field"><input class="field searchbox-input" name="q" type="search" aria-label="Search the web"></div>
+          <button class="btn btn-default" type="submit">Search</button>
+        </form>
+      </noscript>
+    </div>
+    <p class="home-note">An AI-free search engine.</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-row">
+      <div class="site-footer-links" data-repo-links></div>
+      <div class="site-footer-links">
+        <a href="settings.html#privacy">Privacy</a>
+        <a href="settings.html">Settings</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

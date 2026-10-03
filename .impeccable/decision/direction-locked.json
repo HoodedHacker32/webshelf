@@ -1,0 +1,20 @@
+{
+  "title": "Locked: Browser White with toolbar",
+  "question": "This is what I'll build. Press Build this to confirm, or add a last note in the steer box first. The build covers the homepage, results page and settings, every instant answer, light and dark themes, and phones as well as desktops.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Browser White with toolbar",
+      "kicker": "YOUR CHOICE",
+      "lineage": "1994 browser pages, whitened",
+      "thesis": "A white page that feels like the web people know: underlined blue links, visited purple, Redaction (a Times-style serif), monospace addresses. The browser era lives in the controls: a pale grey toolbar band, sunken fields, raised buttons, grooved rules. Images stay in full colour. Your lockup exactly as drawn; your mark is the favicon; the leaning blue book rocks once while results load.",
+      "palette": ["#e7e7e7", "#ffffff", "#111111", "#0000ee", "#551a8b", "#24242a", "#8fb2ff"],
+      "materials": ["pale grey toolbar band", "white page", "sunken and raised bevels", "grooved rules"],
+      "viewport": "Toolbar band with your lockup, sunken search field and Search; grooved rule; results with a full-colour image strip; topic panel as a raised plate on wide screens and after the first result on phones.",
+      "risk": "Its character rests on the bevels, rules and type being crisp everywhere, including every instant-answer card.",
+      "comp": ".impeccable/mocks/decision/white2-b.webp"
+    }
+  ],
+  "canon": false,
+  "steer": true
+}

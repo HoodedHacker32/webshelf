@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview: The First Web Page</title>
+<style>
+* { box-sizing:border-box; }
+body { margin:0; padding:24px 40px; font:17px/1.45 "Times New Roman", Times, serif; color:#000; background:#fff; }
+.top { display:flex; align-items:center; gap:28px; }
+.lockup { width:120px; } .lockup svg { width:100%; height:auto; display:block; }
+form { display:flex; gap:8px; flex:1; max-width:560px; }
+input { flex:1; font:17px "Times New Roman", serif; padding:4px 6px; border:2px inset #ccc; }
+button { font:15px Arial, sans-serif; padding:2px 12px; }
+hr { border:0; border-top:1px solid #888; margin:16px 0; }
+.wrap { display:grid; grid-template-columns:minmax(0,660px) 300px; gap:48px; }
+h1 { font-size:24px; margin:0 0 12px; font-weight:bold; }
+ol { padding-left:28px; margin:0; }
+li { margin-bottom:16px; }
+li a { color:#0000ee; font-size:19px; }
+li a.v { color:#551a8b; }
+.addr { display:block; font:14px "Courier New", monospace; color:#333; }
+li p { margin:2px 0 0; }
+aside { border:1px solid #000; padding:12px 14px; font-size:16px; }
+aside h2 { font-size:22px; margin:0 0 4px; }
+aside img { width:100%; height:150px; object-fit:cover; display:block; margin:6px 0 8px; }
+dl { margin:8px 0 0; } dt { font-weight:bold; display:inline; } dd { display:inline; margin:0; }
+address { font-style:normal; font-size:14px; }
+body.phone { padding:14px 14px; font-size:16px; }
+body.phone .top { flex-direction:column; align-items:flex-start; gap:10px; }
+body.phone form { width:100%; }
+body.phone .wrap { display:block; }
+body.phone aside { margin-bottom:18px; }
+</style></head>
+<body>
+<script>document.body.classList.toggle('phone', new URLSearchParams(location.search).has('phone'));</script>
+<div class="top">
+  <div class="lockup" data-logo="lockup"></div>
+  <form><input value="eiffel tower"> <button type="button">Search</button></form>
+</div>
+<hr>
+<div class="wrap">
+  <div>
+    <h1>Results for “eiffel tower”</h1>
+    <ol>
+      <li><a href="#">Eiffel Tower</a><span class="addr">https://en.wikipedia.org/wiki/Eiffel_Tower</span><p>The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, named after the engineer Gustave Eiffel.</p></li>
+      <li><a href="#" class="v">Official website of the Eiffel Tower</a><span class="addr">https://www.toureiffel.paris/en</span><p>Tickets, opening hours and access to the summit.</p></li>
+      <li><a href="#">Eiffel Tower | History, Height, &amp; Facts</a><span class="addr">https://www.britannica.com/topic/Eiffel-Tower</span><p>Built for the 1889 Exposition Universelle; the world's tallest structure until 1930.</p></li>
+      <li><a href="#">How the Eiffel Tower was built</a><span class="addr">https://engineering-history.org/structures/eiffel</span><p>Some 18,000 iron parts and 2.5 million rivets.</p></li>
+    </ol>
+  </div>
+  <aside id="panel">
+    <h2>Eiffel Tower</h2><em>Tower in Paris, France</em>
+    <img alt="" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg/500px-Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg">
+    A wrought-iron lattice tower on the Champ de Mars, built 1887-89 as the entrance to the World's Fair.
+    <dl><div><dt>Opened:</dt> <dd>31 March 1889</dd></div><div><dt>Height:</dt> <dd>330 m</dd></div></dl>
+    <p><a href="#">Wikipedia</a></p>
+  </aside>
+</div>
+<hr>
+<address>Webshelf · <a href="#">Settings</a> · <a href="#">Privacy</a></address>
+<script>
+  if (document.body.classList.contains('phone')) {
+    const ol = document.querySelector('ol'); const panel = document.getElementById('panel');
+    ol.children[0].after(panel);
+  }
+</script>
+<script src="inline-logo.js"></script>
+</body></html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings - Webshelf</title>
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function () {
+      var t = 'auto';
+      try { t = JSON.parse(localStorage.getItem('webshelf:settings') || '{}').theme || 'auto'; } catch (e) {}
+      var dark = t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+  <link rel="icon" href="logos/logo.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/redaction-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/serp.css">
+  <link rel="stylesheet" href="assets/css/settings.css">
+  <script type="module" src="assets/js/settings.js"></script>
+</head>
+<body class="settings-page">
+  <header class="toolbar">
+    <a class="toolbar-logo logo" href="index.html" data-logo="lockup" data-label="Webshelf home">
+      <img src="logos/lockup.svg" alt="Webshelf home" width="186" height="86">
+    </a>
+    <div class="toolbar-search" id="settings-search"></div>
+    <nav class="toolbar-links" aria-label="Site"><a href="index.html">Home</a></nav>
+  </header>
+
+  <main class="settings" id="main">
+    <h1 class="settings-title">Settings</h1>
+    <p class="settings-intro">Saved in this browser only. Nothing is stored on a server.</p>
+
+    <section class="settings-section" aria-labelledby="s-look">
+      <h2 id="s-look">Appearance</h2>
+      <fieldset class="setting">
+        <legend class="setting-label">Theme</legend>
+        <div class="setting-options setting-inline">
+          <label class="radio"><input type="radio" name="theme" value="auto"> Match my device</label>
+          <label class="radio"><input type="radio" name="theme" value="light"> Light</label>
+          <label class="radio"><input type="radio" name="theme" value="dark"> Dark</label>
+        </div>
+      </fieldset>
+    </section>
+
+    <section class="settings-section" aria-labelledby="s-results">
+      <h2 id="s-results">Search results</h2>
+
+      <fieldset class="setting">
+        <legend class="setting-label">Where web results come from</legend>
+        <p class="setting-help">Webshelf’s permanent results source isn’t chosen yet. These are stand-ins.</p>
+        <div class="setting-options" id="provider-options"></div>
+      </fieldset>
+
+      <div class="setting">
+        <label class="check"><input type="checkbox" id="opt-newtab" data-setting="newTab"> Open results in a new tab</label>
+      </div>
+    </section>
+
+    <section class="settings-section" aria-labelledby="s-box">
+      <h2 id="s-box">Search box</h2>
+
+      <div class="setting">
+        <label class="check"><input type="checkbox" id="opt-suggest" data-setting="suggestions"> Show suggestions while typing</label>
+        <p class="setting-help">Sends what you type to Wikipedia to suggest article titles. Also powers “Related searches”.</p>
+      </div>
+
+      <div class="setting">
+        <label class="check"><input type="checkbox" id="opt-history" data-setting="history"> Remember my searches on this device</label>
+        <p class="setting-help">Recent searches appear in the search box. They never leave this browser.</p>
+        <div class="setting-actions">
+          <button class="btn" type="button" id="clear-history">Clear search history</button>
+          <span class="setting-status" id="history-status" role="status"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-section" id="location" aria-labelledby="s-location">
+      <h2 id="s-location">Weather and time</h2>
+
+      <fieldset class="setting">
+        <legend class="setting-label">Temperature</legend>
+        <div class="setting-options setting-inline">
+          <label class="radio"><input type="radio" name="tempUnit" value="auto"> Automatic</label>
+          <label class="radio"><input type="radio" name="tempUnit" value="c"> Celsius (°C)</label>
+          <label class="radio"><input type="radio" name="tempUnit" value="f"> Fahrenheit (°F)</label>
+        </div>
+      </fieldset>
+
+      <div class="setting">
+        <p class="setting-label" id="home-label">Your location</p>
+        <p class="setting-help">Used when you search “weather” without naming a place. It’s sent only to Open-Meteo, to fetch the forecast.</p>
+        <p class="setting-current" id="home-current"></p>
+        <form class="setting-location" id="home-form" aria-labelledby="home-label">
+          <input class="field" type="text" name="place" placeholder="City or town" aria-label="City or town" autocomplete="address-level2">
+          <button class="btn btn-default" type="submit">Set location</button>
+          <button class="btn" type="button" id="home-locate">Use my location</button>
+          <button class="btn" type="button" id="home-clear">Remove</button>
+        </form>
+        <p class="setting-status" id="home-status" role="status"></p>
+      </div>
+    </section>
+
+    <section class="settings-section" id="privacy" aria-labelledby="s-privacy">
+      <h2 id="s-privacy">Where your searches go</h2>
+      <p class="settings-prose">Webshelf has no server, no accounts, no ads and no tracking. Your browser talks directly to these services, and only when a search needs them:</p>
+      <dl class="privacy-list" id="privacy-list"></dl>
+      <p class="settings-prose">Webshelf uses no AI anywhere: no summaries, no chat, no generated answers.</p>
+    </section>
+
+    <p class="settings-saved raised" id="saved" role="status" aria-live="polite"></p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-row">
+      <p>Webshelf</p>
+      <div class="site-footer-links"><a href="index.html">Home</a></div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,77 @@
+{
+  "title": "Webshelf: Browser Grey, refined",
+  "question": "Shelf fixed: your lockup is back exactly as you drew it, with the shelf only under the books. Extending it across the page changed your logo, which I shouldn't have done. The page divider is a browser-style grooved rule instead. Everything else is unchanged: white page, full-colour images, bevelled controls, a real dark mode. Previews show desktop results (light), phone homepage (dark) and phone results (dark).",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Browser White",
+      "kicker": "YOUR STEER",
+      "lineage": "1994 browser pages, whitened: bevelled controls on a plain white page",
+      "thesis": "The web people know: a white page, underlined blue links, visited purple, Times-style type. The browser era shows only in the controls (sunken search field, raised buttons, grooved rules). Your lockup appears exactly as drawn; your mark is the favicon, and while results load the leaning blue book rocks once.",
+      "palette": [
+        "#ffffff",
+        "#111111",
+        "#0000ee",
+        "#551a8b",
+        "#bc754a",
+        "#17171a",
+        "#8fb2ff"
+      ],
+      "materials": [
+        "white page",
+        "sunken field and raised button bevels",
+        "grooved rules"
+      ],
+      "viewport": "Your lockup at top left beside a sunken search field and raised Search button, the header closed by a grooved rule. Results as a numbered list of underlined links with plain addresses, a strip of full-colour images when the search has them, the topic panel as a raised plate on the right. Homepage: your lockup large and centred, search below.",
+      "risk": "Plain by design; its character rests on the bevels, the grooved rules and the type, so those must be crisp everywhere.",
+      "comp": ".impeccable/mocks/decision/white2-a.webp"
+    },
+    {
+      "id": "steer-toolbar",
+      "label": "Browser White with toolbar",
+      "kicker": "YOUR STEER",
+      "lineage": "the same, with a pale grey toolbar band in the header",
+      "thesis": "As Browser White, but the header sits on a pale grey band like a browser toolbar, closed by a grooved rule; the page below stays white.",
+      "palette": [
+        "#e7e7e7",
+        "#ffffff",
+        "#111111",
+        "#0000ee",
+        "#551a8b",
+        "#bc754a",
+        "#24242a"
+      ],
+      "materials": [
+        "pale grey toolbar band",
+        "white page",
+        "grooved rules"
+      ],
+      "viewport": "A pale grey band holds your lockup, the sunken search field and Search, closed by a grooved rule. Everything below is the same white page with full-colour images.",
+      "risk": "A touch more nostalgic than plain white; the grey band must stay pale so the page still reads as white.",
+      "comp": ".impeccable/mocks/decision/white2-b.webp"
+    }
+  ],
+  "reroll": {
+    "registers": [
+      "safer",
+      "bolder"
+    ]
+  },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "What search engines ship, executed impeccably: white page, centred pill, blue links.",
+    "palette": [
+      "#ffffff",
+      "#202124",
+      "#1a0dab"
+    ],
+    "materials": [
+      "clean grid"
+    ],
+    "viewport": "The arrangement every visitor expects, at full craft.",
+    "risk": "Indistinguishable from the competition by design."
+  },
+  "steer": true,
+  "followup": true
+}

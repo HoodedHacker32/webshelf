@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview: Midnight Line Map</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;800&display=block">
+<style>
+:root { --ground:#0b1230; --panel:#121b42; --ink:#f4f6fb; --ink2:#b9c2dc; --meta:#8792b5; --line:#26305c;
+  --web:#67c1ff; --topic:#52da5a; --tool:#ffb843; --shelf:#bc754a; }
+* { box-sizing:border-box; margin:0; }
+body { font-family:Overpass, sans-serif; background:var(--ground); color:var(--ink); }
+header { display:grid; grid-template-columns:auto minmax(0,640px) 1fr; align-items:center; gap:28px; padding:22px 40px; border-bottom:1px solid var(--line); }
+.lockup { width:150px; color:var(--ink); }
+.lockup svg { width:100%; height:auto; display:block; }
+.lockup svg :is(path,rect,polygon,circle,ellipse):not([style*="fill:rgb"]) { fill:currentColor; }
+.field { display:flex; align-items:center; gap:12px; height:50px; padding:0 8px 0 18px; border:2px solid var(--ink2); border-radius:25px; font-size:19px; }
+.field #q { flex:1; }
+.go { width:36px; height:36px; border-radius:50%; background:var(--web); display:grid; place-items:center; color:var(--ground); font-weight:800; }
+.legend { justify-self:end; display:flex; gap:16px; font-size:13px; color:var(--ink2); font-weight:600; }
+.legend i { display:inline-block; width:22px; height:5px; border-radius:3px; margin-right:6px; vertical-align:middle; }
+main { display:grid; grid-template-columns:minmax(0,640px) 340px; gap:56px; padding:26px 40px 0 218px; }
+.count { color:var(--meta); font-size:14px; margin-bottom:20px; }
+.list { position:relative; padding-left:34px; }
+.list::before { content:""; position:absolute; left:9px; top:8px; bottom:8px; width:5px; border-radius:3px; background:var(--web); }
+.r { position:relative; margin-bottom:24px; }
+.r::before { content:""; position:absolute; left:-31px; top:5px; width:14px; height:14px; border-radius:50%; background:var(--ground); border:3px solid var(--ink); }
+.r a { color:var(--ink); font-weight:800; font-size:20px; text-decoration:none; line-height:1.25; }
+.r cite { display:block; font-style:normal; font-size:14px; color:var(--web); margin:3px 0 4px; }
+.r p { font-size:15px; line-height:1.5; color:var(--ink2); }
+.r b { color:var(--ink); }
+.panel { background:var(--panel); border-radius:12px; overflow:hidden; border-top:6px solid var(--topic); }
+.panel img { width:100%; height:160px; object-fit:cover; display:block; }
+.panel .body { padding:16px 18px 18px; }
+.panel h2 { font-size:28px; font-weight:800; }
+.panel .sub { color:var(--topic); font-size:14px; font-weight:600; margin:2px 0 10px; }
+.panel p { font-size:15px; line-height:1.5; color:var(--ink2); }
+.panel dl { margin-top:12px; font-size:14px; line-height:1.7; }
+.panel dt { display:inline; color:var(--meta); } .panel dd { display:inline; margin:0; }
+.tool { background:var(--panel); border-radius:12px; border-top:6px solid var(--tool); padding:14px 16px 16px; margin-bottom:24px; }
+.tool .eq { display:flex; gap:10px; align-items:baseline; font-size:30px; font-weight:800; }
+.tool .eq span { font-size:15px; color:var(--meta); font-weight:600; }
+.tool p { color:var(--ink2); font-size:14px; margin-top:6px; }
+body.phone header { grid-template-columns:1fr; gap:12px; padding:14px 16px; }
+body.phone .lockup { width:120px; }
+body.phone .legend { justify-self:start; }
+body.phone main { display:block; padding:18px 16px 0; }
+</style></head>
+<body>
+<script>document.body.classList.toggle('phone', new URLSearchParams(location.search).has('phone'));</script>
+<header>
+  <div class="lockup" data-logo="lockup"></div>
+  <div class="field"><span id="q">eiffel tower</span><span class="go">→</span></div>
+  <div class="legend"><span><i style="background:var(--web)"></i>Web</span><span><i style="background:var(--topic)"></i>Topic</span><span><i style="background:var(--tool)"></i>Tool</span></div>
+</header>
+<main>
+  <div>
+    <div id="toolslot"></div>
+    <p class="count">24 results</p>
+    <div class="list">
+      <div class="r"><a href="#">Eiffel Tower</a><cite>en.wikipedia.org › wiki › Eiffel_Tower</cite><p>The <b>Eiffel Tower</b> is a wrought-iron lattice tower on the Champ de Mars in Paris …</p></div>
+      <div class="r"><a href="#">Official website of the Eiffel Tower</a><cite>toureiffel.paris › en</cite><p>Tickets, opening hours and access to the summit …</p></div>
+      <div class="r"><a href="#">Eiffel Tower | History, Height, &amp; Facts</a><cite>britannica.com › topic › Eiffel-Tower</cite><p>Built for the 1889 Exposition Universelle …</p></div>
+      <div class="r"><a href="#">How the Eiffel Tower was built</a><cite>engineering-history.org › structures</cite><p>Some 18,000 iron parts and 2.5 million rivets …</p></div>
+    </div>
+  </div>
+  <aside class="panel" id="panel">
+    <img alt="" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg/500px-Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg">
+    <div class="body"><h2>Eiffel Tower</h2><p class="sub">Tower in Paris, France</p>
+      <p>A wrought-iron lattice tower on the Champ de Mars, built 1887-89 as the entrance to the World's Fair.</p>
+      <dl><div><dt>Opened </dt><dd>31 March 1889</dd></div><div><dt>Height </dt><dd>330 m</dd></div></dl></div>
+  </aside>
+</main>
+<script>
+  if (document.body.classList.contains('phone')) {
+    document.getElementById('q').textContent = '5 miles in km';
+    document.getElementById('panel').remove();
+    document.getElementById('toolslot').innerHTML = '<section class="tool"><div class="eq">5 <span>mi</span> = 8.04672 <span>km</span></div><p>Multiply the length by 1.609</p></section>';
+    document.querySelector('.count').textContent = '31 results';
+  }
+</script>
+<script src="inline-logo.js"></script>
+</body></html>

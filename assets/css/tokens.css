@@ -1,0 +1,129 @@
+/*
+  Webshelf design tokens: "Browser White with toolbar".
+  A white page that reads like the web people know; the browser era lives in
+  the controls (toolbar band, sunken fields, raised buttons, grooved rules).
+  Every colour, font and bevel is defined here, for light and dark.
+*/
+
+@font-face { font-family: "Redaction"; src: url("../fonts/redaction-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Redaction"; src: url("../fonts/redaction-latin-400-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Redaction"; src: url("../fonts/redaction-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Redaction 35"; src: url("../fonts/redaction-35-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Courier Prime"; src: url("../fonts/courier-prime-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+
+:root {
+  color-scheme: light;
+
+  /* Type */
+  --font-text: Redaction, "Times New Roman", Times, serif;
+  --font-ui: "Redaction 35", Redaction, "Times New Roman", serif;
+  --font-mono: "Courier Prime", "Courier New", monospace;
+
+  --text-xs: 13px;
+  --text-mono: 14px;  /* Courier Prime runs wide; addresses and readouts */
+  --text-sm: 15px;
+  --text-md: 17px;   /* body */
+  --text-lg: 20px;   /* result titles */
+  --text-xl: 24px;
+  --text-2xl: 30px;  /* panel titles */
+  --text-3xl: 40px;  /* big answers */
+  --text-4xl: 52px;  /* clocks and timers */
+  --leading: 1.5;
+
+  /* Ink */
+  --ink: #111111;
+  --ink-2: #2b2b2b;
+  --meta: #5b5b5b;
+  --link: #0000ee;
+  --visited: #551a8b;
+  --active: #d40000;
+  --positive: #0b7a24;
+  --negative: #b3141a;
+  --danger: #b3141a;
+  --selection: #000080;
+  --selection-ink: #ffffff;
+
+  /* Surfaces */
+  --page: #ffffff;
+  --chrome: #e7e7e7;     /* toolbar band, buttons */
+  --plate: #f3f3f3;      /* raised plates: panel, answer cards */
+  --field: #ffffff;      /* sunken: inputs, image frames */
+  --hover: #ececec;
+  --pressed: #d8d8d8;
+  --highlight: #000080;  /* listbox selection */
+  --highlight-ink: #ffffff;
+  --image-ground: #f3f3f3;  /* behind photos and cover art, in both themes, so dark ink stays readable */
+
+  /* Bevels: light from the top left */
+  --bevel-hi: #ffffff;
+  --bevel-lit: #d2d2d2;  /* lit edge of sunken things; white would vanish on the white page */
+  --bevel-mid: #c6c6c6;
+  --bevel-lo: #8a8a8a;
+  --bevel-deep: #3c3c3c;
+
+  /* Shape and depth */
+  --radius: 0;
+  --shadow-pop: 2px 2px 0 rgba(0, 0, 0, 0.35);
+
+  /* Layout */
+  --gutter: 16px;
+  --page-margin: 36px;
+  --center-width: 660px;
+  --rhs-width: 320px;
+  --rhs-gap: 52px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 100ms;
+  --dur: 200ms;
+
+  /* Instant answers */
+  --wx-sun: #f2b100;
+  --wx-cloud: #b9bec4;
+  --wx-cloud-dark: #858b92;
+  --wx-rain: #2f6fe0;
+  --wx-snow: #7ea7f0;
+  --wx-bolt: #f2b100;
+  --chart-line: #0000ee;
+  --chart-grid: #e2e2e2;
+  --egg-row-1: #d4382c;
+  --egg-row-2: #e07b22;
+  --egg-row-3: #e5b622;
+  --egg-row-4: #3f9e3a;
+  --egg-row-5: #2f6fe0;
+  --egg-row-6: #6a3fb8;
+}
+
+/* Dark: the same page at night. Structure and spacing never change. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #f0f0ea;
+  --ink-2: #d8d8d2;
+  --meta: #a4a49e;
+  --link: #8fb2ff;
+  --visited: #cfa6ff;
+  --active: #ff7a6b;
+  --positive: #5fd07a;
+  --negative: #ff8a80;
+  --danger: #ff8a80;
+  --selection: #3a5bd9;
+  --selection-ink: #ffffff;
+  --page: #17171a;
+  --chrome: #24242a;
+  --plate: #1f1f24;
+  --field: #0e0e10;
+  --hover: #2c2c33;
+  --pressed: #33333b;
+  --highlight: #3a5bd9;
+  --highlight-ink: #ffffff;
+  --bevel-hi: #3a3a42;
+  --bevel-lit: #3a3a42;
+  --bevel-mid: #2c2c33;
+  --bevel-lo: #0c0c0e;
+  --bevel-deep: #050506;
+  --shadow-pop: 2px 2px 0 rgba(0, 0, 0, 0.7);
+  --wx-cloud: #8b9097;
+  --wx-cloud-dark: #6b7077;
+  --chart-line: #8fb2ff;
+  --chart-grid: #2c2c33;
+}

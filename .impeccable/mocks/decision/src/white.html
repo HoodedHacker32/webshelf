@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview: Browser White</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction/400-italic.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction-35/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/courier-prime/400.css">
+<style>
+/* Light: a white page; browser greys only on controls and rules. */
+:root { --ground:#ffffff; --chrome:#e7e7e7; --field:#ffffff; --ink:#111111; --ink2:#2b2b2b; --meta:#5b5b5b;
+  --link:#0000ee; --visited:#551a8b; --hi:#ffffff; --mid:#c6c6c6; --lo:#8a8a8a; --deep:#3c3c3c; --plate:#f3f3f3; --shelf:#bc754a; }
+body.dark { --ground:#17171a; --chrome:#24242a; --field:#0e0e10; --ink:#f0f0ea; --ink2:#d8d8d2; --meta:#a4a49e;
+  --link:#8fb2ff; --visited:#cfa6ff; --hi:#3a3a42; --mid:#2c2c33; --lo:#0c0c0e; --deep:#050506; --plate:#1f1f24; --shelf:#bc754a; }
+* { box-sizing:border-box; margin:0; }
+body { background:var(--ground); color:var(--ink); font:18px/1.45 Redaction, "Times New Roman", serif; }
+
+/* Header: your lockup exactly as drawn; the header ends on a grooved rule. */
+.head { display:flex; align-items:center; gap:28px; padding:16px 36px 14px; border-bottom:2px solid var(--mid); box-shadow:0 2px 0 var(--hi); }
+body.dark .head { border-bottom-color:var(--lo); }
+body.b .head { background:var(--chrome); }
+.head .lockup { width:186px; flex:none; }
+.lockup { color:var(--ink); }
+.lockup svg { width:100%; height:auto; display:block; }
+.lockup svg :is(path,rect):not([style*="fill:rgb"]) { fill:currentColor; }
+form { display:flex; gap:10px; flex:1; max-width:640px; align-items:center; }
+.in { flex:1; background:var(--field); padding:6px 10px; font-size:20px;
+  border:2px solid; border-color:var(--lo) var(--hi) var(--hi) var(--lo); box-shadow:inset 1px 1px 0 var(--deep); }
+.btn { padding:6px 18px; font:17px "Redaction 35", serif; background:var(--chrome); color:var(--ink);
+  border:2px solid; border-color:var(--hi) var(--deep) var(--deep) var(--hi); box-shadow:inset -1px -1px 0 var(--lo); }
+body.b .btn { background:var(--plate); }
+.tools { margin-left:auto; font:15px "Redaction 35", serif; }
+.tools a { color:var(--link); }
+
+hr { border:0; height:4px; border-top:2px solid var(--mid); border-bottom:2px solid var(--hi); margin:18px 0; }
+body.dark hr { border-top-color:var(--lo); }
+main { display:grid; grid-template-columns:minmax(0,660px) 320px; gap:52px; padding:22px 36px 0 214px; }
+h1 { font:19px "Redaction 35", serif; margin-bottom:14px; color:var(--meta); }
+h1 b { font-family:Redaction, serif; color:var(--ink); }
+ol { padding-left:30px; }
+li { margin-bottom:18px; }
+li::marker { font-family:"Redaction 35", serif; color:var(--meta); }
+li a { color:var(--link); font-size:21px; text-underline-offset:3px; }
+li a.v { color:var(--visited); }
+li cite { display:block; font:14px "Courier Prime", monospace; color:var(--meta); font-style:normal; }
+li p { color:var(--ink2); max-width:62ch; }
+mark { background:none; color:inherit; font-weight:700; }
+.imgs { display:flex; gap:8px; margin:0 0 22px; }
+.imgs img { height:96px; width:auto; display:block; border:2px solid; border-color:var(--lo) var(--hi) var(--hi) var(--lo); }
+aside { background:var(--plate); padding:12px; border:2px solid; border-color:var(--hi) var(--deep) var(--deep) var(--hi); }
+body:not(.dark) aside { border-color:var(--hi) var(--lo) var(--lo) var(--hi); box-shadow:1px 1px 0 var(--deep); }
+aside .img { border:2px solid; border-color:var(--lo) var(--hi) var(--hi) var(--lo); }
+aside img { display:block; width:100%; height:170px; object-fit:cover; }
+aside h2 { font-size:28px; margin-top:10px; }
+aside .sub { font-style:italic; color:var(--meta); }
+aside p { font-size:16px; color:var(--ink2); margin-top:8px; }
+aside dl { margin-top:8px; font-size:16px; } aside dt { display:inline; font-weight:700; } aside dd { display:inline; margin:0; }
+aside a { color:var(--link); }
+footer { padding:0 36px 20px 214px; font:14px "Redaction 35", serif; color:var(--meta); }
+
+/* Homepage */
+.home { display:grid; justify-items:center; padding:0 18px; }
+.home .lockup { width:380px; }
+.home .stage { position:relative; width:100%; display:grid; justify-items:center; padding-top:22vh; }
+.home form { width:100%; max-width:620px; margin:48px 0 0; }
+.home .in { font-size:22px; padding:9px 12px; }
+.home .btn { font-size:18px; padding:9px 22px; }
+.home .note { margin-top:18px; font:15px "Redaction 35", serif; color:var(--meta); }
+.home .note a { color:var(--link); }
+
+body.phone .head { flex-wrap:wrap; gap:12px; padding:12px 14px; }
+body.phone .head .lockup { width:132px; }
+body.phone .head form { order:3; flex-basis:100%; }
+body.phone .head .in { font-size:18px; }
+body.phone main { display:block; padding:16px 14px 0; }
+body.phone footer { padding:0 14px 16px; }
+body.phone.home-page .stage { padding-top:90px; }
+body.phone.home-page .lockup { width:240px; }
+body.phone.home-page .stage { padding-top:18vh; }
+body.phone .home .in { font-size:18px; }
+</style></head>
+<body>
+<script>
+const P = new URLSearchParams(location.search);
+document.body.classList.toggle('phone', P.has('phone'));
+document.body.classList.toggle('dark', P.has('dark'));
+document.body.classList.toggle('b', P.get('v') === 'b');
+document.body.classList.toggle('home-page', P.has('home'));
+</script>
+
+<div id="results">
+<header class="head">
+  <div class="lockup" data-logo="lockup"></div>
+  <form><div class="in">eiffel tower</div><div class="btn">Search</div></form>
+  <div class="tools"><a href="#">Settings</a></div>
+</header>
+<main>
+  <div>
+    <h1>Results for <b>eiffel tower</b> · 24 found</h1>
+    <div class="imgs">
+      <img alt="" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg/250px-Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg">
+      <img alt="" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg/250px-Tour_Eiffel_Wikimedia_Commons.jpg">
+    </div>
+    <ol>
+      <li><a href="#">Eiffel Tower</a><cite>en.wikipedia.org/wiki/Eiffel_Tower</cite><p>The <mark>Eiffel Tower</mark> is a wrought-iron lattice tower on the Champ de Mars in Paris, named after the engineer Gustave Eiffel.</p></li>
+      <li><a href="#" class="v">Official website of the Eiffel Tower</a><cite>toureiffel.paris/en</cite><p>Tickets, opening hours and access to the summit of the <mark>Eiffel Tower</mark>.</p></li>
+      <li><a href="#">Eiffel Tower: History, Height and Facts</a><cite>britannica.com/topic/Eiffel-Tower</cite><p>Built for the 1889 Exposition Universelle, the world's tallest structure until 1930.</p></li>
+    </ol>
+  </div>
+  <aside>
+    <div class="img"><img alt="" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg/500px-Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg"></div>
+    <h2>Eiffel Tower</h2><p class="sub">Tower in Paris, France</p>
+    <p>A wrought-iron lattice tower on the Champ de Mars, built 1887–89 as the entrance to the World's Fair. <a href="#">Wikipedia</a></p>
+    <dl><div><dt>Opened: </dt><dd>31 March 1889</dd></div><div><dt>Height: </dt><dd>330 m</dd></div></dl>
+  </aside>
+</main>
+<hr>
+<footer>Webshelf · Settings · Privacy · No AI, ever.</footer>
+</div>
+
+<div id="home" class="home" hidden>
+  <div class="stage">
+    <div class="lockup" data-logo="lockup"></div>
+  </div>
+  <form><div class="in">&nbsp;</div><div class="btn">Search</div></form>
+  <p class="note">Results first. No AI, ever. <a href="#">Settings</a></p>
+</div>
+
+<script>
+if (document.body.classList.contains('home-page')) {
+  document.getElementById('results').remove();
+  document.getElementById('home').hidden = false;
+} else {
+  document.getElementById('home').remove();
+}
+</script>
+<script src="inline-logo.js"></script>
+</body></html>

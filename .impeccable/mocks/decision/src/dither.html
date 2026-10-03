@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview: Dithered Press</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction/400-italic.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction-50/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/redaction-70/400.css">
+<style>
+:root { --ground:#ffffff; --ink:#111111; --ink2:#3d3d3d; --meta:#6a6a6a; --spot:#1f1fd6; --rule:#111111; }
+body.dark { --ground:#0d0d10; --ink:#ecebe4; --ink2:#c4c3bb; --meta:#8f8e88; --spot:#9a9aff; --rule:#ecebe4; }
+* { box-sizing:border-box; margin:0; }
+body { background:var(--ground); color:var(--ink); font:18px/1.5 Redaction, serif; padding:28px 48px; }
+.top { display:grid; grid-template-columns:150px minmax(0,600px); gap:36px; align-items:end; padding-bottom:18px; border-bottom:1px solid var(--rule); }
+.lockup { color:var(--ink); }
+.lockup svg { width:100%; height:auto; display:block; }
+.lockup svg :is(path,rect) { fill:currentColor !important; }
+/* The three books become three dither densities of the one ink. */
+.lockup svg path[style*="103,193,255"] { fill:url(#d50) !important; }
+.lockup svg path[style*="82,218,90"] { fill:url(#d25) !important; }
+.lockup svg path[style*="255,184,67"] { fill:url(#d75) !important; }
+.field { display:flex; align-items:baseline; gap:14px; border-bottom:3px solid var(--ink); padding-bottom:4px; }
+.field .q { flex:1; font:28px "Redaction 50", serif; }
+.field .go { font:16px "Redaction 70", serif; color:var(--spot); letter-spacing:.04em; }
+main { display:grid; grid-template-columns:minmax(0,640px) 320px; gap:64px; padding-top:22px; margin-left:186px; }
+.count { font:15px "Redaction 70", serif; color:var(--meta); margin-bottom:20px; }
+ol { list-style:none; padding:0; counter-reset:r; }
+li { counter-increment:r; position:relative; margin-bottom:22px; }
+li::before { content:counter(r); position:absolute; left:-46px; top:-2px; font:30px "Redaction 50", serif; color:var(--meta); font-variant-numeric:tabular-nums; width:30px; text-align:right; }
+li a { color:var(--ink); font-weight:700; font-size:21px; text-decoration:none; }
+li cite { display:block; font-style:italic; font-size:15px; color:var(--meta); }
+li p { color:var(--ink2); font-size:17px; max-width:60ch; }
+mark { background:none; color:inherit; text-decoration:underline 2px var(--spot); text-underline-offset:3px; }
+aside h2 { font:44px/1 "Redaction 50", serif; margin:12px 0 4px; }
+aside .sub { font-style:italic; color:var(--meta); }
+aside p { font-size:16px; color:var(--ink2); margin-top:10px; }
+aside dl { margin-top:10px; font-size:16px; } aside dt { display:inline; font-weight:700; } aside dd { display:inline; margin:0; }
+canvas { display:block; width:100%; image-rendering:pixelated; }
+.src { margin-top:12px; font:13px "Redaction 70", serif; color:var(--meta); }
+.tool { border-top:3px solid var(--ink); border-bottom:1px solid var(--rule); padding:12px 0 14px; margin-bottom:24px; }
+.tool .eq { font:40px/1.1 "Redaction 50", serif; }
+.tool .eq small { font:16px Redaction, serif; color:var(--meta); }
+.tool p { font-size:15px; color:var(--meta); font-style:italic; }
+body.phone { padding:16px; font-size:17px; }
+body.phone .top { grid-template-columns:1fr; gap:14px; }
+body.phone .lockup { width:120px; }
+body.phone main { display:block; margin-left:34px; }
+body.phone li::before { left:-36px; font-size:24px; }
+</style></head>
+<body>
+<script>const P=new URLSearchParams(location.search); document.body.classList.toggle('phone',P.has('phone')); document.body.classList.toggle('dark',P.has('dark'));</script>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <pattern id="d50" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="var(--ground)"/><rect width="4" height="4" fill="var(--ink)"/><rect x="4" y="4" width="4" height="4" fill="var(--ink)"/></pattern>
+  <pattern id="d25" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="var(--ground)"/><rect width="4" height="4" fill="var(--ink)"/></pattern>
+  <pattern id="d75" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="var(--ink)"/><rect x="4" width="4" height="4" fill="var(--ground)"/></pattern>
+</defs></svg>
+<header class="top">
+  <div class="lockup" data-logo="lockup"></div>
+  <div class="field"><span class="q" id="q">eiffel tower</span><span class="go">Search ↵</span></div>
+</header>
+<main>
+  <div>
+    <div id="toolslot"></div>
+    <p class="count">24 results · 0.31 s</p>
+    <ol>
+      <li><a href="#">Eiffel Tower</a><cite>en.wikipedia.org/wiki/Eiffel_Tower</cite><p>The <mark>Eiffel Tower</mark> is a wrought-iron lattice tower on the Champ de Mars in Paris, named after the engineer Gustave Eiffel.</p></li>
+      <li><a href="#">Official website of the Eiffel Tower</a><cite>toureiffel.paris/en</cite><p>Tickets, opening hours and access to the summit of the <mark>Eiffel Tower</mark>.</p></li>
+      <li><a href="#">Eiffel Tower: History, Height and Facts</a><cite>britannica.com/topic/Eiffel-Tower</cite><p>Built for the 1889 Exposition Universelle, the world's tallest structure until 1930.</p></li>
+      <li><a href="#">How the Eiffel Tower was built</a><cite>engineering-history.org/structures/eiffel</cite><p>Some 18,000 iron parts and 2.5 million rivets.</p></li>
+    </ol>
+  </div>
+  <aside id="panel">
+    <canvas id="photo" width="320" height="240"></canvas>
+    <h2>Eiffel Tower</h2><p class="sub">Tower in Paris, France</p>
+    <p>A wrought-iron lattice tower on the Champ de Mars, built 1887–89 as the entrance to the World's Fair.</p>
+    <dl><div><dt>Opened </dt><dd>31 March 1889</dd></div><div><dt>Height </dt><dd>330 m</dd></div></dl>
+    <p class="src">From Wikipedia · CC BY-SA</p>
+  </aside>
+</main>
+<script>
+if (document.body.classList.contains('phone')) {
+  document.getElementById('q').textContent = '5 miles in km';
+  document.getElementById('panel').remove();
+  document.getElementById('toolslot').innerHTML = '<section class="tool"><div class="eq">5 <small>miles</small> = 8.047 <small>km</small></div><p>Multiply the length by 1.609</p></section>';
+  document.querySelector('.count').textContent = '31 results · 0.28 s';
+}
+// Error-diffusion dither of the panel photo into the page's two inks.
+const cv = document.getElementById('photo');
+if (cv) {
+  const img = new Image(); img.crossOrigin = 'anonymous';
+  img.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg/500px-Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg';
+  img.onload = () => {
+    const c = cv.getContext('2d'); const w = cv.width, h = cv.height;
+    const s = Math.max(w / img.width, h / img.height); const dw = img.width * s, dh = img.height * s;
+    c.drawImage(img, (w - dw) / 2, (h - dh) * 0.12, dw, dh);
+    const d = c.getImageData(0, 0, w, h); const px = d.data;
+    const css = getComputedStyle(document.body);
+    const hex = (v) => { const x = v.trim().replace('#',''); return [0,2,4].map(i => parseInt(x.slice(i,i+2),16)); };
+    const ink = hex(css.getPropertyValue('--ink')), gr = hex(css.getPropertyValue('--ground'));
+    const dark = document.body.classList.contains('dark');
+    // Luminance, auto-levelled between the 4th and 96th percentiles.
+    const L = new Float32Array(w * h);
+    for (let k = 0; k < w * h; k++) L[k] = (0.299*px[k*4] + 0.587*px[k*4+1] + 0.114*px[k*4+2]) / 255;
+    const sorted = Float32Array.from(L).sort(); const lo = sorted[Math.floor(w*h*0.04)], hi = sorted[Math.floor(w*h*0.96)];
+    for (let k = 0; k < w * h; k++) L[k] = Math.pow(Math.min(1, Math.max(0, (L[k] - lo) / (hi - lo))), 0.8);
+    // Floyd-Steinberg error diffusion to the page's two inks; light stays light in both themes.
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const k = y * w + x; const v = L[k]; const n = v > 0.5 ? 1 : 0; const e = v - n;
+      if (x + 1 < w) L[k + 1] += e * 7 / 16;
+      if (y + 1 < h) { if (x > 0) L[k + w - 1] += e * 3 / 16; L[k + w] += e * 5 / 16; if (x + 1 < w) L[k + w + 1] += e / 16; }
+      const col = (n === 1) !== dark ? gr : ink;
+      px[k*4] = col[0]; px[k*4+1] = col[1]; px[k*4+2] = col[2];
+    }
+    c.putImageData(d, 0, 0);
+    document.body.dataset.dither = '1';
+  };
+}
+</script>
+<script src="inline-logo.js"></script>
+</body></html>
