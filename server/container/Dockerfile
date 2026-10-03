@@ -8,7 +8,7 @@ COPY Caddyfile /etc/caddy/Caddyfile
 # Caddy's image gives it a file capability for low ports; some hosts refuse to run
 # binaries with one ("Operation not permitted"). Port 7860 doesn't need it, so
 # copy the binary without it.
-RUN cat /usr/bin/caddy > /usr/local/bin/caddy && chmod 755 /usr/local/bin/caddy && rm /usr/bin/caddy && \n    chmod -R a+rwX "$__SEARXNG_CONFIG_PATH" "$__SEARXNG_DATA_PATH" && mkdir -m 777 /tmp/caddy
+RUN cat /usr/bin/caddy > /usr/local/bin/caddy && chmod 755 /usr/local/bin/caddy && rm /usr/bin/caddy && chmod -R a+rwX "$__SEARXNG_CONFIG_PATH" "$__SEARXNG_DATA_PATH" && mkdir -m 777 /tmp/caddy
 ENV GRANIAN_HOST=127.0.0.1 XDG_DATA_HOME=/tmp/caddy XDG_CONFIG_HOME=/tmp/caddy
 EXPOSE 7860
 # A fresh secret key on each start unless SEARXNG_SECRET is set on the host.
