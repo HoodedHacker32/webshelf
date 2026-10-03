@@ -41,6 +41,19 @@
 		respond 404
 	}
 
+	# Film and TV posters: TMDB looked up by Wikidata id, key added here.
+	@tmdb path_regexp tmdb ^/tmdb/find/(Q[0-9]+)$
+	handle @tmdb {
+		rewrite * /3/find/{re.tmdb.1}?external_source=wikidata_id&api_key={$TMDB_KEY}
+		reverse_proxy https://api.themoviedb.org {
+			header_up Host api.themoviedb.org
+			header_down -Access-Control-Allow-Origin
+		}
+	}
+	handle /tmdb/* {
+		respond 404
+	}
+
 	handle {
 		reverse_proxy searxng:8080 {
 			header_up X-Forwarded-For {remote_host}

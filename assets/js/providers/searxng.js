@@ -41,6 +41,7 @@ export default {
         url: r.url,
         title: runs(r.title, terms),
         snippet: runs(r.content, terms),
+        engines: (r.engines ?? [r.engine]).filter(Boolean),
         source: `${(r.engines ?? [r.engine]).filter(Boolean).join(', ')} (via Webshelf search)`,
       }))
       .filter((r) => r.title.length);

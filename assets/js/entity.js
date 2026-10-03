@@ -3,6 +3,7 @@
 // quick facts, photos, social profiles, related people and works.
 
 import { getJSON } from './dom.js';
+import { BACKEND } from './config.js';
 
 const WD = 'https://www.wikidata.org/w/api.php';
 const WP = 'https://en.wikipedia.org/w/api.php';
@@ -222,6 +223,7 @@ export async function loadWorks(qid, { signal, onScreen = true } = {}) {
   const items = await getEntities(ids, 'labels|descriptions|sitelinks', signal);
   const seen = new Set();
   const works = ids.map((id) => items[id]).filter((e) => e?.sitelinks?.enwiki && labelText(e)).map((e) => ({
+    id: e.id,
     title: labelText(e),
     article: e.sitelinks.enwiki.title,
     description: e.descriptions?.en?.value ?? '',
@@ -246,6 +248,23 @@ export async function loadWorks(qid, { signal, onScreen = true } = {}) {
     w.kind = WORK_KINDS.find(([, , re]) => re.test(w.description))?.[0] ?? null;
     w.year = /\b(1[89]|20)\d{2}\b/.exec(w.description)?.[0] ?? '';
   }
+  // Films and shows get their poster from TMDB when our server has a key;
+  // free Wikipedia images (often a logo) stay as the fallback.
+  if (BACKEND.tmdbUrl) {
+    const screen = works.filter((w) => w.kind === 'tv' || w.kind === 'film').slice(0, 24);
+    const poster = async (w) => {
+      const data = await getJSON(`${BACKEND.tmdbUrl}/find/${w.id}`, { signal, timeout: 3000 }).catch(() => null);
+      const hit = data?.movie_results?.[0] ?? data?.tv_results?.[0];
+      if (hit?.poster_path) { w.image = `https://image.tmdb.org/t/p/w185${hit.poster_path}`; w.poster = true; }
+      return Boolean(data);
+    };
+    // One lookup first: if the server has no TMDB key it fails, and the rest aren't sent.
+    const posters = screen.length
+      ? poster(screen[0]).then((ok) => (ok ? Promise.all(screen.slice(1).map(poster)) : null))
+      : Promise.resolve();
+    await Promise.race([posters, new Promise((resolve) => setTimeout(resolve, 2000))]);
+  }
+
   return WORK_KINDS.map(([id, heading]) => ({ id, heading, items: works.filter((w) => w.kind === id).slice(0, 12) }))
     .filter((g) => g.items.length >= 2);
 }

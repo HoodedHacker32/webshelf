@@ -530,6 +530,8 @@
   }
   .result { margin-bottom: 24px; }
   .result-cite { max-width: 100%; }
+  /* One line, so the count arriving never pushes the page down. */
+  .serp-status { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* Topic header: a row of photos, the quick facts beneath, in the same 210px. */
   .entity-title { font-size: var(--text-xl); }

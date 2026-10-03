@@ -13,6 +13,7 @@ import * as wiki from './wiki.js';
 import { loadEntity, loadWorks, entityId, fetchSubject, worksOnScreen, values, shownProps } from './entity.js';
 import { parseQuestion, parseDefinition, resolveSubject, factAnswer, questionsFor, kindsShown, leadSentences, contentTerms, highlight, KINDS, looksLikeQuestion } from './qa.js';
 import { icon } from './icons.js';
+import { musicArtist } from './rank.js';
 import { mountTabs } from './page.js';
 import './theme.js';
 
@@ -161,21 +162,18 @@ function errorState(err) {
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let aboveReady = Promise.resolve();
 
-// Our search server sleeps when nobody has used it for a while and takes up
-// to a minute to wake. If it hasn't answered in 6 s, Mwmbl answers instead
-// (the request still wakes the server for the next search).
 async function searchWeb() {
-  if (provider.id !== 'searxng') return provider.search(query, ctx);
-  try {
-    const results = await provider.search(query, { ...ctx, timeout: 6000 });
-    if (results.length) return results;
-    throw new Error('Every engine came back empty');
-  } catch (err) {
-    if (ctx.signal.aborted) throw err;
-    $('#serp-source-note').replaceChildren('Web results from ', h('a', { href: PROVIDERS.mwmbl.home }, PROVIDERS.mwmbl.name),
-      ` while ${SITE.name}’s search server wakes up. ${SITE.name} uses no AI.`);
-    return PROVIDERS.mwmbl.search(query, ctx);
+  const results = await provider.search(query, ctx);
+  if (provider.id === 'webshelf') {
+    const { server, left } = provider.last;
+    $('#serp-source-note').replaceChildren(
+      'Web results from ', server ? 'Bing and ' : '', h('a', { href: 'https://mwmbl.org' }, 'Mwmbl'),
+      server ? '' : ` (${SITE.name}’s search server is waking up)`,
+      ', ranked by ', h('a', { href: 'settings.html#ranking' }, SITE.name),
+      left ? `. ${left} result${left === 1 ? '' : 's'} from AI content farms left out` : '',
+      `. ${SITE.name} uses no AI.`);
   }
+  return results;
 }
 
 async function loadResults() {
@@ -685,8 +683,57 @@ async function loadWiki(answering) {
     worksDecided();
     await filling;
   } else {
+    // No Wikipedia article: a band or artist MusicBrainz knows by that exact name
+    // still gets a panel, with where to listen.
+    const artist = !looksLikeQuestion(query) && !(await answering)
+      ? await Promise.race([musicArtist(query, ctx), wait(1500).then(() => null)])
+      : null;
+    if (artist && artist.links.length) {
+      topicTitle = artist.name;
+      fillArtist(artist, panelShell(artist.name));
+    }
     panelDecided();
   }
+}
+
+// Which service a link belongs to, for the Listen and Profiles buttons.
+const SERVICES = [
+  ['open.spotify.com', 'Spotify', 'listen'], ['music.apple.com', 'Apple Music', 'listen'], ['music.youtube.com', 'YouTube Music', 'listen'],
+  ['youtube.com', 'YouTube', 'listen'], ['deezer.com', 'Deezer', 'listen'], ['tidal.com', 'Tidal', 'listen'],
+  ['soundcloud.com', 'SoundCloud', 'listen'], ['bandcamp.com', 'Bandcamp', 'listen'],
+  ['instagram.com', 'Instagram', 'profile'], ['twitter.com', 'X', 'profile'], ['x.com', 'X', 'profile'],
+  ['tiktok.com', 'TikTok', 'profile'], ['facebook.com', 'Facebook', 'profile'], ['threads.net', 'Threads', 'profile'],
+];
+
+function fillArtist(artist, { summary, details }) {
+  const seen = new Set();
+  const linked = artist.links.map((l) => {
+    const host = hostOf(l.url);
+    const service = SERVICES.find(([domain]) => host === domain || host.endsWith(`.${domain}`));
+    if (!service || seen.has(service[1])) return null;
+    seen.add(service[1]);
+    return { name: service[1], kind: service[2], url: l.url };
+  }).filter(Boolean);
+  const kind = { Group: 'Band', Person: 'Musician', Orchestra: 'Orchestra', Choir: 'Choir' }[artist.type] ?? 'Music artist';
+  const line = [kind, artist.country, artist.began && `since ${artist.began.slice(0, 4)}`].filter(Boolean).join(' · ');
+  const buttons = (items) => h('ul', { class: 'kp-profiles' }, items.map((p) => h('li', null,
+    h('a', { class: 'btn btn-small', href: p.url, rel: 'noreferrer', target: target() }, p.name))));
+  const block = (id, title, items) => (items.length ? h('section', { class: 'kp-block', 'aria-labelledby': id },
+    h('h3', { class: 'kp-block-title', id }, title), buttons(items)) : '');
+  const listen = linked.filter((l) => l.kind === 'listen');
+  const profiles = linked.filter((l) => l.kind === 'profile');
+  const website = artist.official[0];
+  // No topic header sits above this panel, so it carries the name itself.
+  kpPanel.querySelector('.kp-title').textContent = artist.name;
+  kpPanel.querySelector('.kp-credit').textContent = 'From MusicBrainz';
+  summary.replaceChildren(h('p', null, line));
+  details.replaceChildren(
+    h('p', { class: 'kp-subtitle' }, line),
+    artist.tags.length ? h('p', { class: 'kp-extract' }, `Genres: ${artist.tags.join(', ')}`) : '',
+    website ? h('p', { class: 'kp-website' }, h('a', { href: website, rel: 'noreferrer' }, hostOf(website))) : '',
+    block('kp-listen', 'Listen', listen),
+    block('kp-profiles', 'Profiles', profiles),
+    h('p', { class: 'kp-source' }, 'From ', h('a', { href: `https://musicbrainz.org/artist/${artist.id}`, rel: 'noreferrer' }, 'MusicBrainz'), ' (CC0), the open music database'));
 }
 
 /* Go ------------------------------------------------------------------ */

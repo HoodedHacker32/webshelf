@@ -106,9 +106,21 @@
 
     <section class="settings-section" id="privacy" aria-labelledby="s-privacy">
       <h2 id="s-privacy">Where your searches go</h2>
-      <p class="settings-prose">Webshelf has no server, no accounts, no ads and no tracking. Your browser talks directly to these services, and only when a search needs them:</p>
+      <p class="settings-prose">Webshelf has no accounts, no ads and no tracking. Your browser talks to these services, and only when a search needs them:</p>
       <dl class="privacy-list" id="privacy-list"></dl>
       <p class="settings-prose">Webshelf uses no AI anywhere: no summaries, no chat, no generated answers.</p>
+    </section>
+
+    <section class="settings-section" id="ranking" aria-labelledby="s-ranking">
+      <h2 id="s-ranking">How results are ranked</h2>
+      <p class="settings-prose">Webshelf asks Bing (through its search server) and Mwmbl, then puts the results in order itself, using rules anyone can read in <code>assets/js/rank.js</code>. No AI is involved. A result ranks higher when:</p>
+      <ul class="settings-prose">
+        <li>several engines found it, and placed it high;</li>
+        <li>its site is widely used, going by the <a href="https://tranco-list.eu">Tranco list</a> of the 50,000 most visited websites;</li>
+        <li>its title contains the words you searched for, or its address spells them (<span class="num">gordonramsay.com</span> for “gordon ramsay”);</li>
+        <li>it’s the official website of what you searched for, as listed by Wikidata or MusicBrainz.</li>
+      </ul>
+      <p class="settings-prose">Sites known for mass-produced AI content, from the public <a href="https://github.com/laylavish/uBlockOrigin-HUGE-AI-Blocklist">HUGE AI Blocklist</a>, are left out, and the footer of each results page says how many.</p>
     </section>
 
     <p class="settings-saved raised" id="saved" role="status" aria-live="polite"></p>

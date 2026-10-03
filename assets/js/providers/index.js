@@ -10,10 +10,11 @@ import { getSettings } from '../store.js';
 import mwmbl from './mwmbl.js';
 import wikipedia from './wikipedia.js';
 import searxng from './searxng.js';
+import webshelf from './webshelf.js';
 import { BACKEND } from '../config.js';
 
 // The search server only appears once its address is set in config.js.
-export const PROVIDERS = BACKEND.searxngUrl ? { searxng, mwmbl, wikipedia } : { mwmbl, wikipedia };
+export const PROVIDERS = BACKEND.searxngUrl ? { webshelf, searxng, mwmbl, wikipedia } : { webshelf, mwmbl, wikipedia };
 
 export function currentProvider() {
   const chosen = getSettings().provider;

@@ -113,7 +113,11 @@ showHome();
 /* Privacy list -------------------------------------------------------- */
 
 const SERVICES = [
-  [`${PROVIDERS[SITE.defaultProvider].name} (or the source picked above)`, 'Every search, to fetch web results.'],
+  ['Webshelf’s search server (on Render, in the US)', 'Every search, which it passes on to Bing and Mwmbl, plus film and TV titles for posters (from TMDB) and share symbols for prices (from Twelve Data). It keeps no record of searches; Render, its host, may keep standard request logs for a short time.'],
+  ['Mwmbl', 'Every search, directly, when the search server is waking up.'],
+  ['MusicBrainz', 'Short searches that aren’t on Wikipedia, to recognise bands and artists.'],
+  ['Openverse, Dailymotion, SepiaSearch, the Internet Archive', 'Searches on the Images and Videos tabs.'],
+  ['CoinGecko and Twelve Data', 'Searches for a share or cryptocurrency price.'],
   ['Wikipedia and Wikidata', 'Every search, for the knowledge panel, “Did you mean” and related searches. Also what you type, if suggestions are on.'],
   ['Wiktionary', 'Words you look up with “define”.'],
   ['Open-Meteo', 'Place names or your saved location, for weather and time searches.'],

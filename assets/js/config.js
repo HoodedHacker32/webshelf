@@ -6,6 +6,8 @@ export const BACKEND = {
   searxngUrl: BACKEND_URL,
   // Share prices go through the server, which holds the Twelve Data key.
   marketUrl: BACKEND_URL ? `${BACKEND_URL}/market` : null,
+  // Film and TV posters from TMDB, looked up through the server (which holds the key).
+  tmdbUrl: BACKEND_URL ? `${BACKEND_URL}/tmdb` : null,
 };
 
 // Site-wide constants. The name lives here so a rename is a one-line change.
@@ -15,7 +17,7 @@ export const SITE = {
   repoUrl: null,
   // Results provider used when the visitor hasn't picked one in Settings.
   // PLACEHOLDER: the real web results source is still undecided.
-  defaultProvider: BACKEND_URL ? 'searxng' : 'mwmbl',
+  defaultProvider: 'webshelf',
   resultsPerLoad: 10,
 };
 
