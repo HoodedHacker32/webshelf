@@ -30,8 +30,12 @@ export default {
     const data = await getJSON(url, { signal, timeout });
     const terms = termsOf(query);
     const seen = new Set();
+    // Engines disagree on the form of a link: Bing gives Wikipedia's mobile
+    // address, and its redirect unwrapping can leave "/__url__" on the end.
+    const tidy = (url) => url.replace(/\/__url__$/, '/').replace(/^https:\/\/(\w+)\.m\.wikipedia\.org\//, 'https://$1.wikipedia.org/');
     return (data?.results ?? [])
       .filter((r) => typeof r?.url === 'string' && /^https?:\/\//.test(r.url))
+      .map((r) => ({ ...r, url: tidy(r.url) }))
       .filter((r) => !seen.has(r.url) && seen.add(r.url))
       .map((r) => ({
         url: r.url,

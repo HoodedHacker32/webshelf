@@ -6,8 +6,8 @@ use_default_settings:
     # Engines that tolerate requests from a cloud server. Google, Bing and
     # DuckDuckGo mostly answer data-centre addresses with CAPTCHAs, so they're
     # left out; SearXNG also pauses any engine that starts failing.
-    # Tested from Render (Frankfurt), 2026-10-03: Mwmbl, Wikipedia and Bing
-    # answer. Google (access denied), Startpage and Qwant (CAPTCHA), Mojeek and
+    # Tested from Render, 2026-10-03: Mwmbl, Wikipedia and Bing answer (Bing in
+    # English only from a US region, so the service runs in Virginia). Google (access denied), Startpage and Qwant (CAPTCHA), Mojeek and
     # DuckDuckGo (timeouts) and Brave (rate limited) are blocked from cloud
     # addresses; Yahoo returns unrelated spam. Blocked engines only add delay.
     keep_only:
@@ -55,9 +55,13 @@ outgoing:
 
 engines:
   # Off by default in SearXNG; on for Webshelf.
+  # SearXNG ranks merged results partly by engine weight. Bing's index is far
+  # bigger, so its results lead; Mwmbl fills in after them.
   - name: mwmbl
     disabled: false
+    weight: 0.4
   - name: openverse
     disabled: false
   - name: bing
     disabled: false
+    weight: 2

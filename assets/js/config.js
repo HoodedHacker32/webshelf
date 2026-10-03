@@ -1,6 +1,6 @@
 // Our own search server (server/README.md), e.g. 'https://203-0-113-7.sslip.io'.
 // While it's null the site uses Mwmbl directly.
-const BACKEND_URL = null;
+const BACKEND_URL = 'https://webshelf-search-us.onrender.com';
 
 export const BACKEND = {
   searxngUrl: BACKEND_URL,

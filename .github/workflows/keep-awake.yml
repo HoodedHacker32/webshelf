@@ -17,4 +17,4 @@ jobs:
     timeout-minutes: 3
     steps:
       - name: Visit the search server
-        run: curl -fsS --max-time 120 -o /dev/null -w "%{http_code} in %{time_total}s\n" https://webshelf-search.onrender.com/healthz
+        run: curl -fsS --max-time 120 -o /dev/null -w "%{http_code} in %{time_total}s\n" https://webshelf-search-us.onrender.com/healthz
