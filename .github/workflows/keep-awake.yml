@@ -1,0 +1,20 @@
+# Render's free plan puts the search server to sleep after 15 minutes without
+# visits, and waking it takes up to a minute. This visits it every 15 minutes
+# through the European day so searches are usually instant.
+# Cost: about 1,800 Actions minutes a month, inside the 2,000 free minutes for
+# a private repo (and unlimited once the repo is public).
+
+name: Keep search server awake
+
+on:
+  schedule:
+    - cron: "*/15 7-21 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Visit the search server
+        run: curl -fsS --max-time 120 -o /dev/null -w "%{http_code} in %{time_total}s\n" https://webshelf-search.onrender.com/healthz

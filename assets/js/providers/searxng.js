@@ -24,10 +24,10 @@ export default {
   get home() { return BACKEND.searxngUrl ?? 'https://docs.searxng.org'; },
   verticals: ['all'],
 
-  async search(query, { signal } = {}) {
+  async search(query, { signal, timeout = 12000 } = {}) {
     if (!BACKEND.searxngUrl) throw new Error('No search server set');
     const url = `${BACKEND.searxngUrl}/search?q=${encodeURIComponent(query)}&format=json&language=en&safesearch=1`;
-    const data = await getJSON(url, { signal, timeout: 12000 });
+    const data = await getJSON(url, { signal, timeout });
     const terms = termsOf(query);
     const seen = new Set();
     return (data?.results ?? [])

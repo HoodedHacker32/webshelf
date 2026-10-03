@@ -6,7 +6,7 @@ import { SITE, searchUrl } from './config.js';
 import { h, svg, $, hostOf } from './dom.js';
 import { getSettings, addHistory } from './store.js';
 import { createSearchbox } from './searchbox.js';
-import { currentProvider } from './providers/index.js';
+import { currentProvider, PROVIDERS } from './providers/index.js';
 import { findAnswer } from './answers/index.js';
 import { mountLogos, rockBook } from './logo.js';
 import * as wiki from './wiki.js';
@@ -161,11 +161,28 @@ function errorState(err) {
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let aboveReady = Promise.resolve();
 
+// Our search server sleeps when nobody has used it for a while and takes up
+// to a minute to wake. If it hasn't answered in 6 s, Mwmbl answers instead
+// (the request still wakes the server for the next search).
+async function searchWeb() {
+  if (provider.id !== 'searxng') return provider.search(query, ctx);
+  try {
+    const results = await provider.search(query, { ...ctx, timeout: 6000 });
+    if (results.length) return results;
+    throw new Error('Every engine came back empty');
+  } catch (err) {
+    if (ctx.signal.aborted) throw err;
+    $('#serp-source-note').replaceChildren('Web results from ', h('a', { href: PROVIDERS.mwmbl.home }, PROVIDERS.mwmbl.name),
+      ` while ${SITE.name}’s search server wakes up. ${SITE.name} uses no AI.`);
+    return PROVIDERS.mwmbl.search(query, ctx);
+  }
+}
+
 async function loadResults() {
   const started = performance.now();
   status.replaceChildren('Searching for ', h('b', null, query), '…');
   try {
-    all = await track(provider.search(query, ctx));
+    all = await track(searchWeb());
   } catch (err) {
     if (err.name === 'AbortError') return;
     status.replaceChildren();
