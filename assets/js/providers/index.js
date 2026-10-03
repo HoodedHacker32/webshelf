@@ -9,8 +9,11 @@ import { SITE } from '../config.js';
 import { getSettings } from '../store.js';
 import mwmbl from './mwmbl.js';
 import wikipedia from './wikipedia.js';
+import searxng from './searxng.js';
+import { BACKEND } from '../config.js';
 
-export const PROVIDERS = { mwmbl, wikipedia };
+// The search server only appears once its address is set in config.js.
+export const PROVIDERS = BACKEND.searxngUrl ? { searxng, mwmbl, wikipedia } : { mwmbl, wikipedia };
 
 export function currentProvider() {
   const chosen = getSettings().provider;

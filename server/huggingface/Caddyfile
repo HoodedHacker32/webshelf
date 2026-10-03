@@ -1,0 +1,35 @@
+{
+	auto_https off
+	admin off
+}
+
+# Hugging Face provides HTTPS; Caddy adds browser access for Webshelf only and
+# adds the Twelve Data key (a Space secret) to share-price requests.
+:7860 {
+	encode zstd gzip
+	@webshelf header_regexp Origin {$ALLOWED_ORIGINS:^(https://hoodedhacker32\.github\.io|http://localhost:8417)$}
+	header @webshelf {
+		Access-Control-Allow-Origin {http.request.header.Origin}
+		Access-Control-Allow-Methods "GET, OPTIONS"
+		Vary Origin
+	}
+	@preflight method OPTIONS
+	handle @preflight {
+		respond 204
+	}
+	@market path_regexp ^/market/(quote|time_series)$
+	handle @market {
+		uri strip_prefix /market
+		rewrite * {path}?{query}&apikey={$TWELVE_DATA_KEY}
+		reverse_proxy https://api.twelvedata.com {
+			header_up Host api.twelvedata.com
+			header_down -Access-Control-Allow-Origin
+		}
+	}
+	handle /market/* {
+		respond 404
+	}
+	handle {
+		reverse_proxy 127.0.0.1:8080
+	}
+}

@@ -1,0 +1,41 @@
+# Webshelf search server: SearXNG behind Caddy, with Valkey for SearXNG's
+# rate limiter. Start with `docker compose up -d` after setup.sh wrote .env.
+
+services:
+  caddy:
+    image: docker.io/library/caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    env_file: .env
+    depends_on:
+      - searxng
+
+  searxng:
+    image: docker.io/searxng/searxng:latest
+    restart: unless-stopped
+    volumes:
+      - ./searxng:/etc/searxng
+    environment:
+      - SEARXNG_BASE_URL=https://${SEARX_HOST}/
+      - SEARXNG_SECRET=${SEARXNG_SECRET}
+    depends_on:
+      - valkey
+
+  valkey:
+    image: docker.io/valkey/valkey:8-alpine
+    command: valkey-server --save 30 1 --loglevel warning
+    restart: unless-stopped
+    volumes:
+      - valkey-data:/data
+
+volumes:
+  caddy-data:
+  caddy-config:
+  valkey-data:

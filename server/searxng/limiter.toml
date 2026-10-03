@@ -1,0 +1,24 @@
+# SearXNG's rate limiter: stops one address from hammering the engines
+# through us (which would get the server blocked by them).
+
+[botdetection]
+ipv4_prefix = 32
+ipv6_prefix = 48
+
+# Caddy runs in a Docker container on a private network. Requests from it carry
+# the visitor's real address in X-Forwarded-For; without this every visitor
+# would look like Caddy and share one rate limit.
+trusted_proxies = [
+  '127.0.0.0/8',
+  '::1',
+  '172.16.0.0/12',
+]
+
+[botdetection.ip_limit]
+# Webshelf calls the JSON API from its own pages, which never load SearXNG's
+# HTML first, so the link-token check would block them.
+link_token = false
+
+[botdetection.ip_lists]
+pass_ip = []
+block_ip = []

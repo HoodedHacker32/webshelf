@@ -28,7 +28,7 @@ Hosted as a static GitHub Pages site on a `github.io` subdomain (no custom domai
 | "I'm Feeling Lucky" | Not included. |
 | Stocks | Market summary card with chart. Shares: Twelve Data (free key in `assets/js/config.js`; the placeholder `demo` key only covers AAPL). Coins: CoinGecko, keyless. Yahoo, Stooq, Nasdaq and Cboe all block browser calls. |
 | Tabs | All, Images (Openverse, Commons fallback), Videos (YouTube links via Mwmbl, Dailymotion, PeerTube via SepiaSearch, Internet Archive). |
-| Not decided | Where web results come from (see section 5). Mwmbl is the placeholder. |
+| Results backend | Our own SearXNG server on Oracle Cloud's Always Free tier, behind Caddy (`server/`, walkthrough in `server/README.md`). Until `BACKEND_URL` is set in `assets/js/config.js`, the site uses Mwmbl directly. |
 
 ### Font notes (SIL OFL 1.1; not legal advice)
 - Commercial use is allowed. No credit is needed in or beside a logo.

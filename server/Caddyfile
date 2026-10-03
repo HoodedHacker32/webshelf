@@ -1,0 +1,50 @@
+# Caddy gets a free HTTPS certificate for SEARX_HOST, lets the Webshelf site
+# (and a local copy for testing) read the results, and passes share-price
+# requests to Twelve Data with the key added here, so the key never reaches
+# the public site.
+
+{$SEARX_HOST} {
+	encode zstd gzip
+
+	# Only Webshelf's own pages may read responses from a browser.
+	@webshelf header_regexp Origin {$ALLOWED_ORIGINS}
+	header @webshelf {
+		Access-Control-Allow-Origin {http.request.header.Origin}
+		Access-Control-Allow-Methods "GET, OPTIONS"
+		Vary Origin
+	}
+	header {
+		-Server
+		Referrer-Policy no-referrer
+		X-Content-Type-Options nosniff
+	}
+
+	# Browsers check before cross-site requests; answer here, not in SearXNG.
+	# (handle blocks run in the order written and only one of them runs.)
+	@preflight method OPTIONS
+	handle @preflight {
+		respond 204
+	}
+
+	# Share prices: only the two calls the market card makes.
+	@market path_regexp ^/market/(quote|time_series)$
+	handle @market {
+		uri strip_prefix /market
+		rewrite * {path}?{query}&apikey={$TWELVE_DATA_KEY}
+		reverse_proxy https://api.twelvedata.com {
+			header_up Host api.twelvedata.com
+			# Twelve Data sends its own CORS header; ours is the one that counts.
+			header_down -Access-Control-Allow-Origin
+		}
+	}
+	handle /market/* {
+		respond 404
+	}
+
+	handle {
+		reverse_proxy searxng:8080 {
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+}

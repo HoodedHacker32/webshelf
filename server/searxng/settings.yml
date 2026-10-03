@@ -1,0 +1,65 @@
+# SearXNG settings for Webshelf. Anything not set here keeps SearXNG's default.
+# The secret key and public address come from .env (see setup.sh).
+
+use_default_settings:
+  engines:
+    # Engines that tolerate requests from a cloud server. Google, Bing and
+    # DuckDuckGo mostly answer data-centre addresses with CAPTCHAs, so they're
+    # left out; SearXNG also pauses any engine that starts failing.
+    keep_only:
+      # Web
+      - mojeek
+      - brave
+      - qwant
+      - mwmbl
+      - wikipedia
+      - wikidata
+      - startpage
+      # Images
+      - openverse
+      - wikicommons.images
+      - qwant images
+      - brave.images
+      # Videos
+      - youtube
+      - dailymotion
+      - sepiasearch
+      - vimeo
+      - brave.videos
+      # News
+      - qwant news
+      - brave.news
+
+general:
+  instance_name: "Webshelf search"
+  enable_metrics: false
+
+search:
+  safe_search: 1
+  autocomplete: ""
+  default_lang: "en"
+  formats:
+    - html
+    - json
+
+server:
+  limiter: true
+  public_instance: false
+  image_proxy: false
+  method: "GET"
+
+valkey:
+  url: valkey://valkey:6379/0
+
+outgoing:
+  request_timeout: 3.0
+  max_request_timeout: 6.0
+
+engines:
+  # Off by default in SearXNG; on for Webshelf.
+  - name: mojeek
+    disabled: false
+  - name: mwmbl
+    disabled: false
+  - name: openverse
+    disabled: false

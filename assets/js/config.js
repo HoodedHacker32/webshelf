@@ -1,3 +1,13 @@
+// Our own search server (server/README.md), e.g. 'https://203-0-113-7.sslip.io'.
+// While it's null the site uses Mwmbl directly.
+const BACKEND_URL = null;
+
+export const BACKEND = {
+  searxngUrl: BACKEND_URL,
+  // Share prices go through the server, which holds the Twelve Data key.
+  marketUrl: BACKEND_URL ? `${BACKEND_URL}/market` : null,
+};
+
 // Site-wide constants. The name lives here so a rename is a one-line change.
 export const SITE = {
   name: 'Webshelf',
@@ -5,7 +15,7 @@ export const SITE = {
   repoUrl: null,
   // Results provider used when the visitor hasn't picked one in Settings.
   // PLACEHOLDER: the real web results source is still undecided.
-  defaultProvider: 'mwmbl',
+  defaultProvider: BACKEND_URL ? 'searxng' : 'mwmbl',
   resultsPerLoad: 10,
 };
 

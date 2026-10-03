@@ -3,7 +3,7 @@
 // needs no key. Cryptocurrencies come from CoinGecko, which needs no key.
 
 import { h, getJSON } from '../dom.js';
-import { MARKET } from '../config.js';
+import { MARKET, BACKEND } from '../config.js';
 import { lineChart } from './chart.js';
 
 const TD = 'https://api.twelvedata.com';
@@ -74,8 +74,10 @@ async function findShare({ text, symbol, bare }, signal) {
   return named[0] ?? exact[0] ?? null;
 }
 
+// With our server, it adds the key; otherwise the browser sends the key in config.js.
 async function td(path, signal) {
-  const data = await getJSON(`${TD}/${path}&apikey=${encodeURIComponent(MARKET.twelveDataKey)}`, { signal });
+  const url = BACKEND.marketUrl ? `${BACKEND.marketUrl}/${path}` : `${TD}/${path}&apikey=${encodeURIComponent(MARKET.twelveDataKey)}`;
+  const data = await getJSON(url, { signal });
   if (data?.status === 'error') throw new Error(data.message ?? 'Twelve Data error');
   return data;
 }
@@ -171,7 +173,7 @@ function card({ path, name, sub, price, change, pct, when, credit, stats, series
 const rangeWords = { '1D': 'today', '5D': 'past 5 days', '1M': 'past month', '6M': 'past 6 months', YTD: 'year to date', '1Y': 'past year', '5Y': 'past 5 years', Max: 'all time' };
 
 async function renderShare(args, signal) {
-  if (!MARKET.twelveDataKey) return null;
+  if (!BACKEND.marketUrl && !MARKET.twelveDataKey) return null;
   const share = await findShare(args, signal);
   if (!share) return null;
   let q;
