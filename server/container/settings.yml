@@ -1,5 +1,5 @@
 # SearXNG settings for Webshelf. Anything not set here keeps SearXNG's default.
-# Hugging Face Spaces version: no Valkey, so no rate limiter.
+# Single-container version: no Valkey, so no rate limiter.
 
 use_default_settings:
   engines:

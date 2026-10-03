@@ -3,7 +3,7 @@
 	admin off
 }
 
-# Hugging Face provides HTTPS; Caddy adds browser access for Webshelf only and
+# The host provides HTTPS; Caddy adds browser access for Webshelf only and
 # adds the Twelve Data key (a Space secret) to share-price requests.
 :7860 {
 	encode zstd gzip
