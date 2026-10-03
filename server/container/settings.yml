@@ -15,6 +15,12 @@ use_default_settings:
       - wikipedia
       - wikidata
       - startpage
+      - duckduckgo
+      - bing
+      - google
+      - marginalia
+      - yahoo
+      - presearch
       # Images
       - openverse
       - wikicommons.images
@@ -56,6 +62,20 @@ outgoing:
 engines:
   # Off by default in SearXNG; on for Webshelf.
   - name: mojeek
+    disabled: false
+    inactive: false
+  - name: startpage
+    disabled: false
+    inactive: false
+  - name: duckduckgo
+    disabled: false
+  - name: bing
+    disabled: false
+  - name: google
+    disabled: false
+  - name: yahoo
+    disabled: false
+  - name: presearch
     disabled: false
   - name: mwmbl
     disabled: false
