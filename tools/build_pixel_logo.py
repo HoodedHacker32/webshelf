@@ -32,10 +32,18 @@ def icon_pixels():
         px[(i, 2)] = INK
     for i in range(2, 14):
         px[(i, i)] = INK
-    for r in (6, 11):
-        for a in range(0, 91, 2):
-            t = math.radians(a)
-            px[(round(2 + r * math.cos(t)), round(2 + r * math.sin(t)))] = INK
+    # The rungs sag gently in towards the corner, like real threads between the
+    # spokes (as in the owner's drawing): shallow arcs from one edge to the other,
+    # on circles centred well out along the diagonal.
+    for span in (8, 15):
+        a_pt, b_pt = (2, 2 + span), (2 + span, 2)
+        c = 2 + span + span * 0.9
+        radius = math.dist((c, c), a_pt)
+        start = math.atan2(a_pt[1] - c, a_pt[0] - c)
+        end = math.atan2(b_pt[1] - c, b_pt[0] - c)
+        for i in range(121):
+            t = start + (end - start) * i / 120
+            px[(round(c + radius * math.cos(t)), round(c + radius * math.sin(t)))] = INK
 
     def book(x0, top, lean, c, tag=None):
         for y in range(top, 40):
