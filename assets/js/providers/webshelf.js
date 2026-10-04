@@ -65,7 +65,7 @@ export default {
     }
     if (!lists.length) throw new Error('No search engine answered');
 
-    const sites = await Promise.race([official, wait(1500).then(() => [])]);
+    const sites = await Promise.race([official, wait(2500).then(() => [])]);
     const host = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; } };
     const { results, left } = await rank(query, lists, { officialHosts: sites.map((s) => host(s.url)) });
     this.last = { server: Boolean(server), left };

@@ -3,7 +3,6 @@
 // quick facts, photos, social profiles, related people and works.
 
 import { getJSON } from './dom.js';
-import { BACKEND } from './config.js';
 
 const WD = 'https://www.wikidata.org/w/api.php';
 const WP = 'https://en.wikipedia.org/w/api.php';
@@ -234,35 +233,41 @@ export async function loadWorks(qid, { signal, onScreen = true } = {}) {
     return !seen.has(key) && seen.add(key);
   });
 
-  // Free-licence lead images from Wikipedia, in one request.
-  const titles = works.map((w) => w.article).slice(0, 50);
-  if (titles.length) {
-    const data = await getJSON(`${WP}?${qs({ action: 'query', prop: 'pageimages', titles: titles.join('|'), piprop: 'thumbnail', pithumbsize: 250, pilicense: 'free', redirects: 1 })}`, { signal }).catch(() => null);
-    const thumbs = {};
-    for (const p of Object.values(data?.query?.pages ?? {})) if (p.thumbnail?.source) thumbs[p.title] = p.thumbnail.source;
-    works.forEach((w) => { w.image = thumbs[w.article] ?? null; });
-  }
-
   // Each work goes in the first group its description matches.
   for (const w of works) {
     w.kind = WORK_KINDS.find(([, , re]) => re.test(w.description))?.[0] ?? null;
     w.year = /\b(1[89]|20)\d{2}\b/.exec(w.description)?.[0] ?? '';
   }
-  // Films and shows get their poster from TMDB when our server has a key;
-  // free Wikipedia images (often a logo) stay as the fallback.
-  if (BACKEND.tmdbUrl) {
-    const screen = works.filter((w) => w.kind === 'tv' || w.kind === 'film').slice(0, 24);
-    const poster = async (w) => {
-      const data = await getJSON(`${BACKEND.tmdbUrl}/find/${w.id}`, { signal, timeout: 3000 }).catch(() => null);
-      const hit = data?.movie_results?.[0] ?? data?.tv_results?.[0];
-      if (hit?.poster_path) { w.image = `https://image.tmdb.org/t/p/w185${hit.poster_path}`; w.poster = true; }
-      return Boolean(data);
-    };
-    // One lookup first: if the server has no TMDB key it fails, and the rest aren't sent.
-    const posters = screen.length
-      ? poster(screen[0]).then((ok) => (ok ? Promise.all(screen.slice(1).map(poster)) : null))
-      : Promise.resolve();
-    await Promise.race([posters, new Promise((resolve) => setTimeout(resolve, 2000))]);
+
+  // Lead images from Wikipedia. Films use their theatrical poster, which
+  // Wikipedia hosts as a non-free image for identification; everything else
+  // uses free images only (for TV that's often a logo or title card).
+  const pageImages = async (license, list) => {
+    const titles = list.map((w) => w.article).slice(0, 50);
+    if (!titles.length) return {};
+    const data = await getJSON(`${WP}?${qs({ action: 'query', prop: 'pageimages', titles: titles.join('|'), piprop: 'thumbnail', pithumbsize: 250, pilicense: license, redirects: 1 })}`, { signal }).catch(() => null);
+    const thumbs = {};
+    for (const p of Object.values(data?.query?.pages ?? {})) if (p.thumbnail?.source) thumbs[p.title] = p.thumbnail.source;
+    return thumbs;
+  };
+  const [freeThumbs, posterThumbs] = await Promise.all([
+    pageImages('free', works.filter((w) => w.kind !== 'film')),
+    pageImages('any', works.filter((w) => w.kind === 'film')),
+  ]);
+  works.forEach((w) => { w.image = (w.kind === 'film' ? posterThumbs : freeThumbs)[w.article] ?? null; });
+
+  // TV shows: posters from TVmaze (open, no key or account), matched by the
+  // show's IMDb id on Wikidata. Wikipedia's image stays if TVmaze has none.
+  const shows = works.filter((w) => w.kind === 'tv').slice(0, 12);
+  if (shows.length) {
+    const posters = getEntities(shows.map((w) => w.id), 'claims', signal).catch(() => ({})).then((found) => Promise.all(shows.map(async (w) => {
+      const imdb = values(found[w.id]?.claims ?? {}, 'P345')[0]?.value;
+      if (typeof imdb !== 'string') return;
+      const show = await getJSON(`https://api.tvmaze.com/lookup/shows?imdb=${encodeURIComponent(imdb)}`, { signal, timeout: 3000 }).catch(() => null);
+      const src = show?.image?.medium;
+      if (src) w.image = src.replace(/^http:/, 'https:');
+    })));
+    await Promise.race([posters, new Promise((resolve) => setTimeout(resolve, 2500))]);
   }
 
   return WORK_KINDS.map(([id, heading]) => ({ id, heading, items: works.filter((w) => w.kind === id).slice(0, 12) }))

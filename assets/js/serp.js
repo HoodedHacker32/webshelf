@@ -605,7 +605,11 @@ function worksGroup(g) {
     h('div', { class: 'carousel-head' },
       h('h2', { class: 'carousel-title', id: label }, g.heading),
       h('div', { class: 'carousel-navs' }, prev, next)),
-    list);
+    list,
+    // TVmaze's licence asks for a credit wherever its posters appear.
+    g.items.some((w) => w.image?.startsWith('https://static.tvmaze.com/'))
+      ? h('p', { class: 'carousel-credit' }, 'Posters from ', h('a', { href: 'https://www.tvmaze.com', rel: 'noreferrer' }, 'TVmaze'))
+      : '');
 }
 
 const pendingBlocks = [];
@@ -686,7 +690,7 @@ async function loadWiki(answering) {
     // No Wikipedia article: a band or artist MusicBrainz knows by that exact name
     // still gets a panel, with where to listen.
     const artist = !looksLikeQuestion(query) && !(await answering)
-      ? await Promise.race([musicArtist(query, ctx), wait(1500).then(() => null)])
+      ? await Promise.race([musicArtist(query, ctx), wait(2500).then(() => null)])
       : null;
     if (artist && artist.links.length) {
       topicTitle = artist.name;
@@ -739,6 +743,9 @@ function fillArtist(artist, { summary, details }) {
 /* Go ------------------------------------------------------------------ */
 
 if (query) {
+  // MusicBrainz is slow (about two seconds for a band), so its lookup starts
+  // now, alongside everything else; the ranking and band panel reuse it.
+  if (query.trim().split(/\s+/).length <= 5 && !looksLikeQuestion(query)) musicArtist(query, ctx);
   const answering = loadAnswer();
   loadWiki(answering);
   // Anything that sits above the results (an instant answer, the topic header)

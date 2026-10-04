@@ -548,3 +548,4 @@
   .question-fact { font-size: var(--text-lg); }
   .questions-title { font-size: var(--text-md); }
 }
+.carousel-credit { margin-top: 4px; color: var(--meta); font-family: var(--font-ui); font-size: var(--text-xs); }

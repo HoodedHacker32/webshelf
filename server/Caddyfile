@@ -30,7 +30,7 @@
 	@market path_regexp ^/market/(quote|time_series)$
 	handle @market {
 		uri strip_prefix /market
-		rewrite * {path}?{query}&apikey={$TWELVE_DATA_KEY}
+		rewrite * {path}?{query}&apikey={$TWELVE_DATA_KEY:demo}
 		reverse_proxy https://api.twelvedata.com {
 			header_up Host api.twelvedata.com
 			# Twelve Data sends its own CORS header; ours is the one that counts.
@@ -38,19 +38,6 @@
 		}
 	}
 	handle /market/* {
-		respond 404
-	}
-
-	# Film and TV posters: TMDB looked up by Wikidata id, key added here.
-	@tmdb path_regexp tmdb ^/tmdb/find/(Q[0-9]+)$
-	handle @tmdb {
-		rewrite * /3/find/{re.tmdb.1}?external_source=wikidata_id&api_key={$TMDB_KEY}
-		reverse_proxy https://api.themoviedb.org {
-			header_up Host api.themoviedb.org
-			header_down -Access-Control-Allow-Origin
-		}
-	}
-	handle /tmdb/* {
 		respond 404
 	}
 

@@ -6,8 +6,6 @@ export const BACKEND = {
   searxngUrl: BACKEND_URL,
   // Share prices go through the server, which holds the Twelve Data key.
   marketUrl: BACKEND_URL ? `${BACKEND_URL}/market` : null,
-  // Film and TV posters from TMDB, looked up through the server (which holds the key).
-  tmdbUrl: BACKEND_URL ? `${BACKEND_URL}/tmdb` : null,
 };
 
 // Site-wide constants. The name lives here so a rename is a one-line change.

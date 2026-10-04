@@ -113,7 +113,7 @@ showHome();
 /* Privacy list -------------------------------------------------------- */
 
 const SERVICES = [
-  ['Webshelf’s search server (on Render, in the US)', 'Every search, which it passes on to Bing and Mwmbl, plus film and TV titles for posters (from TMDB) and share symbols for prices (from Twelve Data). It keeps no record of searches; Render, its host, may keep standard request logs for a short time.'],
+  ['Webshelf’s search server (on Render, in the US)', 'Every search, which it passes on to Bing and Mwmbl, plus share symbols for prices (from Twelve Data). It keeps no record of searches; Render, its host, may keep standard request logs for a short time.'],
   ['Mwmbl', 'Every search, directly, when the search server is waking up.'],
   ['MusicBrainz', 'Short searches that aren’t on Wikipedia, to recognise bands and artists.'],
   ['Openverse, Dailymotion, SepiaSearch, the Internet Archive', 'Searches on the Images and Videos tabs.'],

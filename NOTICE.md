@@ -27,6 +27,7 @@ Each card names its source on the page.
 | [CoinGecko](https://www.coingecko.com) | Cryptocurrency prices and charts | Free API, with attribution |
 | [Bing](https://www.bing.com), through Webshelf's SearXNG server | Web results | Results link to third-party pages |
 | [MusicBrainz](https://musicbrainz.org) | Band and artist panels, official websites | CC0 (core data) |
-| [TMDB](https://www.themoviedb.org) | Film and TV posters. This product uses the TMDB API but is not endorsed or certified by TMDB. | TMDB API terms, with attribution |
+| [TVmaze](https://www.tvmaze.com) | TV show posters in topic carousels | CC BY-SA, with attribution |
+| Wikipedia film posters | Film posters in topic carousels: the poster image each film's Wikipedia article uses, shown small to identify the film | Non-free images hosted by Wikipedia; shown as identifying thumbnails linking to the film |
 | [Tranco list](https://tranco-list.eu) (`assets/data/top-sites.txt`) | Site popularity in ranking. Le Pochat et al., "Tranco: A Research-Oriented Top Sites Ranking Hardened Against Manipulation", NDSS 2019. | Free to use, with citation |
 | [HUGE AI Blocklist](https://github.com/laylavish/uBlockOrigin-HUGE-AI-Blocklist) (`assets/data/ai-sites.txt`) | Leaving out AI content farms | CC0 |

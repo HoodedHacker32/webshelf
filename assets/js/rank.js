@@ -5,8 +5,9 @@
 //   1. Agreement: reciprocal-rank fusion over every engine that returned it
 //      (a result two engines rank highly beats one engine's favourite).
 //   2. Authority: the site's place in the Tranco top-50,000 list.
-//   3. Match: query words in the title, and the address itself spelling the
-//      query ("gordonramsay.com" for "gordon ramsay").
+//   3. Match: every query word present somewhere (missing words cost a lot),
+//      words in the title, and the address itself spelling the query
+//      ("gordonramsay.com" for "gordon ramsay").
 //   4. Identity: the official website of the thing searched for, from Wikidata
 //      or MusicBrainz, goes first, as it does on Google.
 // Sites on the AI content-farm blocklist are left out.
@@ -128,6 +129,10 @@ export async function rank(query, lists, { officialHosts = [] } = {}) {
     // Match: share of query words in the title; the address spelling the query.
     const title = words(entry.title.map?.((r) => r.text).join('') ?? entry.title);
     const inTitle = terms.length ? terms.filter((t) => title.includes(t)).length / terms.length : 0;
+    // Every word somewhere (title, snippet or address) matters most: a page about
+    // "Gordon" the engineering firm isn't an answer to "gordon ramsay".
+    const text = `${title.join(' ')} ${words(entry.snippet?.map?.((r) => r.text).join('') ?? entry.snippet).join(' ')} ${words(entry.url).join(' ')}`;
+    const covered = terms.length ? terms.filter((t) => text.includes(t)).length / terms.length : 1;
     const navigational = squashed.length > 3 && host.replace(/\.[a-z.]+$/, '').replace(/[^a-z0-9]/g, '') === squashed;
 
     const isOfficial = official.has(host) || [...official].some((o) => host.endsWith(`.${o}`));
@@ -138,6 +143,7 @@ export async function rank(query, lists, { officialHosts = [] } = {}) {
     const score = entry.agreement * 20          // about 0 to 2.5
       + authority * 0.6
       + inTitle * 0.5
+      - (1 - covered) * 1.5
       + (navigational ? 1.5 : 0)
       + (isOfficial ? (path.length <= 1 ? 6 : 3) : 0)
       + (entry.engines.size > 1 ? 0.3 : 0);
