@@ -16,7 +16,16 @@ export async function completions(text, { limit = 8, signal } = {}) {
 }
 
 // Top article for a query plus Wikipedia's spelling suggestion, if any.
-export async function lookup(query, { signal } = {}) {
+// The results page, the ranking and the topic panel all ask about the same
+// search; one request serves them all.
+const lookups = new Map();
+export function lookup(query, ctx = {}) {
+  const key = query.trim().toLowerCase();
+  if (!lookups.has(key)) lookups.set(key, lookupFresh(query, ctx).catch((err) => { lookups.delete(key); throw err; }));
+  return lookups.get(key);
+}
+
+async function lookupFresh(query, { signal } = {}) {
   const data = await getJSON(`${API}?${qs({
     action: 'query', list: 'search', srsearch: query, srlimit: 3,
     srinfo: 'suggestion|totalhits', srprop: 'redirecttitle|snippet', srenablerewrites: 0,

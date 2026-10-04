@@ -92,14 +92,20 @@ async function findArtist(query, { signal } = {}) {
 
 /* Ranking ---------------------------------------------------------------- */
 
+const STOP = new Set(['a', 'an', 'the', 'to', 'in', 'into', 'of', 'on', 'at', 'by', 'for', 'from', 'with', 'and', 'or', 'is', 'are', 'was', 'were', 'be', 'how', 'what', 'who', 'when', 'where', 'why', 'which', 'do', 'does', 'did', 'it', 'its', 'my', 'me', 'i', 'vs', 'as']);
 const words = (text) => String(text ?? '').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 1);
 
 // lists: [{ engine, results }] where each result is { url, title, snippet, ... }.
 // Returns { results, left } with left = how many AI-farm results were removed.
 export async function rank(query, lists, { officialHosts = [] } = {}) {
   const { rank: top, farms, size } = await loadLists();
-  const terms = words(query);
-  const squashed = terms.join('');
+  // Little words ("to", "in", "the") match almost any page, so only the words
+  // that carry meaning count; the address check still uses them all
+  // ("theguardian.com" for "the guardian").
+  const all = words(query);
+  const meaningful = all.filter((w) => !STOP.has(w));
+  const terms = meaningful.length ? meaningful : all;
+  const squashed = all.join('');
   const official = new Set(officialHosts.map((h) => h.replace(/^www\./, '').toLowerCase()));
   const merged = new Map();
 

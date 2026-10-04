@@ -90,7 +90,15 @@ export function shownProps(entity) {
 }
 
 // The subject's own Wikidata record (one request), by id when known.
-export async function fetchSubject({ qid, title }, { signal } = {}) {
+// Fetched once per page, however many parts of the page ask for it.
+const subjects = new Map();
+export function fetchSubject({ qid, title }, ctx = {}) {
+  const key = qid ?? `title:${title}`;
+  if (!subjects.has(key)) subjects.set(key, fetchSubjectFresh({ qid, title }, ctx).catch((err) => { subjects.delete(key); throw err; }));
+  return subjects.get(key);
+}
+
+async function fetchSubjectFresh({ qid, title }, { signal } = {}) {
   const params = qid ? { ids: qid } : { sites: 'enwiki', titles: title };
   const data = await getJSON(`${WD}?${qs({ action: 'wbgetentities', props: 'claims', ...params })}`, { signal });
   const entity = Object.values(data?.entities ?? {})[0];
@@ -206,16 +214,17 @@ const WORK_KINDS = [
 ];
 
 export async function loadWorks(qid, { signal, onScreen = true } = {}) {
-  const search = (q) => getJSON(`${WD}?${qs({ action: 'query', list: 'search', srsearch: q, srlimit: 30 })}`, { signal, timeout: 6000 })
+  const search = (q) => getJSON(`${WD}?${qs({ action: 'query', list: 'search', srsearch: q, srlimit: 50 })}`, { signal, timeout: 6000 })
     .then((d) => (d?.query?.search ?? []).map((s) => s.title))
     .catch(() => []);
+  // Two searches, not five: Wikidata limits how many requests one visitor makes,
+  // and "a|b" in haswbstatement means either.
   const queries = [
     // Books as works, not their many printed editions.
     `haswbstatement:P50=${qid} haswbstatement:P31=Q7725634|P31=Q571|P31=Q47461344|P31=Q8261|P31=Q4184783`,
-    `haswbstatement:P371=${qid}`,
-    `haswbstatement:P175=${qid}`,
+    // Presented, performed, acted in or directed.
+    `haswbstatement:${['P371', 'P175', ...(onScreen ? ['P161', 'P57'] : [])].map((p) => `${p}=${qid}`).join('|')}`,
   ];
-  if (onScreen) queries.push(`haswbstatement:P161=${qid}`, `haswbstatement:P57=${qid}`);
   const ids = [...new Set((await Promise.all(queries.map(search))).flat())].slice(0, 60);
   if (!ids.length) return [];
 

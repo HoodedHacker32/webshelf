@@ -53,7 +53,12 @@ async function commons() {
 function tile(item, i) {
   const ratio = item.w / item.h;
   const img = h('img', { src: item.thumb, alt: item.title, loading: i < 12 ? 'eager' : 'lazy', referrerpolicy: 'no-referrer', width: String(Math.round(ratio * 180)), height: '180' });
-  img.addEventListener('error', () => { li.hidden = true; }, { once: true });
+  // Openverse's thumbnail service sometimes fails; the original image is next,
+  // and only a tile whose image can't load at all is hidden.
+  img.addEventListener('error', () => {
+    if (img.src !== item.full && item.full) img.src = item.full;
+    else li.hidden = true;
+  });
   const button = h('button', { class: 'image-tile-open', type: 'button', 'aria-haspopup': 'dialog' }, img);
   button.addEventListener('click', () => openViewer(i));
   const li = h('li', { class: 'image-tile', style: `--r: ${ratio.toFixed(3)}` },
