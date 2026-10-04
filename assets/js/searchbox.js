@@ -1,5 +1,5 @@
 // The search box: a sunken field, a raised Search button, and a suggestion
-// listbox (search history plus Wikipedia titles). Follows the ARIA combobox
+// listbox (search history plus query suggestions). Follows the ARIA combobox
 // pattern: arrow keys move through the list, Enter searches, Escape closes.
 
 import { h, svg, debounce } from './dom.js';
@@ -7,6 +7,25 @@ import { icon } from './icons.js';
 import { searchUrl } from './config.js';
 import { getSettings, getHistory, addHistory, removeHistory } from './store.js';
 import { completions } from './wiki.js';
+import { BACKEND } from './config.js';
+
+// Query suggestions: what people search for (DuckDuckGo's suggestions, through
+// Webshelf's search server), or Wikipedia article titles if the server is
+// asleep or has none. Returns { list, fromServer }.
+async function suggestionsFor(text) {
+  if (BACKEND.searxngUrl) {
+    try {
+      const res = await fetch(`${BACKEND.searxngUrl}/autocompleter?q=${encodeURIComponent(text)}`, { signal: AbortSignal.timeout(1500) });
+      if (res.ok) {
+        const data = await res.json();
+        // SearXNG answers in OpenSearch form, [query, [suggestions]], or as a plain list.
+        const list = Array.isArray(data?.[1]) ? data[1] : Array.isArray(data) ? data : [];
+        if (list.length) return { list: list.filter((x) => typeof x === 'string'), fromServer: true };
+      }
+    } catch { /* asleep or slow: Wikipedia instead */ }
+  }
+  return { list: await completions(text), fromServer: false };
+}
 
 let uid = 0;
 
@@ -114,14 +133,15 @@ export function createSearchbox({ value = '', autofocus = false, label = 'Search
 
     if (!t || !getSettings().suggestions) return;
     const mine = ++request;
-    let titles = [];
-    try { titles = await completions(t); } catch { return; }
+    let found;
+    try { found = await suggestionsFor(t); } catch { return; }
     if (mine !== request) return;
     const seen = new Set(history.map((i) => i.text.toLowerCase()));
     seen.add(lower);
-    const extra = titles
+    // Wikipedia titles only count when they extend what was typed.
+    const extra = found.list
       .map((title) => title.toLowerCase())
-      .filter((s) => s.startsWith(lower) && !seen.has(s) && seen.add(s))
+      .filter((s) => (found.fromServer || s.startsWith(lower)) && !seen.has(s) && seen.add(s))
       .map((text) => ({ text, history: false }));
     items = [...history, ...extra].slice(0, 8);
     render();
