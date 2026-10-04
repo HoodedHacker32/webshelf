@@ -17,6 +17,7 @@ import { musicArtist } from './rank.js';
 import { mountTabs } from './page.js';
 import { parseQuery, plainQuery, applyOperators } from './operators.js';
 import { mountTools, pageUrl } from './searchtools.js';
+import { peopleAsk, paaBlock } from './paa.js';
 import './theme.js';
 
 const params = new URLSearchParams(location.search);
@@ -122,7 +123,61 @@ function resultItem(r, index) {
     h('h3', { class: 'result-title' }, h('a', { href: r.url, target, rel }, runs(r.title))),
     h('div', { class: 'result-meta' }, h('cite', { class: 'result-cite' }, address(r.url)), toggle),
     r.snippet.length ? h('p', { class: 'result-snippet' }, runs(r.snippet)) : null,
+    r.sitelinks?.length ? h('ul', { class: 'sitelinks', 'aria-label': `More from ${host}` }, r.sitelinks.map((l) => h('li', null,
+      h('a', { href: l.url, target, rel }, runs(l.title).length ? runs(l.title) : address(l.url)),
+      l.snippet.length ? h('p', null, runs(l.snippet)) : null))) : null,
     about);
+}
+
+// Sitelinks, as Google showed under a site's home page: when the first result
+// is a home page and more results come from the same site, up to six of them
+// are listed under it instead of further down.
+function addSitelinks() {
+  const first = all[0];
+  if (!first) return;
+  let home;
+  try { home = new URL(first.url); } catch { return; }
+  if (home.pathname.replace(/\/$/, '') !== '' || home.search) return;
+  const host = home.hostname.replace(/^www\./, '');
+  const same = all.slice(1).filter((r) => { try { return new URL(r.url).hostname.replace(/^www\./, '') === host; } catch { return false; } });
+  if (same.length < 2) return;
+  first.sitelinks = same.slice(0, 6).map((r) => ({ ...r, title: shortTitle(r.title, host), snippet: [] }));
+  const linked = new Set(first.sitelinks.map((l) => l.url));
+  all = all.filter((r) => !linked.has(r.url));
+}
+
+// "About Gordon Ramsay - International Chef and Restaurateur | Gordon…" -> "About Gordon Ramsay".
+function shortTitle(titleRuns, host) {
+  const text = titleRuns.map((r) => r.text).join('').split(/\s[|–—-]\s/)[0].trim();
+  return [{ text: text || host, bold: false }];
+}
+
+// A featured snippet for a question: the top result's own snippet, quoted with
+// its page, when it covers the question's words and no answer box has already
+// answered. Extractive only: nothing is rewritten.
+async function featuredSnippet() {
+  if (found || !looksLikeQuestion(query) || await answerShown) return;
+  const terms = contentTerms(plain);
+  if (terms.length < 2) return;
+  const text = (r) => r.snippet.map((x) => x.text).join('');
+  const pick = all.slice(0, 3).find((r) => {
+    const t = text(r);
+    const has = new Set(contentTerms(t));
+    return t.length >= 100 && terms.filter((w) => has.has(w)).length / terms.length >= 0.6;
+  });
+  if (!pick) return;
+  const target = settings.newTab ? '_blank' : null;
+  $('#serp-answer').replaceChildren(h('section', { class: 'answer snippetbox raised', 'aria-label': `From ${hostOf(pick.url)}` },
+    h('blockquote', { class: 'snippet-text', cite: pick.url }, runs(withoutDate(pick.snippet))),
+    h('p', { class: 'answer-source' }, 'From ', h('a', { href: pick.url, target, rel: 'noreferrer' }, runs(pick.title)), ` · ${hostOf(pick.url)}`)));
+}
+
+// Engines start some snippets with the page's date ("Jul 27, 2026 · …"); a
+// featured snippet quotes the words, not the date.
+function withoutDate(snippet) {
+  const [first, ...rest] = snippet;
+  if (!first) return snippet;
+  return [{ ...first, text: first.text.replace(/^[A-Z][a-z]{2} \d{1,2}, \d{4}\s*[·—-]\s*/, '') }, ...rest];
 }
 
 // Newest first; results without a date keep their order, after those with one.
@@ -341,6 +396,10 @@ async function loadResults() {
   status.replaceChildren(page > 1 ? `Page ${page} of results for ` : 'Results for ', h('b', null, query),
     page > 1 ? '' : ` · ${all.length.toLocaleString()} found in ${secs} s`);
   list.replaceChildren();
+  if (page === 1) {
+    addSitelinks();
+    await featuredSnippet();
+  }
   shown = 0;
   showMore();
   placePending();
@@ -473,9 +532,18 @@ async function questionsBlock(subj, exclude) {
     })));
 }
 
+let questionsPlaced = false;
 async function queueQuestions(subj, exclude) {
   const block = await questionsBlock(subj, exclude).catch(() => null);
-  if (block) placeInList(h('li', { class: 'result-questions' }, block), 2);
+  if (block) { questionsPlaced = true; placeInList(h('li', { class: 'result-questions' }, block), 2); }
+}
+
+// People also ask: questions people search for about this search, each
+// answered by quoting the top result for it (see paa.js).
+async function queuePeopleAsk() {
+  const questions = await peopleAsk(plain, ctx).catch(() => []);
+  const block = paaBlock(questions, { signal: abort.signal, target: target(), language: tools.lang ?? settings.language ?? 'en', safe: settings.safeSearch ?? 1 });
+  if (block) { questionsPlaced = true; placeInList(h('li', { class: 'result-questions' }, block), 2); }
 }
 
 async function factOrDefinition() {
@@ -706,6 +774,17 @@ async function fillTopic(title, ent, panel, subject) {
       h('h3', { class: 'kp-block-title', id: 'kp-profiles' }, 'Profiles'),
       h('ul', { class: 'kp-profiles' }, data.profiles.map((p) => h('li', null,
         h('a', { class: 'btn btn-small', href: p.url, rel: 'noreferrer', target: target() }, p.name))))) : '',
+    data?.ratings?.length ? h('section', { class: 'kp-block', 'aria-labelledby': 'kp-ratings' },
+      h('h3', { class: 'kp-block-title', id: 'kp-ratings' }, 'Ratings'),
+      h('ul', { class: 'kp-ratings' }, data.ratings.map((r) => h('li', null, h('span', { class: 'kp-rating-value num' }, r.value), h('span', { class: 'kp-rating-by' }, r.by))))) : '',
+    data?.cast?.length ? h('section', { class: 'kp-block', 'aria-labelledby': 'kp-cast' },
+      h('h3', { class: 'kp-block-title', id: 'kp-cast' }, 'Cast'),
+      h('ul', { class: 'kp-people kp-cast' }, data.cast.slice(0, 8).map((p) => h('li', null,
+        h('a', { href: searchUrl(p.name) },
+          h('span', { class: 'kp-person-photo' }, p.image
+            ? h('img', { src: p.image, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' })
+            : h('span', { class: 'kp-person-initial', 'aria-hidden': 'true' }, initials(p.name))),
+          h('span', { class: 'kp-person-name' }, p.name)))))) : '',
     data?.people.length ? h('section', { class: 'kp-block', 'aria-labelledby': 'kp-people' },
       h('h3', { class: 'kp-block-title', id: 'kp-people' }, 'People also search for'),
       h('ul', { class: 'kp-people' }, [...data.people].sort((a, b) => Boolean(b.image) - Boolean(a.image)).slice(0, 4).map((p) => h('li', null,
@@ -833,7 +912,12 @@ async function loadWiki(answering) {
   const someMatch = info.hits.some((hit) => contentTerms(hit.title).some((t) => typed.includes(t)));
   if (!title && !someMatch) spelling(info.suggestion);
   // A topic would compete with an instant answer, so only one of them shows.
-  if (!(title && !(await answering))) { worksDecided(); questionsDecided(); }
+  if (!(title && !(await answering))) {
+    worksDecided();
+    // No topic page: "People also ask", unless an answer box already brought its own questions.
+    if (!found && !questionsPlaced && !tools.verbatim) queuePeopleAsk().finally(questionsDecided);
+    else questionsDecided();
+  }
   if (title && !(await answering)) {
     topicTitle = title;
     const ent = entityShell(title);

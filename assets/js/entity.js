@@ -16,11 +16,14 @@ const FACTS = [
   ['P569', 'Born'], ['P570', 'Died'], ['P26', 'Spouse'], ['P40', 'Children'], ['P3373', 'Siblings'],
   ['P22', 'Father'], ['P25', 'Mother'], ['P571', 'Founded'], ['P112', 'Founders'], ['P169', 'CEO'],
   ['P159', 'Headquarters'], ['P36', 'Capital'], ['P38', 'Currency'], ['P1082', 'Population'],
-  ['P57', 'Director'], ['P577', 'Release date'], ['P50', 'Author'], ['P175', 'Performer'],
+  // Films and TV (in the order a reader looks for them).
+  ['P577', 'Release date'], ['P57', 'Director'], ['P2047', 'Running time'], ['P136', 'Genre'],
+  ['P2437', 'Seasons'], ['P1113', 'Episodes'], ['P449', 'Network'], ['P2142', 'Box office'],
+  ['P50', 'Author'], ['P175', 'Performer'],
   ['P2048', 'Height'], ['P131', 'Location'], ['P84', 'Architect'], ['P1619', 'Opened'], ['P264', 'Record label'],
 ];
-const MULTI = new Set(['P26', 'P40', 'P3373', 'P112']);
-export const UNITS = { Q11573: ' m', Q174728: ' cm', Q828224: ' km', Q11570: ' kg', Q712226: ' km²', Q3311267: ' ft' };
+const MULTI = new Set(['P26', 'P40', 'P3373', 'P112', 'P57', 'P136', 'P449']);
+export const UNITS = { Q7727: ' min', Q4917: ' US dollars', Q11573: ' m', Q174728: ' cm', Q828224: ' km', Q11570: ' kg', Q712226: ' km²', Q3311267: ' ft' };
 
 // Film and TV credits only make sense for people who work in film or TV;
 // otherwise a politician's cameo would fill a "Films" carousel.
@@ -132,6 +135,10 @@ export async function loadEntity(title, { signal, subject } = {}) {
   const relativeIds = RELATIVES.flatMap((pid) => values(claims, pid).map((v) => v?.value?.id)).filter(Boolean).slice(0, 8);
   const linkIds = new Set(picked.flatMap((f) => f.vals.map((v) => v?.value?.id).filter(Boolean)));
   relativeIds.forEach((id) => linkIds.add(id));
+  const castIds = values(claims, 'P161').map((v) => v?.value?.id).filter(Boolean).slice(0, 8);
+  castIds.forEach((id) => linkIds.add(id));
+  const ratingClaims = best(claims, 'P444').filter((c) => c.qualifiers?.P447?.[0]?.datavalue?.value?.id);
+  ratingClaims.forEach((c) => linkIds.add(c.qualifiers.P447[0].datavalue.value.id));
   const linked = linkIds.size ? await getEntities([...linkIds], 'labels|claims', signal).catch(() => ({})) : {};
   const labelOf = (id) => labelText(linked[id]);
 
@@ -174,6 +181,18 @@ export async function loadEntity(title, { signal, subject } = {}) {
     tiles.push({ label: r.label, value: r.parts.slice(0, 2).map((p) => p.text).join(', '), note: r.parts.length > 2 ? `and ${r.parts.length - 2} more` : '' });
   }
 
+  // Cast, with photos, for films and TV series.
+  const cast = castIds.map((id) => {
+    const file = values(linked[id]?.claims ?? {}, 'P18')[0]?.value;
+    return labelOf(id) ? { name: labelOf(id), image: file ? commonsFile(file, 250) : null } : null;
+  }).filter(Boolean);
+
+  // Ratings Wikidata records with their source (IMDb, Rotten Tomatoes, Metacritic…).
+  const ratings = ratingClaims.map((c) => ({ value: c.mainsnak.datavalue.value, by: labelOf(c.qualifiers.P447[0].datavalue.value.id) }))
+    .filter((r) => r.by && typeof r.value === 'string')
+    .filter((r, i, all) => all.findIndex((x) => x.by === r.by) === i)
+    .slice(0, 3);
+
   const people = relativeIds.map((id) => {
     const file = values(linked[id]?.claims ?? {}, 'P18')[0]?.value;
     return labelOf(id) ? { name: labelOf(id), image: file ? commonsFile(file, 250) : null } : null;
@@ -191,6 +210,8 @@ export async function loadEntity(title, { signal, subject } = {}) {
     rows,
     tiles,
     people,
+    cast,
+    ratings,
     profiles,
     photos: values(claims, 'P18').map((v) => v.value).slice(0, 2).map((f) => commonsFile(f)),
     website: values(claims, 'P856')[0]?.value ?? null,

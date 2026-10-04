@@ -31,7 +31,10 @@ export async function peopleAsk(query, { signal, max = 12 } = {}) {
   const topic = query.trim().toLowerCase();
   const terms = words(topic);
   if (!terms.length || terms.length > 6) return [];
-  const prompts = [`what is ${topic}`, `who is ${topic}`, `how ${topic}`, `why ${topic}`, `how to ${topic}`, `is ${topic}`, `${topic} `];
+  // A search that's already a question ("why is the sky blue") asks for its
+  // own continuations; otherwise question words are put in front of it.
+  const isQuestion = QUESTION.test(topic);
+  const prompts = isQuestion ? [`${topic} `, topic] : [`what is ${topic}`, `who is ${topic}`, `how ${topic}`, `why ${topic}`, `how to ${topic}`, `is ${topic}`, `${topic} `];
   const lists = await Promise.all(prompts.map((p) => suggest(p, signal).catch(() => [])));
   const seen = new Set();
   const out = [];
@@ -42,6 +45,10 @@ export async function peopleAsk(query, { signal, max = 12 } = {}) {
       if (!s) continue;
       const lower = s.toLowerCase().trim();
       if (!QUESTION.test(lower) || prompts.some((p) => p.trim() === lower)) continue;
+      // Suggestions with search operators in them ("-ai", "site:") aren't questions.
+      if (/(?:^|\s)-\S|\w+:\S/.test(lower)) continue;
+      // "what is how to …": two question openings is a joined-up suggestion, not a question.
+      if (/^(?:what|how|why|who|when|where|which|is|are|can|does|do)(?:\s+(?:is|are|to|does|do|was|were))?\s+(?:what|how|why|who|when|where|which)/.test(lower)) continue;
       // About the search: every one of its words is in the question.
       const has = new Set(words(lower));
       if (!terms.every((t) => has.has(t))) continue;
@@ -58,9 +65,21 @@ export async function peopleAsk(query, { signal, max = 12 } = {}) {
 export async function answerFor(question, { signal, language = 'en', safe = 1 } = {}) {
   const params = new URLSearchParams({ q: question, format: 'json', language, safesearch: String(safe) });
   const data = await getJSON(`${BACKEND.searxngUrl}/search?${params}`, { signal, timeout: 10000 });
-  const hit = (data?.results ?? []).find((r) => typeof r.content === 'string' && r.content.trim().length >= 80 && /^https?:/.test(r.url ?? ''));
+  // The result that covers the question's words best (of the top five), not
+  // simply the first: engines sometimes put a page about one word first.
+  const want = words(question).filter((w) => !QUESTION.test(w));
+  const cover = (r) => {
+    const has = new Set(words(`${r.title} ${r.content}`));
+    return want.length ? want.filter((w) => has.has(w)).length / want.length : 1;
+  };
+  const hit = (data?.results ?? []).slice(0, 5)
+    .filter((r) => typeof r.content === 'string' && r.content.trim().length >= 80 && /^https?:/.test(r.url ?? ''))
+    .map((r, i) => ({ r, score: cover(r) - i * 0.02 }))
+    .filter((x) => x.score >= 0.5)
+    .sort((a, b) => b.score - a.score)[0]?.r;
   if (!hit) return null;
-  let text = hit.content.replace(/\s+/g, ' ').trim();
+  // Engines start some snippets with the page's date ("Jul 27, 2026 · …").
+  let text = hit.content.replace(/\s+/g, ' ').trim().replace(/^[A-Z][a-z]{2} \d{1,2}, \d{4}\s*[·—-]\s*/, '');
   // End on a whole sentence where the snippet has one.
   const cut = text.slice(0, 320);
   const stop = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('.'));

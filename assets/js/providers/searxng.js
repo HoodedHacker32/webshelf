@@ -11,11 +11,15 @@ function runs(text, terms) {
   const clean = String(text ?? '').replace(/\s+/g, ' ').trim();
   if (!clean) return [];
   if (!terms.length) return [{ text: clean, bold: false }];
-  const pattern = new RegExp(`(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+  // Whole words only, so "to" isn't bolded inside "top".
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}])(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![\\p{L}\\p{N}])`, 'giu');
   return clean.split(pattern).filter(Boolean).map((part) => ({ text: part, bold: terms.some((t) => t.toLowerCase() === part.toLowerCase()) }));
 }
 
-const termsOf = (query) => query.toLowerCase().split(/\s+/).filter((t) => t.length > 1);
+// Words worth bolding: not operators, not little words like "to" or "the".
+const LITTLE = new Set(['a', 'an', 'the', 'to', 'of', 'in', 'on', 'at', 'by', 'for', 'and', 'or', 'is', 'are', 'how', 'what', 'why', 'who']);
+const termsOf = (query) => query.toLowerCase().replace(/"/g, ' ').split(/\s+/)
+  .filter((t) => t.length > 1 && !t.startsWith('-') && !t.includes(':') && !LITTLE.has(t));
 
 export default {
   id: 'searxng',
