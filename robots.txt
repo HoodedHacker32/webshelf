@@ -1,0 +1,8 @@
+# Results pages are generated per search; only the homepage and settings are
+# worth indexing. (Crawlers read robots.txt only at a domain's root, so on a
+# GitHub Pages project address the results pages also carry
+# <meta name="robots" content="noindex">.)
+User-agent: *
+Disallow: /search.html
+Disallow: /images.html
+Disallow: /videos.html

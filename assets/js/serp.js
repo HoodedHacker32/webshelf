@@ -82,7 +82,9 @@ function resultItem(r, index) {
   const about = h('div', { class: 'result-about raised', id: aboutId, hidden: true },
     h('p', { class: 'result-about-title' }, 'About this result'),
     h('p', null, `Found by ${provider.name}. ${provider.about}`),
-    h('p', null, `${SITE.name} doesn’t rank, filter or personalise results; they appear in the order the source returned them.`),
+    provider.id === 'webshelf'
+      ? h('p', null, `${SITE.name} merged the engines’ results, ranked them with open rules and left out known AI content farms. It doesn’t personalise results. `, h('a', { href: 'settings.html#ranking' }, 'How results are ranked'))
+      : h('p', null, `Results appear in the order ${provider.name} returned them. ${SITE.name} doesn’t personalise them.`),
     h('p', null, `Source: ${r.source} · Site: ${host}`));
 
   const toggle = h('button', {

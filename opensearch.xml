@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Lets browsers add Webshelf as a search engine. The addresses must be absolute:
+     update them if the site moves (they assume GitHub Pages at https://hoodedhacker32.github.io/webshelf/). -->
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+  <ShortName>Webshelf</ShortName>
+  <Description>Search the web with Webshelf, a search engine with no AI</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="16" height="16" type="image/svg+xml">https://hoodedhacker32.github.io/webshelf/logos/pixel-icon.svg</Image>
+  <Url type="text/html" method="get" template="https://hoodedhacker32.github.io/webshelf/search.html?q={searchTerms}"/>
+  <moz:SearchForm>https://hoodedhacker32.github.io/webshelf/</moz:SearchForm>
+</OpenSearchDescription>

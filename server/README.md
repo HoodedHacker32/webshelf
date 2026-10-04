@@ -2,7 +2,12 @@
 
 Webshelf's web results come from this server: [SearXNG](https://docs.searxng.org), which asks several independent search engines at once and merges what they find. [Caddy](https://caddyserver.com) sits in front of it. Caddy provides HTTPS, lets the Webshelf site read the results, and holds the Twelve Data key for share prices.
 
-It's built for Oracle Cloud's **Always Free** tier. Any small Ubuntu server with a public IP address works the same way.
+There are two ways to run it:
+
+- **The live setup: one container on Render** (`container/`). Render builds `container/Dockerfile` from this repo (root directory `server/container`, free plan, Virginia region, environment variable `PORT=7860`). Render provides HTTPS, so Caddy only adds the browser-access headers and the share-price proxy. The free plan sleeps after 15 minutes without visits; the site falls back to Mwmbl while it wakes, and `.github/workflows/keep-awake.yml` visits it through the day. Optional environment variable: `TWELVE_DATA_KEY` (without it, share prices use Twelve Data's `demo` key, which only covers AAPL).
+- **A virtual machine** (`compose.yaml`, `setup.sh`), for example Oracle Cloud's Always Free tier, which needs a card to sign up. Steps below.
+
+Both use the same engine list.
 
 | File | What it does |
 |---|---|
@@ -74,6 +79,6 @@ Web results then come from the server, and share prices go through it with the k
 | Add or change the Twelve Data key | Edit `.env`, then `sudo docker compose up -d caddy` |
 | See which engines are failing | Open `https://YOUR_HOST/stats` |
 
-Engines are chosen to work from a cloud server: Mojeek, Brave, Qwant, Mwmbl, Wikipedia, Wikidata and Startpage for web results, plus image, video and news engines. Google, Bing and DuckDuckGo usually answer data-centre addresses with CAPTCHAs, so they're left out. SearXNG pauses any engine that starts failing and retries it later.
+Engines were tested one by one from Render (October 2026). **Bing** answers (in English only from a US region, which is why the live server runs in Virginia), as do **Mwmbl**, **Wikipedia** and **Wikidata**; Bing Images and Bing Videos, Openverse, Wikimedia Commons, YouTube, Dailymotion, SepiaSearch (PeerTube) and Vimeo cover the Images and Videos tabs. Google (access denied), Startpage and Qwant (CAPTCHAs), Mojeek and DuckDuckGo (timeouts) are blocked from cloud addresses and left out; Brave rate-limits and is kept in case it recovers; Yahoo returned unrelated spam. Bing ranks above Mwmbl (engine weights 2 and 0.4). SearXNG pauses any engine that starts failing and retries it later.
 
 Only `https://hoodedhacker32.github.io` and `http://localhost:8417` can read results from a browser. To change that, edit `ALLOWED_ORIGINS` in `.env` and restart Caddy.

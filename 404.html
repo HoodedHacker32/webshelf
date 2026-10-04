@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page not found - Webshelf</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    // GitHub Pages shows this page at any missing address, however deep, so
+    // links are made relative to the site's root: "/webshelf/" on a project
+    // address, "/" on a domain of its own.
+    (function () {
+      var base = /\.github\.io$/.test(location.hostname) ? '/' + location.pathname.split('/')[1] + '/' : '/';
+      document.write('<base href="' + base + '">');
+      var t = 'auto';
+      try { t = JSON.parse(localStorage.getItem('webshelf:settings') || '{}').theme || 'auto'; } catch (e) {}
+      var dark = t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+  <link rel="icon" href="logos/pixel-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/home.css">
+  <script type="module">import { mountLogos } from './assets/js/logo.js'; mountLogos();</script>
+</head>
+<body class="home">
+  <main class="home-main">
+    <a class="home-logo logo" href="index.html" data-logo="pixel-lockup" data-label="Webshelf home">
+      <img src="logos/pixel-lockup.svg" alt="Webshelf" width="380" height="109">
+    </a>
+    <h1 class="notfound-title">This page isn’t on the shelf.</h1>
+    <p class="home-note">The address may be mistyped, or the page has moved. Try a search instead:</p>
+    <form class="searchbox notfound-search" action="search.html" method="get" role="search">
+      <div class="searchbox-field"><input class="field searchbox-input" name="q" type="search" aria-label="Search the web" autocomplete="off"></div>
+      <button class="btn btn-default searchbox-submit" type="submit">Search</button>
+    </form>
+    <p class="home-note"><a href="index.html">Go to the Webshelf homepage</a></p>
+  </main>
+  <style>
+    .notfound-title { margin: 8px 0 0; font-size: var(--text-xl); text-align: center; }
+    .notfound-search { width: min(560px, 100%); }
+  </style>
+</body>
+</html>

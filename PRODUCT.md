@@ -61,7 +61,7 @@ Entirely AI-free. There is no AI tab, AI mode or AI summary, now or later. Every
 2. Familiar behaviour, own identity. Keep the search behaviours people know; never borrow another company's look.
 3. Honest sourcing. Every answer and panel names where its data came from.
 4. Free and forkable. No paid services, no keys in the code, no build step.
-5. Private by default. No tracking, and no requests to third parties beyond the data sources a query needs.
+5. Plain about where searches go. Searches go to Webshelf's search server and on to the engines it asks; features call their data sources (Wikipedia, Wikidata, MusicBrainz, Open-Meteo and others) only when a query needs them, and Settings lists every one. No accounts, no ads, no record of searches kept by Webshelf.
 
 ## Accessibility & Inclusion
 
