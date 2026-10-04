@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logo options</title>
+  <link rel="stylesheet" href="/assets/css/tokens.css">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <style>
+    body { background: var(--page); color: var(--ink); margin: 0; }
+    .top { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 12px 16px; background: var(--chrome); border-bottom: 1px solid var(--bevel-lo); }
+    .top h1 { font-size: var(--text-xl); margin: 0; }
+    .top p { margin: 0; color: var(--meta); font-family: var(--font-ui); font-size: var(--text-sm); }
+    .top .chosen { color: var(--ink); font-weight: 700; }
+    main { max-width: 1180px; margin: 0 auto; padding: 16px; }
+    .option { margin: 0 0 28px; padding: 16px; }
+    .option-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 12px; }
+    .option h2 { font-size: var(--text-xl); margin: 0; }
+    .option h2 span { color: var(--meta); font-family: var(--font-ui); font-size: var(--text-sm); font-weight: 400; }
+    .option .why { margin: 4px 0 0; color: var(--ink-2); font-size: var(--text-sm); max-width: 62ch; }
+    .option.is-chosen { outline: 3px solid var(--link); outline-offset: 2px; }
+    .views { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1.6fr); gap: 12px; }
+    @media (max-width: 900px) { .views { grid-template-columns: 1fr; } }
+    .view-label { margin: 0 0 4px; color: var(--meta); font-family: var(--font-ui); font-size: var(--text-xs); }
+    .frame { overflow: hidden; background: var(--page); border: 2px solid; border-color: var(--bevel-lo) var(--bevel-lit) var(--bevel-lit) var(--bevel-lo); }
+
+    /* On its own */
+    .alone { display: grid; place-items: center; height: 200px; padding: 16px; }
+    .alone > * { width: min(100%, 300px); }
+
+    /* Homepage */
+    .home { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; height: 200px; padding: 12px; }
+    .home .mark { width: min(78%, 260px); }
+    .home .box { display: flex; gap: 6px; width: 88%; }
+    .field-mock { flex: 1; height: 26px; background: var(--field); border: 2px solid; border-color: var(--bevel-lo) var(--bevel-lit) var(--bevel-lit) var(--bevel-lo); }
+    .btn-mock { padding: 3px 10px; background: var(--chrome); border: 2px solid; border-color: var(--bevel-hi) var(--bevel-deep) var(--bevel-deep) var(--bevel-hi); font-family: var(--font-ui); font-size: 12px; }
+    .home .note { color: var(--meta); font-size: 12px; }
+
+    /* Search page */
+    .serp { height: 200px; }
+    .serp .bar { display: grid; grid-template-columns: 112px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px 0; background: var(--chrome); border-bottom: 1px solid var(--bevel-lo); }
+    .serp .bar .mark { width: 112px; }
+    .serp .bar .field-mock { height: 22px; }
+    .serp .tabs { grid-column: 2; display: flex; gap: 2px; margin-top: 8px; margin-bottom: -1px; }
+    .serp .tabs span { padding: 2px 9px; background: var(--chrome); border: 1px solid var(--bevel-lo); border-bottom: 0; font-family: var(--font-ui); font-size: 11px; }
+    .serp .tabs span:first-child { background: var(--page); font-weight: 700; padding-bottom: 3px; }
+    .serp .lines { padding: 12px 12px 0 134px; }
+    .serp .lines p { margin: 0 0 10px; font-size: 12px; line-height: 1.35; }
+    .serp .lines a { color: var(--link); font-size: 14px; }
+    .serp .lines cite { display: block; color: var(--meta); font-family: var(--font-mono); font-size: 10px; font-style: normal; }
+
+    /* Logo pieces */
+    .lockup svg, .icon svg { display: block; width: 100%; height: auto; }
+    /* The "l" in Shelf is a rect, not a path, so both are recoloured. */
+    .lockup svg :is(path, rect):not([style*="fill:rgb"]), .word :is(path, rect):not([style*="fill:rgb"]) { fill: currentColor; }
+    .pixel svg { image-rendering: pixelated; shape-rendering: crispEdges; }
+    .pixel-lockup { display: flex; align-items: center; gap: 6%; }
+    .pixel-lockup .icon { flex: 0 0 34%; }
+    .pixel-word { font-family: "Redaction 35", var(--font-ui); line-height: 1; white-space: nowrap; color: var(--ink); }
+    .pixel-word i { font-style: normal; color: var(--meta); }
+    .pixel-word b { font-weight: 400; -webkit-text-stroke: 0.04em currentColor; }
+    .icon-word { display: flex; align-items: flex-end; gap: 5%; }
+    .icon-word .icon { flex: 0 0 28%; }
+    .icon-word .word svg { display: block; width: 100%; height: auto; }
+    .icon-word .word svg path { fill: currentColor; }
+    .icon-word .word { flex: 1; padding-bottom: 4%; }
+
+    .plate { padding: 7% 8%; background: var(--chrome); border: 3px solid; border-color: var(--bevel-hi) var(--bevel-deep) var(--bevel-deep) var(--bevel-hi); box-shadow: inset -1px -1px 0 var(--bevel-lo), inset 1px 1px 0 var(--bevel-lit); }
+    .shadowed svg { filter: drop-shadow(0.05em 0.05em 0 var(--shadow-ink)); }
+    .link-word svg g:first-of-type :is(path, rect) { fill: var(--link) !important; }
+    .link-word { position: relative; }
+    .link-word::after { content: ""; position: absolute; left: 47%; right: 3%; bottom: 31%; height: 2.2%; background: var(--link); }
+    .closeup { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .closeup > .pixel:first-child { width: 100%; }
+    .zoom { display: flex; align-items: flex-end; gap: 8px; }
+    .zoom svg { width: 96px; height: auto; display: block; }
+    .zoom span { color: var(--meta); font-family: var(--font-ui); font-size: 11px; }
+    .button88 svg { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+    :root { --shadow-ink: #000; }
+    :root[data-theme="dark"] { --shadow-ink: #000; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>Logo options</h1>
+    <p>Each option on its own, on the homepage and in the search page toolbar. Choose the one you like; nothing on the site changes until you say so. Chosen: <span class="chosen" id="chosen">none yet</span></p>
+    <button class="btn btn-small" type="button" id="theme">Dark mode</button>
+  </header>
+  <main id="options"></main>
+
+  <script type="module">
+    const raw = await (await fetch('/logos/lockup.svg')).text();
+    const wordRaw = await (await fetch('/logos/wordmark.svg')).text();
+    const clean = (text) => text.replace(/<\?xml[^>]*>/, '').replace(/<!DOCTYPE[^>]*>/, '');
+
+    // The drawing as drawn, with its four colours mapped to new ones if asked.
+    const COLOURS = { blue: 'rgb(103,193,255)', green: 'rgb(82,218,90)', orange: 'rgb(255,184,67)', brown: 'rgb(188,117,74)' };
+    function lockup(map = {}) {
+      let svg = clean(raw);
+      for (const [name, from] of Object.entries(COLOURS)) if (map[name]) svg = svg.replaceAll(`fill:${from}`, `fill:${map[name]}`);
+      return `<div class="lockup">${svg}</div>`;
+    }
+    const WEBSAFE = { blue: '#3399FF', green: '#33CC33', orange: '#FF9900', brown: '#996633' };
+
+    // The icon redrawn on a 24 x 24 pixel grid: cobweb, three books, shelf.
+    function pixelIcon(size = 24) {
+      const px = [];
+      const put = (x, y, c) => px.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${c}"/>`);
+      const ink = 'currentColor';
+      for (let i = 1; i <= 8; i++) { put(1, i, ink); put(i, 1, ink); }
+      for (const [x, y] of [[2, 2], [3, 3], [4, 4], [5, 5], [2, 6], [3, 6], [4, 5], [5, 4], [6, 3], [6, 2]]) put(x, y, ink);
+      // Blue book, leaning right.
+      for (let y = 8; y <= 19; y++) {
+        const o = Math.round((19 - y) * 0.27);
+        for (let x = 3 + o; x <= 6 + o; x++) put(x, y, y === 10 || y === 17 ? '#0066CC' : x === 3 + o ? '#99CCFF' : '#3399FF');
+      }
+      const book = (x0, top, main, band, light) => {
+        for (let y = top; y <= 19; y++) for (let x = x0; x <= x0 + 3; x++) put(x, y, y === top + 2 || y === 17 ? band : x === x0 ? light : main);
+      };
+      book(10, 5, '#33CC33', '#009900', '#99FF99');
+      book(15, 6, '#FF9900', '#CC6600', '#FFCC66');
+      for (let x = 1; x <= 21; x++) { put(x, 20, '#CC9966'); put(x, 21, '#996633'); put(x, 22, '#663300'); }
+      return `<div class="icon pixel"><svg viewBox="0 0 23 24" width="${size}" xmlns="http://www.w3.org/2000/svg">${px.join('')}</svg></div>`;
+    }
+
+    // The same icon at twice the resolution (48 x 48 grid): two web strands,
+    // shaded book edges, spine bands, title labels and wood grain on the shelf.
+    function pixelIcon2Pixels() {
+      const px = new Map();
+      const put = (x, y, c) => px.set(`${x},${y}`, c);
+      const ink = 'currentColor';
+      for (let i = 2; i <= 18; i++) { put(2, i, ink); put(i, 2, ink); }
+      for (let i = 2; i <= 13; i++) put(i, i, ink);
+      for (const r of [6, 11]) for (let a = 0; a <= 90; a += 2) {
+        const t = (a * Math.PI) / 180;
+        put(Math.round(2 + r * Math.cos(t)), Math.round(2 + r * Math.sin(t)), ink);
+      }
+      // A book: 8 wide from x0 at the bottom row (39) up to `top`, leaning by `lean` per row.
+      const book = (x0, top, lean, c) => {
+        for (let y = top; y <= 39; y++) {
+          const o = Math.round((39 - y) * lean);
+          for (let x = 0; x < 8; x++) {
+            let colour = c.main;
+            if (x === 0) colour = c.light;
+            if (x === 7 || y === top) colour = c.dark;
+            if ((y === top + 3 || y === top + 4 || y === 34 || y === 35) && x > 0 && x < 7) colour = c.dark;
+            if (y >= top + 8 && y <= top + 11 && x >= 2 && x <= 5) colour = c.label;
+            put(x0 + x + o, y, colour);
+          }
+        }
+      };
+      book(5, 16, 0.27, { main: '#3399FF', light: '#99CCFF', dark: '#0066CC', label: '#CCE5FF' });
+      book(19, 10, 0, { main: '#33CC33', light: '#99FF99', dark: '#009900', label: '#CCFFCC' });
+      book(29, 12, 0, { main: '#FF9900', light: '#FFCC66', dark: '#CC6600', label: '#FFE5B3' });
+      for (let x = 2; x <= 43; x++) {
+        put(x, 40, '#CC9966');
+        for (const y of [41, 42, 43]) put(x, y, (y === 42 && x % 7 === 3) || (y === 41 && x % 9 === 6) ? '#86592D' : '#996633');
+        put(x, 44, '#663300');
+      }
+      return [...px].map(([k, c]) => { const [x, y] = k.split(','); return `<rect x="${x}" y="${y}" width="1" height="1" fill="${c}"/>`; }).join('');
+    }
+    const pixelLockup2 = () => `<div class="pixel"><svg viewBox="0 0 172 48" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto" shape-rendering="crispEdges">
+        <g>${pixelIcon2Pixels()}</g>
+        <text x="52" y="37" font-family="Redaction 35" font-size="27" textLength="118" lengthAdjust="spacingAndGlyphs"><tspan fill="var(--meta)">web</tspan><tspan fill="currentColor" stroke="currentColor" stroke-width="0.8">Shelf</tspan></text>
+      </svg></div>`;
+
+    // An 88 x 31 web button: pixel icon on white, name on navy.
+    function button88() {
+      const icon = pixelIcon().replace('<div class="icon pixel">', '').replace('</div>', '').replace('viewBox="0 0 23 24" width="24"', 'x="4" y="3" width="23" height="24" viewBox="0 0 23 24"');
+      return `<div class="button88"><svg viewBox="0 0 88 31" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+        <rect x="0" y="0" width="88" height="31" fill="#000"/>
+        <rect x="1" y="1" width="30" height="29" fill="#fff"/>
+        <g color="#000">${icon}</g>
+        <rect x="32" y="1" width="55" height="29" fill="#000080"/>
+        <rect x="32" y="1" width="55" height="1" fill="#3333cc"/>
+        <text x="59.5" y="15" text-anchor="middle" font-family="Redaction 35" font-size="11" fill="#fff">webShelf</text>
+        <text x="59.5" y="25" text-anchor="middle" font-family="Redaction 35" font-size="7.5" fill="#FFFF00">NO AI INSIDE</text>
+      </svg></div>`;
+    }
+
+    // The icon's pixels without its wrapper, for building single-SVG lockups.
+    const iconPixels = () => pixelIcon().match(/<svg[^>]*>([\s\S]*)<\/svg>/)[1];
+    const wordInner = clean(wordRaw).match(/<svg[^>]*>([\s\S]*)<\/svg>/)[1];
+
+    // One SVG each, so the lockup scales as a whole wherever it's placed.
+    const pixelLockup = () => `<div class="pixel"><svg viewBox="0 0 104 24" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto">
+        <g>${iconPixels()}</g>
+        <text x="28" y="19" font-family="Redaction 35" font-size="17" textLength="75" lengthAdjust="spacingAndGlyphs"><tspan fill="var(--meta)">web</tspan><tspan fill="currentColor" stroke="currentColor" stroke-width="0.5">Shelf</tspan></text>
+      </svg></div>`;
+    const iconAndWord = () => `<div class="pixel"><svg viewBox="0 0 100 24" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto">
+        <g>${iconPixels()}</g>
+        <svg x="27" y="6" width="73" height="14" viewBox="59 125 726 140" class="word" style="fill:currentColor">${wordInner}</svg>
+      </svg></div>`;
+
+    const OPTIONS = [
+      { id: 'as-drawn', name: 'As drawn', kind: 'Keeps your drawing', why: 'Your logo exactly as it is now, for comparison.',
+        mark: () => lockup() },
+      { id: 'web-safe', name: 'Web-safe colours', kind: 'Keeps your drawing', why: 'Recoloured to the 216-colour "web-safe" palette every 1990s site used: the same drawing, punchier colours.',
+        mark: () => lockup(WEBSAFE) },
+      { id: 'hard-shadow', name: 'Hard shadow', kind: 'Keeps your drawing', why: 'Web-safe colours with a solid offset shadow, the way logos stood off the page in the Geocities era.',
+        mark: () => `<div class="shadowed" style="font-size:40px">${lockup(WEBSAFE)}</div>` },
+      { id: 'plate', name: 'Bevelled plate', kind: 'Keeps your drawing', why: 'Your logo set on a raised grey plate, matching the site’s bevelled buttons.',
+        mark: () => `<div class="plate">${lockup()}</div>` },
+      { id: 'hyperlink', name: 'Hyperlink', kind: 'Keeps your drawing', why: 'The wordmark in classic link blue with an underline: the logo reads like the web’s first link.',
+        mark: () => `<div class="link-word">${lockup()}</div>` },
+      { id: 'button88', name: '88×31 button', kind: 'New, based on your logo', why: 'The tiny badge sites used to link to each other. Pixel icon, name and "No AI inside". Best as a small toolbar mark.',
+        mark: () => button88() },
+      { id: 'pixel', name: 'Pixel art', kind: 'Redrawn', why: 'Books, shelf and cobweb redrawn on a 24-pixel grid like a 1990s icon, with the name in the site’s pixel font (Redaction 35).',
+        mark: () => pixelLockup() },
+      { id: 'pixel-2x', name: 'Pixel art, 2× detail', kind: 'Redrawn', why: 'The pixel-art version on a 48-pixel grid: two web strands, shaded book edges, spine bands, title labels and wood grain on the shelf.',
+        mark: (where) => (where === 'alone'
+          ? `<div class="closeup">${pixelLockup2()}<div class="pixel zoom"><svg viewBox="0 0 46 48" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">${pixelIcon2Pixels()}</svg><span>Icon close-up</span></div></div>`
+          : pixelLockup2()) },
+      { id: 'pixel-icon', name: 'Pixel icon, your wordmark', kind: 'Partly redrawn', why: 'The pixel icon with your original lettering kept exactly as drawn.',
+        mark: () => iconAndWord() },
+    ];
+
+    const results = `<div class="lines"><p><a>Gordon Ramsay - Wikipedia</a><cite>en.wikipedia.org/wiki/Gordon_Ramsay</cite>Gordon James Ramsay is a British chef…</p><p><a>Official site</a><cite>gordonramsay.com</cite>Restaurants, recipes and more…</p></div>`;
+
+    const list = document.getElementById('options');
+    for (const o of OPTIONS) {
+      const section = document.createElement('section');
+      section.className = 'option raised';
+      section.id = o.id;
+      section.innerHTML = `
+        <div class="option-head">
+          <div><h2>${o.name} <span>· ${o.kind}</span></h2><p class="why">${o.why}</p></div>
+          <button class="btn btn-default" type="button" data-choose="${o.id}">Choose this one</button>
+        </div>
+        <div class="views">
+          <div><p class="view-label">On its own</p><div class="frame alone">${o.mark('alone')}</div></div>
+          <div><p class="view-label">Homepage</p><div class="frame home"><div class="mark">${o.mark('home')}</div><div class="box"><span class="field-mock"></span><span class="btn-mock">Search</span></div><span class="note">An AI-free search engine.</span></div></div>
+          <div><p class="view-label">Search page</p><div class="frame serp"><div class="bar"><div class="mark">${o.mark('serp')}</div><span class="field-mock"></span><span class="btn-mock">Search</span><div class="tabs"><span>All</span><span>Images</span><span>Videos</span></div></div>${results}</div></div>
+        </div>`;
+      list.append(section);
+    }
+
+    const KEY = 'webshelf:logo-choice';
+    const show = (id) => {
+      document.querySelectorAll('.option').forEach((s) => s.classList.toggle('is-chosen', s.id === id));
+      document.querySelectorAll('[data-choose]').forEach((b) => { b.textContent = b.dataset.choose === id ? 'Chosen ✓' : 'Choose this one'; });
+      document.getElementById('chosen').textContent = OPTIONS.find((o) => o.id === id)?.name ?? 'none yet';
+    };
+    try { show(localStorage.getItem(KEY)); } catch { /* storage unavailable */ }
+    list.addEventListener('click', (e) => {
+      const id = e.target.closest('[data-choose]')?.dataset.choose;
+      if (!id) return;
+      try { localStorage.setItem(KEY, id); } catch { /* storage unavailable */ }
+      show(id);
+    });
+    document.getElementById('theme').addEventListener('click', (e) => {
+      const dark = document.documentElement.dataset.theme !== 'dark';
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      e.target.textContent = dark ? 'Light mode' : 'Dark mode';
+    });
+  </script>
+</body>
+</html>

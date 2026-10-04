@@ -407,3 +407,9 @@ When a search names something with a Wikipedia article (a person, place, work or
 - **Web results under answer boxes.** When an answer box understood the search, the web results are searched with a clean version of it: "EUR to GBP exchange rate", "convert miles to kilometers", "AAPL stock".
 - **Topic header.** Commons photos load at 500px; a lone fact tile centres its text.
 
+## Logo (pixel art, October 2026)
+
+- The site uses the owner's chosen pixel-art lockup, `logos/pixel-lockup.svg`: the cobweb, three books and shelf on a 48-pixel grid (shaded edges, spine bands, title labels, no wood grain), and "webShelf" in Redaction 35 rasterised onto the same grid, "web" lighter and "Shelf" in bitmap bold (each letter drawn again one pixel to the right). The letters are shapes, so no font is needed. The tab icon is `logos/pixel-icon.svg`.
+- Rebuild both with `python tools/build_pixel_logo.py` (needs the local preview server for the font). The cobweb and letters follow the text colour; the blue book is `data-book="blue"` and still rocks once while results load. Rendered with crisp edges at every size.
+- The original drawn logo files stay in `logos/`. The comparison page the owner chose from is `.impeccable/mocks/logo/index.html`.
+

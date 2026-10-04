@@ -284,6 +284,9 @@ select.field { padding-right: 28px; }
 
 .logo, a.logo:visited { display: block; color: var(--ink); }
 .logo img, .logo svg { display: block; width: 100%; height: auto; }
+/* The pixel-art logo stays crisp at any size. */
+.logo svg { shape-rendering: crispEdges; }
+.logo img { image-rendering: pixelated; }
 .logo svg :is(path, rect):not([style*="fill:rgb"]) { fill: currentColor; }
 :root[data-theme="dark"] .logo:not(.is-inline) img { visibility: hidden; }
 

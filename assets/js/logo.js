@@ -1,5 +1,6 @@
-// The owner's logo files, used exactly as drawn. Inlining the SVG lets the
-// black parts follow the text colour in dark mode; nothing else is changed.
+// The owner's logo files, used as drawn. The site uses the pixel-art lockup the
+// owner chose (logos/pixel-lockup.svg, built by tools/build_pixel_logo.py).
+// Inlining the SVG lets the black parts follow the text colour in dark mode.
 
 const cache = new Map();
 
@@ -39,7 +40,8 @@ export async function mountLogos(root = document) {
 // The leaning blue book rocks once, as a loading cue. Skipped for reduced motion.
 export function rockBook(root = document) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  for (const book of root.querySelectorAll('[data-logo].is-inline path[style*="103,193,255"]')) {
+  const books = '[data-logo].is-inline [data-book="blue"], [data-logo].is-inline path[style*="103,193,255"]';
+  for (const book of root.querySelectorAll(books)) {
     book.classList.remove('book-rock');
     void book.getBoundingClientRect();
     book.classList.add('book-rock');
