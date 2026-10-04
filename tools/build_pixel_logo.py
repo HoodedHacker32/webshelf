@@ -32,18 +32,20 @@ def icon_pixels():
         px[(i, 2)] = INK
     for i in range(2, 14):
         px[(i, i)] = INK
-    # The rungs sag gently in towards the corner, like real threads between the
-    # spokes (as in the owner's drawing): shallow arcs from one edge to the other,
-    # on circles centred well out along the diagonal.
-    for span in (8, 15):
-        a_pt, b_pt = (2, 2 + span), (2 + span, 2)
-        c = 2 + span + span * 0.9
-        radius = math.dist((c, c), a_pt)
-        start = math.atan2(a_pt[1] - c, a_pt[0] - c)
-        end = math.atan2(b_pt[1] - c, b_pt[0] - c)
-        for i in range(121):
-            t = start + (end - start) * i / 120
-            px[(round(c + radius * math.cos(t)), round(c + radius * math.sin(t)))] = INK
+    # Each ring is made of separate threads, one between each pair of spokes
+    # (left edge to diagonal, diagonal to top edge), each sagging in towards the
+    # corner, so they meet at the diagonal in a scallop, as in the owner's drawing.
+    corner = (2, 2)
+    for d in (8, 15):
+        left, diag, top = (2, 2 + d), (2 + d * 0.72, 2 + d * 0.72), (2 + d, 2)
+        for p0, p1 in ((left, diag), (diag, top)):
+            mid = ((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
+            ctrl = (mid[0] + (corner[0] - mid[0]) * 0.32, mid[1] + (corner[1] - mid[1]) * 0.32)
+            for i in range(61):
+                t = i / 60
+                x = (1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * p1[0]
+                y = (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * p1[1]
+                px[(round(x), round(y))] = INK
 
     def book(x0, top, lean, c, tag=None):
         for y in range(top, 40):
