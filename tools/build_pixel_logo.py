@@ -27,25 +27,23 @@ def icon_pixels():
     """{(x, y): colour}, with INK for the parts that follow the text colour,
     and ('blue', colour) for the leaning book, which the site animates."""
     px = {}
-    for i in range(2, 19):
-        px[(2, i)] = INK
-        px[(i, 2)] = INK
-    for i in range(2, 14):
-        px[(i, i)] = INK
-    # Each ring is made of separate threads, one between each pair of spokes
-    # (left edge to diagonal, diagonal to top edge), each sagging in towards the
-    # corner, so they meet at the diagonal in a scallop, as in the owner's drawing.
-    corner = (2, 2)
-    for d in (8, 15):
-        left, diag, top = (2, 2 + d), (2 + d * 0.72, 2 + d * 0.72), (2 + d, 2)
-        for p0, p1 in ((left, diag), (diag, top)):
-            mid = ((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
-            ctrl = (mid[0] + (corner[0] - mid[0]) * 0.32, mid[1] + (corner[1] - mid[1]) * 0.32)
-            for i in range(61):
-                t = i / 60
-                x = (1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * ctrl[0] + t * t * p1[0]
-                y = (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * ctrl[1] + t * t * p1[1]
-                px[(round(x), round(y))] = INK
+    # The cobweb, placed pixel by pixel (no rounded maths): one-pixel lines, no
+    # doubled corners, curves stepping evenly. Local grid: (0, 0) is the corner.
+    web = set()
+    for i in range(17):
+        web.add((i, 0))       # top edge
+        web.add((0, i))       # left edge
+    for i in range(1, 13):
+        web.add((i, i))       # diagonal spoke, running past the outer ring
+    # Each ring is two threads, edge to spoke, sagging gently towards the corner
+    # and mirrored across the diagonal so they meet in a scallop.
+    inner = [(1, 6), (2, 6), (3, 5), (4, 5)]
+    outer = [(1, 13), (2, 12), (3, 12), (4, 11), (5, 11), (6, 11), (7, 10), (8, 10), (9, 10)]
+    for x, y in inner + outer:
+        web.add((x, y))
+        web.add((y, x))
+    for x, y in web:
+        px[(x + 2, y + 2)] = INK
 
     def book(x0, top, lean, c, tag=None):
         for y in range(top, 40):
