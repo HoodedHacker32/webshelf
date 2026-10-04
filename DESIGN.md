@@ -393,3 +393,9 @@ When a search names something with a Wikipedia article (a person, place, work or
 - Below 760px the page has 16px gutters and results use the full width: each result's number moves into its title line.
 - The topic header keeps its 210px: a row of photos (first one wider) with the quick-fact tiles in a row beneath. Free cover images that aren't poster-shaped (usually logos) are fitted inside the cover frame rather than cropped.
 
+## Ranking and band panels
+
+- **Ranked results.** The footer names the engines used ("Web results from Bing and Mwmbl, ranked by Webshelf") and links to Settings → How results are ranked. It also says how many AI content-farm results were left out. An official website added because no engine found it reads "<Name> – official website", with "Official website, as listed by MusicBrainz/Wikidata" in its About line.
+- **Band panel.** For a band or artist with no Wikipedia article, the About plate is titled with the artist's name and carries a one-line description (Band · country · since year), the official site, **Listen** and **Profiles** rows of small raised buttons, and "From MusicBrainz (CC0)". It uses the same compact card on phones, credited "From MusicBrainz".
+- **Posters.** Film and TV covers are posters (TVmaze for TV, the Wikipedia article's poster for films); a "Posters from TVmaze" credit sits under a carousel that uses them. Non-poster images are still fitted inside the frame.
+

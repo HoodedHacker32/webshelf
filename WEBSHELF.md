@@ -27,6 +27,9 @@ Hosted as a static GitHub Pages site on a `github.io` subdomain (no custom domai
 | Easter eggs and games | All removed except Atari Breakout (query `atari breakout`). |
 | "I'm Feeling Lucky" | Not included. |
 | Stocks | Market summary card with chart. Shares: Twelve Data (free key in `assets/js/config.js`; the placeholder `demo` key only covers AAPL). Coins: CoinGecko, keyless. Yahoo, Stooq, Nasdaq and Cboe all block browser calls. |
+| Ranking | Webshelf ranks results itself (`assets/js/rank.js`, rules only, no AI): engine agreement (reciprocal-rank fusion), Tranco top-50,000 popularity, all-words and title match, navigational addresses, and the official website from Wikidata or MusicBrainz (added first if no engine found it). AI content farms (HUGE AI Blocklist) are left out. Lists refresh with `tools/update_lists.py`. |
+| Bands | MusicBrainz panel (official site, Listen, Profiles) when Wikipedia has no article. |
+| Posters | TV from TVmaze by IMDb id; films use the poster image Wikipedia's article uses. No keys or accounts. |
 | Tabs | All, Images (Openverse, Commons fallback), Videos (YouTube links via Mwmbl, Dailymotion, PeerTube via SepiaSearch, Internet Archive). |
 | Results backend | Our own SearXNG server on Oracle Cloud's Always Free tier, behind Caddy (`server/`, walkthrough in `server/README.md`). Until `BACKEND_URL` is set in `assets/js/config.js`, the site uses Mwmbl directly. |
 
