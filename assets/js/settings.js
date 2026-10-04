@@ -3,6 +3,7 @@ import { h, $, $$ } from './dom.js';
 import { getSettings, setSetting, clearHistory, DEFAULTS } from './store.js';
 import { createSearchbox } from './searchbox.js';
 import { PROVIDERS, currentProvider } from './providers/index.js';
+import { LANGUAGES } from './searchtools.js';
 import { geocode, locateMe } from './answers/geo.js';
 import { mountLogos } from './logo.js';
 import { applyTheme } from './theme.js';
@@ -52,6 +53,15 @@ for (const radio of $$('input[name="theme"]')) {
     applyTheme(radio.value);
   });
 }
+
+for (const radio of $$('input[name="safeSearch"]')) {
+  radio.checked = Number(radio.value) === (settings.safeSearch ?? 1);
+  radio.addEventListener('change', () => save('safeSearch', Number(radio.value)));
+}
+
+const languageSelect = $('#opt-language');
+languageSelect.replaceChildren(...LANGUAGES.map(([code, name]) => h('option', { value: code, selected: code === (settings.language ?? 'en') }, name)));
+languageSelect.addEventListener('change', () => save('language', languageSelect.value));
 
 for (const radio of $$('input[name="tempUnit"]')) {
   radio.checked = radio.value === settings.tempUnit;

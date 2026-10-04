@@ -54,6 +54,8 @@
       <a class="tab" href="videos.html" data-page="videos.html">Videos</a>
     </nav>
   </header>
+  <div class="search-tools" id="search-tools" hidden role="group" aria-label="Search tools"></div>
+  <script>if (/[?&](time|lang|sort|verbatim)=/.test(location.search)) document.getElementById('search-tools').hidden = false;</script>
 
   <main class="serp-main" id="main">
     <div class="serp-grid">

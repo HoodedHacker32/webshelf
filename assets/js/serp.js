@@ -15,6 +15,8 @@ import { parseQuestion, parseDefinition, resolveSubject, factAnswer, questionsFo
 import { icon } from './icons.js';
 import { musicArtist } from './rank.js';
 import { mountTabs } from './page.js';
+import { parseQuery, plainQuery, applyOperators } from './operators.js';
+import { mountTools, pageUrl } from './searchtools.js';
 import './theme.js';
 
 const params = new URLSearchParams(location.search);
@@ -22,7 +24,22 @@ const query = (params.get('q') ?? '').trim();
 if (!query) location.replace('index.html');
 
 const settings = getSettings();
+// Which page of results, and the Tools menu's choices (all in the address, so
+// a search can be shared or bookmarked exactly).
+let page = Math.max(1, Math.min(10, parseInt(params.get('page') ?? '1', 10) || 1));
+const tools = {
+  time: ['day', 'week', 'month', 'year'].includes(params.get('time')) ? params.get('time') : null,
+  lang: params.get('lang') || null,
+  sort: params.get('sort') === 'date' ? 'date' : null,
+  verbatim: params.get('verbatim') === '1',
+};
+// Operators ("exact", -word, site: …): the engines get the whole search; the
+// words alone are used for ranking and for looking things up.
+const parsed = parseQuery(query);
+const plain = plainQuery(parsed) || query;
 const provider = currentProvider();
+// A link to a later page from a provider that has none shows the first page.
+if (!provider.supports?.pages) page = 1;
 const abort = new AbortController();
 const ctx = { signal: abort.signal, query };
 
@@ -30,6 +47,7 @@ document.title = `${query} - ${SITE.name}`;
 $('#serp-h1').textContent = `${SITE.name} results for ${query}`;
 $('#serp-search').replaceChildren(createSearchbox({ value: query }));
 mountTabs(query);
+mountTools({ query, tools, settings, supports: provider.supports ?? {} });
 addHistory(query);
 mountLogos().then(() => { if (pending) rockBook($('#toolbar')); });
 
@@ -107,8 +125,16 @@ function resultItem(r, index) {
     about);
 }
 
+// Newest first; results without a date keep their order, after those with one.
+function byDate(results) {
+  const time = (r) => { const t = Date.parse(r.date ?? ''); return Number.isFinite(t) ? t : -Infinity; };
+  return [...results].map((r, i) => ({ r, i })).sort((a, b) => time(b.r) - time(a.r) || a.i - b.i).map((x) => x.r);
+}
+
+// With numbered pages, a page shows all its results; otherwise ten at a time
+// behind "More results".
 function showMore() {
-  const next = all.slice(shown, shown + SITE.resultsPerLoad);
+  const next = provider.supports?.pages ? all.slice(shown) : all.slice(shown, shown + SITE.resultsPerLoad);
   const firstNew = list.querySelectorAll('.result').length;
   list.append(...next.map((r, i) => resultItem(r, shown + i)));
   shown += next.length;
@@ -117,14 +143,65 @@ function showMore() {
   return firstNew;
 }
 
+// Numbered pages, as Google had them: Previous, 1 to 10, Next. Later pages
+// are offered while this one was full enough to suggest there's more.
 function renderMoreButton() {
-  if (shown >= all.length) { moreBox.replaceChildren(); return; }
-  const btn = h('button', { class: 'btn', type: 'button' }, 'More results');
-  btn.addEventListener('click', () => {
-    const first = showMore();
-    list.querySelectorAll('.result')[first]?.querySelector('a')?.focus();
-  });
-  moreBox.replaceChildren(h('div', { class: 'more-row' }, btn));
+  if (!provider.supports?.pages) {
+    if (shown >= all.length) { moreBox.replaceChildren(); return; }
+    const btn = h('button', { class: 'btn', type: 'button' }, 'More results');
+    btn.addEventListener('click', () => {
+      const first = showMore();
+      list.querySelectorAll('.result')[first]?.querySelector('a')?.focus();
+    });
+    moreBox.replaceChildren(h('div', { class: 'more-row' }, btn));
+    return;
+  }
+  const more = all.length >= 8 && page < 10;
+  if (page === 1 && !more) { moreBox.replaceChildren(); return; }
+  const last = Math.min(10, more ? Math.max(page + 4, 5) : page);
+  const link = (n, label, rel) => (n === page
+    ? h('span', { class: 'pager-current', 'aria-current': 'page' }, label)
+    : h('a', { class: 'btn btn-small', href: pageUrl(query, tools, n), rel }, label));
+  const items = [];
+  if (page > 1) items.push(link(page - 1, 'Previous', 'prev'));
+  for (let n = 1; n <= last; n++) items.push(link(n, String(n)));
+  if (more) items.push(link(page + 1, 'Next', 'next'));
+  moreBox.replaceChildren(h('nav', { class: 'pager', 'aria-label': 'Results pages' }, items));
+}
+
+// While the search server sleeps, results come from Mwmbl alone. Say so, keep
+// asking the server, and offer its full results when they're ready, rather
+// than swapping the list under the visitor.
+function degradedNotice() {
+  const text = h('span', null, 'Showing reduced results while ', SITE.name, '’s search server wakes up (up to a minute). ');
+  const notice = h('p', { class: 'serp-notice is-waiting', role: 'status' }, text);
+  (async () => {
+    for (let tries = 0; tries < 16 && !abort.signal.aborted; tries++) {
+      await wait(5000);
+      try {
+        const res = await fetch(`${BACKEND.searxngUrl}/healthz`, { signal: abort.signal });
+        if (!res.ok) continue;
+        const fuller = await provider.search(query, searchOptions({ serverTimeout: 10000 }));
+        if (!provider.last.server) continue;
+        const show = h('button', { class: 'btn btn-small', type: 'button' }, 'Show full results');
+        show.addEventListener('click', () => {
+          const kept = applyOperators(fuller, parsed).results;
+          all = tools.sort === 'date' && provider.supports?.dates ? byDate(kept) : kept;
+          list.querySelectorAll('.result').forEach((li) => li.remove());
+          shown = 0;
+          showMore();
+          notice.remove();
+          list.querySelector('.result a')?.focus();
+        });
+        notice.classList.remove('is-waiting');
+        text.replaceChildren('The search server is awake: its full results are ready. ');
+        notice.append(show);
+        return;
+      } catch { /* still asleep */ }
+    }
+    text.replaceChildren('Showing reduced results: ', SITE.name, '’s search server isn’t answering right now.');
+  })();
+  return notice;
 }
 
 function elsewhere() {
@@ -149,6 +226,16 @@ function emptyState() {
       h('li', null, 'or search for a related phrase.')));
 }
 
+// Pages after the first come only from the search server; Mwmbl has one page.
+function laterPagesAsleep() {
+  const retry = h('button', { class: 'btn', type: 'button' }, 'Try again');
+  retry.addEventListener('click', () => location.reload());
+  return h('div', { class: 'serp-error', role: 'alert' },
+    h('p', { class: 'serp-error-title' }, `Page ${page} isn’t available yet.`),
+    h('p', null, `Later pages come from ${SITE.name}’s search server, which is waking up. It takes up to a minute; try again shortly.`),
+    retry);
+}
+
 function errorState(err) {
   const retry = h('button', { class: 'btn', type: 'button' }, 'Try again');
   retry.addEventListener('click', () => location.reload());
@@ -166,18 +253,34 @@ let aboveReady = Promise.resolve();
 
 let answerShown = Promise.resolve(false);
 
+// What every web search on this page asks the provider for.
+function searchOptions(extra = {}) {
+  return {
+    ...ctx,
+    page,
+    time: provider.supports?.timeRange ? tools.time : null,
+    language: tools.lang ?? settings.language ?? 'en',
+    safe: settings.safeSearch ?? 1,
+    rankQuery: plain,
+    verbatim: tools.verbatim,
+    ...extra,
+  };
+}
+
 async function searchWeb() {
   // An answer box that understood the search can say what the web results
   // should be about ("EUR to GBP exchange rate" for "50 euro to pounds").
   let webQuery = query;
-  try { webQuery = found?.mod.webQuery?.(found.args) || query; } catch { /* keep the search */ }
+  if (!tools.verbatim && !parsed.any) {
+    try { webQuery = found?.mod.webQuery?.(found.args) || query; } catch { /* keep the search */ }
+  }
   // A bare word might be a ticker ("aapl") or just a word ("cat"): only once the
   // market card has actually appeared does the search become "aapl stock".
   if (webQuery !== query && found?.args?.bare) {
     const shown = await Promise.race([answerShown, wait(2000).then(() => false)]);
     if (shown !== true) webQuery = query;
   }
-  const results = await provider.search(webQuery, ctx);
+  const results = await provider.search(webQuery, searchOptions({ rankQuery: webQuery === query ? plain : webQuery }));
   if (provider.id === 'webshelf') {
     const { server, left } = provider.last;
     $('#serp-source-note').replaceChildren(
@@ -199,12 +302,15 @@ async function loadResults() {
     if (err.name === 'AbortError') return;
     status.replaceChildren();
     list.replaceChildren();
-    moreBox.replaceChildren(errorState(err));
+    moreBox.replaceChildren(page > 1 && provider.id === 'webshelf' ? laterPagesAsleep() : errorState(err));
     elsewhere();
     return;
   }
   // Time the search itself, not the brief hold below.
   const secs = ((performance.now() - started) / 1000).toFixed(2);
+  const filtered = applyOperators(all, parsed);
+  all = tools.sort === 'date' && provider.supports?.dates ? byDate(filtered.results) : filtered.results;
+  const meta = provider.id === 'webshelf' ? provider.last.meta : null;
   // Hold the list (briefly) until anything that would sit above it is placed,
   // so nothing pushes results down after they've appeared.
   // Topic pages already show their header and photos while waiting, so they
@@ -213,13 +319,27 @@ async function loadResults() {
   // A question's answer is the point of the page, so it gets the whole 4 s.
   const limit = factQ || defQ ? wait(4000) : panelKnown.then(() => wait(topicTitle ? 2500 : 1500));
   await Promise.race([aboveReady, limit, wait(4000)]);
+  // The engines' spelling correction, if they offered one (placed before the
+  // results, so it never pushes them down).
+  const correction = meta?.corrections?.find((c) => c.toLowerCase() !== query.toLowerCase());
+  if (correction && !$('#serp-spell').childElementCount) spelling(correction);
+  const notices = h('div', { class: 'serp-notices' });
+  if (filtered.unmet.length) {
+    notices.append(h('p', { class: 'serp-notice' }, 'No results matched ',
+      filtered.unmet.flatMap((u, i) => [i ? ', ' : '', h('b', null, u)]),
+      '. The search engines Webshelf can reach don’t always support ', filtered.unmet.length > 1 ? 'these operators' : 'this operator',
+      '; try the search without ', filtered.unmet.length > 1 ? 'them' : 'it', '.'));
+  }
+  if (provider.id === 'webshelf' && BACKEND.searxngUrl && !provider.last.server) notices.append(degradedNotice());
+  list.before(notices);
   if (!all.length) {
     status.replaceChildren();
     moreBox.replaceChildren(emptyState());
     elsewhere();
     return;
   }
-  status.replaceChildren('Results for ', h('b', null, query), ` · ${all.length.toLocaleString()} found in ${secs} s`);
+  status.replaceChildren(page > 1 ? `Page ${page} of results for ` : 'Results for ', h('b', null, query),
+    page > 1 ? '' : ` · ${all.length.toLocaleString()} found in ${secs} s`);
   list.replaceChildren();
   shown = 0;
   showMore();
@@ -425,14 +545,22 @@ function spelling(suggestion) {
 async function related() {
   if (!getSettings().suggestions) return;
   await resultsReady;
-  const titles = await wiki.completions(query, { limit: 10, signal: abort.signal });
   const lower = query.toLowerCase();
-  // Wikipedia's prefix search ignores spaces ("roll a die" finds "rolla"), so keep true completions only.
-  const items = [...new Set(titles.map((t) => t.toLowerCase()))].filter((t) => t !== lower && t.startsWith(`${lower} `)).slice(0, 8);
+  // The engines' related searches (Bing's, through the server) when there are
+  // some; otherwise Wikipedia titles that extend the search.
+  const fromEngines = (provider.id === 'webshelf' ? provider.last.meta?.suggestions : []) ?? [];
+  let items = [...new Set(fromEngines.map((t) => t.toLowerCase()))].filter((t) => t !== lower).slice(0, 8);
+  if (items.length < 2) {
+    const titles = await wiki.completions(query, { limit: 10, signal: abort.signal });
+    // Wikipedia's prefix search ignores spaces ("roll a die" finds "rolla"), so keep true completions only.
+    items = [...new Set(titles.map((t) => t.toLowerCase()))].filter((t) => t !== lower && t.startsWith(`${lower} `)).slice(0, 8);
+  }
   if (items.length < 2) return;
+  // Bold what each suggestion adds to the search, as Google did.
+  const words = new Set(lower.split(/\s+/));
   const section = $('#serp-related');
   section.querySelector('.related-list').replaceChildren(...items.map((t) =>
-    h('li', null, h('a', { href: searchUrl(t) }, t.slice(0, lower.length), h('b', null, t.slice(lower.length))))));
+    h('li', null, h('a', { href: searchUrl(t) }, t.split(/(\s+)/).map((w) => (words.has(w) || !w.trim() ? w : h('b', null, w)))))));
   section.hidden = false;
 }
 
@@ -778,7 +906,12 @@ function fillArtist(artist, { summary, details }) {
 
 /* Go ------------------------------------------------------------------ */
 
-if (query) {
+if (query && page > 1) {
+  // Answers, topic panels, questions and images belong to the first page.
+  panelDecided(); worksDecided(); questionsDecided(); imagesDecided();
+  loadResults();
+  related().catch(() => {});
+} else if (query) {
   // MusicBrainz is slow (about two seconds for a band), so its lookup starts
   // now, alongside everything else; the ranking and band panel reuse it.
   if (query.trim().split(/\s+/).length <= 5 && !looksLikeQuestion(query)) musicArtist(query, ctx);

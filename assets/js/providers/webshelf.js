@@ -46,15 +46,30 @@ export default {
   about: 'Results from Bing (through our search server) and Mwmbl, merged and ranked by Webshelf using open signals: agreement between engines, how widely used a site is, how well its title matches, and the official website of what you searched for.',
   home: 'settings.html#ranking',
   verticals: ['all'],
-  // Set after each search, for the page footer.
-  last: { server: false, left: 0 },
+  // What the engines behind the server can do. SearXNG's Bing connector can't
+  // fetch later pages or filter by date (Bing needs JavaScript for both), and
+  // the engines that can (Google, Brave, DuckDuckGo, Startpage) block the
+  // server. With a time range set, SearXNG drops every engine that can't
+  // filter, which is all of them. Turn these on if a capable engine is added;
+  // the page numbers, time ranges and date sort are built and wait on them.
+  supports: { pages: false, timeRange: false, dates: false },
+  // Set after each search, for the page: whether the server answered, how many
+  // AI-farm results were left out, and the engines' corrections and suggestions.
+  last: { server: false, left: 0, meta: { corrections: [], suggestions: [] } },
 
+  // ctx: { signal, page, time, language, safe, serverTimeout, rankQuery, verbatim }
+  // rankQuery is the search without operators (site:, "quotes", -words), for
+  // ranking and for looking up official sites; the engines get the whole query.
   async search(query, ctx = {}) {
-    const official = officialSites(query, ctx);
+    const page = ctx.page ?? 1;
+    const rankQuery = ctx.rankQuery ?? query;
+    // Official sites belong to the first page, and not to verbatim searches.
+    const official = page === 1 && !ctx.verbatim ? officialSites(rankQuery, ctx) : Promise.resolve([]);
     const fromServer = BACKEND.searxngUrl
-      ? searxng.search(query, { ...ctx, timeout: 4500 }).then((r) => (r.length ? r : null)).catch(() => null)
+      ? searxng.search(query, { ...ctx, timeout: ctx.serverTimeout ?? 4500 }).then((r) => (r.length ? r : null)).catch(() => null)
       : Promise.resolve(null);
-    const fromMwmbl = mwmbl.search(query, ctx).catch(() => null);
+    // Mwmbl has one page of results, so it only stands in on the first.
+    const fromMwmbl = page === 1 ? mwmbl.search(query, ctx).catch(() => null) : Promise.resolve(null);
 
     // The server already includes Mwmbl, so Mwmbl alone is only used without it.
     const server = await fromServer;
@@ -67,11 +82,11 @@ export default {
 
     const sites = await Promise.race([official, wait(2500).then(() => [])]);
     const host = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; } };
-    const { results, left } = await rank(query, lists, { officialHosts: sites.map((s) => host(s.url)) });
-    this.last = { server: Boolean(server), left };
+    const { results, left } = await rank(rankQuery, lists, { officialHosts: sites.map((s) => host(s.url)) });
+    this.last = { server: Boolean(server), left, meta: server?.meta ?? { corrections: [], suggestions: [] } };
     // An official site no engine found still belongs first: add it, credited to
     // the open database that names it.
-    const missing = sites.filter((s) => !results.some((r) => host(r.url) === host(s.url)))
+    const missing = page > 1 ? [] : sites.filter((s) => !results.some((r) => host(r.url) === host(s.url)))
       .map((s) => ({
         url: s.url,
         title: [{ text: `${s.name} – official website`, bold: false }],
@@ -82,6 +97,7 @@ export default {
       url: r.url,
       title: r.title,
       snippet: r.snippet ?? [],
+      date: r.date ?? null,
       source: `Found by ${r.engines.map((e) => sourceNames[e] ?? e).join(' and ')}, ranked by Webshelf`,
     })));
   },

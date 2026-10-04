@@ -14,6 +14,8 @@ export const DEFAULTS = {
   tempUnit: 'auto',        // 'auto' | 'c' | 'f'
   theme: 'auto',           // 'auto' | 'light' | 'dark'
   home: null,              // { name, lat, lon, tz }
+  safeSearch: 1,           // 0 off | 1 moderate | 2 strict
+  language: 'en',          // results language, a SearXNG language code
 };
 
 function read(key, fallback) {

@@ -551,3 +551,61 @@
 .carousel-credit { margin-top: 4px; color: var(--meta); font-family: var(--font-ui); font-size: var(--text-xs); }
 /* A lone tile centres its fact rather than leaving the lower half empty. */
 .hero-tile:only-child { display: flex; flex-direction: column; justify-content: center; }
+
+/* Tools (time range, language, sort, verbatim) ------------------------------ */
+
+.tools-toggle { margin-left: auto; cursor: pointer; }
+.tools-toggle[aria-expanded="true"] { background: var(--pressed); box-shadow: inset 1px 1px 0 var(--bevel-lo); }
+.search-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px var(--page-margin) 10px calc(var(--page-margin) + 186px + 28px);
+  border-bottom: 1px solid var(--bevel-lo);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+.search-tools[hidden] { display: none; }
+/* Same height empty or filled, so filling it moves nothing. */
+.search-tools { min-height: 53px; box-sizing: border-box; }
+.tools-select { width: auto; min-height: 32px; padding: 2px 6px; font-family: var(--font-ui); font-size: var(--text-sm); }
+.tools-check { display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 759px) {
+  .search-tools { padding-left: var(--page-margin); }
+}
+
+/* Notices above results: unmet operators, reduced results ------------------ */
+
+.serp-notices:empty { display: none; }
+.serp-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 8px 12px;
+  background: var(--plate);
+  border: 1px solid var(--bevel-lo);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+.serp-notice.is-waiting::before { content: ""; width: 10px; height: 10px; border: 2px solid var(--meta); border-right-color: transparent; border-radius: 50%; animation: notice-spin 900ms linear infinite; }
+@keyframes notice-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .serp-notice.is-waiting::before { animation: none; } }
+
+/* Numbered pages ------------------------------------------------------------ */
+
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 30px; font-family: var(--font-ui); }
+.pager .btn { min-width: 36px; }
+.pager-current {
+  display: inline-grid;
+  place-items: center;
+  min-width: 36px;
+  min-height: 30px;
+  padding: 0 10px;
+  background: var(--pressed);
+  border: 2px solid;
+  border-color: var(--bevel-deep) var(--bevel-hi) var(--bevel-hi) var(--bevel-deep);
+  font-weight: 700;
+}

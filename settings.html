@@ -64,9 +64,25 @@
 
       <fieldset class="setting">
         <legend class="setting-label">Where web results come from</legend>
-        <p class="setting-help">Webshelf’s permanent results source isn’t chosen yet. These are stand-ins.</p>
+        <p class="setting-help">Webshelf ranking merges the search engines’ results. The others show a single source on its own, in its own order.</p>
         <div class="setting-options" id="provider-options"></div>
       </fieldset>
+
+      <fieldset class="setting">
+        <legend class="setting-label">Safe search</legend>
+        <p class="setting-help">Filters explicit results, where the search engines support it.</p>
+        <div class="setting-options setting-inline">
+          <label class="radio"><input type="radio" name="safeSearch" value="0"> Off</label>
+          <label class="radio"><input type="radio" name="safeSearch" value="1"> Moderate</label>
+          <label class="radio"><input type="radio" name="safeSearch" value="2"> Strict</label>
+        </div>
+      </fieldset>
+
+      <div class="setting">
+        <label class="setting-label" for="opt-language">Results language</label>
+        <p class="setting-help">Asks the engines for results in this language. (They choose the country from where Webshelf’s search server is, in the US.) You can change it for one search with Tools.</p>
+        <select class="field" id="opt-language"></select>
+      </div>
 
       <div class="setting">
         <label class="check"><input type="checkbox" id="opt-newtab" data-setting="newTab"> Open results in a new tab</label>
