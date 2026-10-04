@@ -204,6 +204,18 @@ export function match(query) {
 
 /* Card --------------------------------------------------------------- */
 
+// What the web results should be about: "10 miles in km" as a search finds
+// pages about the number 10; "mile to kilometre conversion" finds converters.
+// Bing finds converters best for "convert miles to kilometers": plural, US spelling.
+export function webQuery({ cat, from, to }) {
+  const name = (id) => {
+    const word = unitDef(cat, id)[1].toLowerCase().replace(/metre/g, 'meter').replace(/litre/g, 'liter');
+    if (cat === 'temperature') return word;
+    return { foot: 'feet', inch: 'inches' }[word] ?? (/s$/.test(word) ? word : `${word}s`);
+  };
+  return `convert ${name(from)} to ${name(to)}`;
+}
+
 export function render({ cat, from, to, amount }) {
   let state = { cat, from, to };
 

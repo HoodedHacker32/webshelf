@@ -30,7 +30,7 @@ Hosted as a static GitHub Pages site on a `github.io` subdomain (no custom domai
 | Ranking | Webshelf ranks results itself (`assets/js/rank.js`, rules only, no AI): engine agreement (reciprocal-rank fusion), Tranco top-50,000 popularity, all-words and title match, navigational addresses, and the official website from Wikidata or MusicBrainz (added first if no engine found it). AI content farms (HUGE AI Blocklist) are left out. Lists refresh with `tools/update_lists.py`. |
 | Bands | MusicBrainz panel (official site, Listen, Profiles) when Wikipedia has no article. |
 | Posters | TV from TVmaze by IMDb id; films use the poster image Wikipedia's article uses. No keys or accounts. |
-| Tabs | All, Images (Openverse, Commons fallback), Videos (YouTube links via Mwmbl, Dailymotion, PeerTube via SepiaSearch, Internet Archive). |
+| Tabs | All, Images (server: Bing Images, Openverse, Commons; "Free to reuse" filter uses Openverse directly), Videos (server: Bing Videos incl. YouTube, Dailymotion, PeerTube, Vimeo; Internet Archive by title; direct sources if the server sleeps). |
 | Results backend | Our own SearXNG server on Oracle Cloud's Always Free tier, behind Caddy (`server/`, walkthrough in `server/README.md`). Until `BACKEND_URL` is set in `assets/js/config.js`, the site uses Mwmbl directly. |
 
 ### Font notes (SIL OFL 1.1; not legal advice)

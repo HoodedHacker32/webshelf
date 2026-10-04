@@ -549,3 +549,5 @@
   .questions-title { font-size: var(--text-md); }
 }
 .carousel-credit { margin-top: 4px; color: var(--meta); font-family: var(--font-ui); font-size: var(--text-xs); }
+/* A lone tile centres its fact rather than leaving the lower half empty. */
+.hero-tile:only-child { display: flex; flex-direction: column; justify-content: center; }

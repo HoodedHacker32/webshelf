@@ -63,6 +63,11 @@ const RANGES = [
 
 const isoDay = (d) => d.toISOString().slice(0, 10);
 
+// Web results about the exchange rate, not the number in the search.
+export function webQuery({ from, to }) {
+  return `${from} to ${to} exchange rate`;
+}
+
 export async function render({ from, to, amount }, { signal }) {
   const [names, latest] = await Promise.all([
     getJSON(`${API}/currencies`, { signal }),

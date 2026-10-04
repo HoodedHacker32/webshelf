@@ -1,16 +1,19 @@
-// Images tab: openly licensed images from Openverse (Flickr, Wikimedia Commons,
-// museums and more), with Wikimedia Commons as a fallback. Keyless and
-// CORS-enabled. Every image shows its creator and licence in the viewer.
+// Images tab. By default our search server's image search (Bing Images,
+// Openverse and Wikimedia Commons, merged). "Free to reuse" searches only
+// openly licensed images, from Openverse directly, with each image's creator
+// and licence; it's also the fallback while the server is asleep.
 
 import { h, svg, $, getJSON, hostOf } from './dom.js';
 import { icon } from './icons.js';
 import { setupPage } from './page.js';
+import { BACKEND, searchUrl } from './config.js';
 import * as wiki from './wiki.js';
+import { parseQuestion, parseDefinition } from './qa.js';
 
 const { query, ctx, track, target } = setupPage({
   page: 'images.html',
   title: 'Images',
-  sources: [['Openverse', 'https://openverse.org'], ['Wikimedia Commons', 'https://commons.wikimedia.org']],
+  sources: [['Bing Images', 'https://www.bing.com/images'], ['Openverse', 'https://openverse.org'], ['Wikimedia Commons', 'https://commons.wikimedia.org']],
 });
 
 const grid = $('#results');
@@ -18,14 +21,48 @@ const status = $('#serp-status');
 const moreBox = $('#serp-more');
 const viewer = $('#viewer');
 const items = [];
+const free = new URLSearchParams(location.search).get('rights') === 'free';
 let page = 0;
 let total = 0;
-let fallback = false;
+let mode = free || !BACKEND.searxngUrl ? 'openverse' : 'server';
+
+// A question searches for its subject: "how tall is the eiffel tower" ->
+// "eiffel tower", the way the answer box reads it.
+const STOP = new Set(['how', 'what', 'who', 'when', 'where', 'why', 'is', 'are', 'was', 'were', 'does', 'do', 'did', 'the', 'a', 'an', 'of', 'to', 'in', 'pictures', 'picture', 'photos', 'photo', 'images', 'image']);
+const subject = parseQuestion(query)?.subject ?? parseDefinition(query)?.subject
+  ?? (query.split(/\s+/).filter((w) => !STOP.has(w.toLowerCase())).join(' ') || query);
+
+// Like Google's "Usage rights": everything, or only images free to reuse.
+grid.before(h('nav', { class: 'image-filters', 'aria-label': 'Usage rights' },
+  [['All images', null], ['Free to reuse', 'free']].map(([label, rights]) => h('a', {
+    class: 'btn btn-small', href: `${searchUrl(query, 'images.html')}${rights ? `&rights=${rights}` : ''}`,
+    'aria-current': (rights === 'free') === free ? 'page' : null,
+  }, label))));
 
 const LICENCES = { cc0: 'CC0 (public domain)', pdm: 'Public domain', by: 'CC BY', 'by-sa': 'CC BY-SA', 'by-nd': 'CC BY-ND', 'by-nc': 'CC BY-NC', 'by-nc-sa': 'CC BY-NC-SA', 'by-nc-nd': 'CC BY-NC-ND' };
 
+async function fromServer(n) {
+  const data = await getJSON(`${BACKEND.searxngUrl}/search?q=${encodeURIComponent(subject)}&format=json&categories=images&language=en&safesearch=1&pageno=${n}`, { ...ctx, timeout: 8000 });
+  const size = (text) => String(text ?? '').match(/(\d+)\s*[x×\u00d7]\s*(\d+)/);
+  return (data.results ?? []).filter((r) => r.img_src && /^https?:/.test(r.img_src)).map((r) => {
+    const dims = size(r.resolution);
+    const commons = /wikimedia\.org/.test(r.url ?? '');
+    return {
+      title: r.title || 'Untitled',
+      thumb: r.thumbnail_src || r.img_src,
+      full: r.img_src,
+      page: r.url || r.img_src,
+      w: dims ? Number(dims[1]) : 4,
+      h: dims ? Number(dims[2]) : 3,
+      creator: r.author || null,
+      licence: commons ? 'See the file page for its licence' : 'Reuse rights unknown: check the source',
+      licenceUrl: commons ? r.url : null,
+    };
+  });
+}
+
 async function openverse(n) {
-  const data = await getJSON(`https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&page_size=20&page=${n}&mature=false`, { ...ctx, timeout: 10000 });
+  const data = await getJSON(`https://api.openverse.org/v1/images/?q=${encodeURIComponent(subject)}&page_size=20&page=${n}&mature=false`, { ...ctx, timeout: 10000 });
   total = data.result_count ?? 0;
   return (data.results ?? []).map((r) => ({
     title: r.title || 'Untitled',
@@ -38,14 +75,13 @@ async function openverse(n) {
     creatorUrl: r.creator_url,
     licence: `${LICENCES[r.license] ?? r.license?.toUpperCase()}${r.license_version && !['cc0', 'pdm'].includes(r.license) ? ` ${r.license_version}` : ''}`,
     licenceUrl: r.license_url,
-    source: r.source,
   }));
 }
 
 async function commons() {
-  const list = await wiki.commonsImages(query, { ...ctx, limit: 50 });
+  const list = await wiki.commonsImages(subject, { ...ctx, limit: 50 });
   total = list.length;
-  return list.map((r) => ({ title: r.title, thumb: r.thumb, full: r.thumb, page: r.page, w: r.w || 4, h: r.h || 3, creator: null, licence: 'See the file page', licenceUrl: r.page, source: 'wikimedia' }));
+  return list.map((r) => ({ title: r.title, thumb: r.thumb, full: r.thumb, page: r.page, w: r.w || 4, h: r.h || 3, creator: null, licence: 'See the file page for its licence', licenceUrl: r.page }));
 }
 
 // Justified rows: each tile grows in proportion to its shape, so a row's
@@ -73,13 +109,21 @@ async function load() {
   page += 1;
   moreBox.replaceChildren();
   let batch = [];
+  const seen = new Set(items.map((i) => i.full));
   try {
-    batch = fallback ? [] : await track(openverse(page));
+    if (mode === 'server') {
+      batch = await track(fromServer(page));
+      if (!batch.length && page === 1) throw new Error('No images from the server');
+    } else if (mode === 'openverse') {
+      batch = await track(openverse(page));
+    }
   } catch (err) {
     if (err.name === 'AbortError') return;
-    // Openverse limits anonymous use; Commons carries on when it says no.
-    if (page === 1) { fallback = true; batch = await track(commons()).catch(() => []); }
+    // Server asleep: Openverse. Openverse refusing (it limits anonymous use): Commons.
+    if (page === 1 && mode === 'server') { mode = 'openverse'; page = 0; return load(); }
+    if (page === 1 && mode === 'openverse') { mode = 'commons'; batch = await track(commons()).catch(() => []); }
   }
+  batch = batch.filter((i) => !seen.has(i.full) && seen.add(i.full));
   const start = items.length;
   items.push(...batch);
   grid.append(...batch.map((item, i) => tile(item, start + i)));
@@ -87,11 +131,13 @@ async function load() {
     status.replaceChildren('No images found for ', h('b', null, query), '. Try fewer or different words.');
     return;
   }
-  status.replaceChildren('Images for ', h('b', null, query), ` · ${total.toLocaleString()} openly licensed`);
-  if (!fallback && batch.length && items.length < total) {
-    const more = h('button', { class: 'btn more-btn', type: 'button' }, 'More images');
-    more.addEventListener('click', () => load());
-    moreBox.replaceChildren(h('div', { class: 'more-row' }, more));
+  status.replaceChildren('Images for ', h('b', null, query),
+    mode === 'server' ? '' : ` · ${total.toLocaleString()} openly licensed`);
+  const more = mode === 'server' ? batch.length > 0 && page < 5 : mode === 'openverse' && batch.length && items.length < total;
+  if (more) {
+    const button = h('button', { class: 'btn more-btn', type: 'button' }, 'More images');
+    button.addEventListener('click', () => load());
+    moreBox.replaceChildren(h('div', { class: 'more-row' }, button));
   }
 }
 

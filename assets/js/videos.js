@@ -1,16 +1,17 @@
-// Videos tab: one list drawn from several free, keyless sources, taking turns
-// so no single site fills the page. YouTube links come from the web index
-// (Mwmbl); Dailymotion, PeerTube (through SepiaSearch) and the Internet
-// Archive are searched directly.
+// Videos tab. Our search server (Bing Videos, which covers YouTube, plus
+// Dailymotion and PeerTube) leads; the Internet Archive takes a turn too. If the
+// server is asleep, Dailymotion, PeerTube and YouTube links from Mwmbl are
+// searched directly instead.
 
 import { h, svg, $, getJSON, hostOf } from './dom.js';
 import { icon } from './icons.js';
 import { setupPage } from './page.js';
+import { BACKEND } from './config.js';
 
 const { query, ctx, track, target } = setupPage({
   page: 'videos.html',
   title: 'Videos',
-  sources: [['Mwmbl', 'https://mwmbl.org'], ['Dailymotion', 'https://www.dailymotion.com'], ['SepiaSearch', 'https://sepiasearch.org'], ['the Internet Archive', 'https://archive.org']],
+  sources: [['Bing Videos', 'https://www.bing.com/videos'], ['Mwmbl', 'https://mwmbl.org'], ['Dailymotion', 'https://www.dailymotion.com'], ['SepiaSearch', 'https://sepiasearch.org'], ['the Internet Archive', 'https://archive.org']],
 });
 
 const list = $('#results');
@@ -32,9 +33,47 @@ const youtubeId = (url) => {
   return null;
 };
 
+// "11:59" or "105.0" (seconds) -> seconds.
+const seconds = (text) => {
+  const t = String(text ?? '');
+  if (t.includes(':')) return t.split(':').map(Number).reduce((a, v) => a * 60 + v, 0);
+  const n = Number(t);
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
+const SITES = { 'youtube.com': 'YouTube', 'youtu.be': 'YouTube', 'dailymotion.com': 'Dailymotion', 'vimeo.com': 'Vimeo', 'archive.org': 'Internet Archive' };
+const siteOf = (url) => {
+  const host = hostOf(url);
+  return Object.entries(SITES).find(([d]) => host === d || host.endsWith(`.${d}`))?.[1] ?? host;
+};
+
+// Words that carry the search, for checking a result is really about it.
+const STOP = new Set(['a', 'an', 'the', 'to', 'in', 'of', 'on', 'at', 'by', 'for', 'and', 'or', 'is', 'how', 'what', 'video', 'videos']);
+const meaningful = query.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 1 && !STOP.has(w));
+
 const SOURCES = [
   {
+    name: 'Webshelf search server',
+    pages: 3,
+    share: 3, // results per turn: it's the best source
+    lead: true,
+    async fetch(page) {
+      if (!BACKEND.searxngUrl) return [];
+      const data = await getJSON(`${BACKEND.searxngUrl}/search?q=${q}&format=json&categories=videos&language=en&safesearch=1&pageno=${page}`, { ...ctx, timeout: 8000 });
+      return (data.results ?? []).filter((r) => /^https?:\/\//.test(r.url ?? '')).map((r) => ({
+        url: r.url,
+        title: clean(r.title),
+        snippet: clean(r.content),
+        thumb: r.thumbnail || r.thumbnail_src || null,
+        duration: seconds(r.length),
+        channel: r.author || null,
+        date: r.publishedDate && r.publishedDate !== 'None' ? new Date(r.publishedDate) : null,
+        site: siteOf(r.url),
+      }));
+    },
+  },
+  {
     name: 'YouTube',
+    backup: true,
     pages: 1, // the web index returns one page
     async fetch() {
       const data = await getJSON(`https://api.mwmbl.org/api/v1/search/?s=${encodeURIComponent(`${query} youtube`)}`, { ...ctx, timeout: 10000 });
@@ -50,6 +89,7 @@ const SOURCES = [
   },
   {
     name: 'Dailymotion',
+    backup: true,
     pages: 5,
     async fetch(page) {
       const fields = 'id,title,thumbnail_360_url,duration,owner.screenname,created_time,url,description';
@@ -62,6 +102,7 @@ const SOURCES = [
   },
   {
     name: 'PeerTube',
+    backup: true,
     pages: 5,
     async fetch(page) {
       const data = await getJSON(`https://sepiasearch.org/api/v1/search/videos?search=${q}&start=${(page - 1) * 10}&count=10&nsfw=false`, ctx);
@@ -76,7 +117,7 @@ const SOURCES = [
     pages: 5,
     async fetch(page) {
       const fl = ['identifier', 'title', 'description', 'date', 'creator', 'runtime'].map((f) => `fl[]=${f}`).join('&');
-      const data = await getJSON(`https://archive.org/advancedsearch.php?q=${encodeURIComponent(`(${query}) AND mediatype:movies`)}&${fl}&sort[]=downloads+desc&rows=8&page=${page}&output=json`, ctx);
+      const data = await getJSON(`https://archive.org/advancedsearch.php?q=${encodeURIComponent(`title:(${meaningful.join(' AND ') || query}) AND mediatype:movies`)}&${fl}&sort[]=downloads+desc&rows=8&page=${page}&output=json`, ctx);
       return (data.response?.docs ?? []).map((d) => {
         // Runtimes look like "00:23:41" (or are missing, or prose).
         const parts = String(d.runtime ?? '').split(':').map(Number);
@@ -144,9 +185,12 @@ function card(v) {
 const state = SOURCES.map((s) => ({ ...s, page: 0, queue: [], done: false }));
 const seen = new Set();
 let shownCount = 0;
+let serverDown = false;
+let shownFromServer = false;
 
 async function refill() {
   await Promise.all(state.map(async (s) => {
+    if (s.backup && !serverDown) return;
     if (s.done || s.queue.length >= 4) return;
     s.page += 1;
     try {
@@ -158,6 +202,14 @@ async function refill() {
       if (err.name !== 'AbortError') { s.done = true; console.warn(`${s.name} videos unavailable:`, err.message); }
     }
   }));
+  // The server answered: the direct copies of its sources aren't needed.
+  const lead = state.find((s) => s.lead);
+  if (!serverDown && lead.done && !lead.queue.length && !shownFromServer) {
+    // Asleep, failing or not set up: the backups take over.
+    serverDown = true;
+    await refill();
+  }
+  if (lead.queue.length) shownFromServer = true;
 }
 
 async function showMore(count = 12) {
@@ -166,8 +218,10 @@ async function showMore(count = 12) {
   const batch = [];
   while (batch.length < count && state.some((s) => s.queue.length)) {
     for (const s of state) {
-      const v = s.queue.shift();
-      if (v && !seen.has(v.url)) { seen.add(v.url); batch.push(v); }
+      for (let i = 0; i < (s.share ?? 1) && batch.length < count; i += 1) {
+        const v = s.queue.shift();
+        if (v && !seen.has(v.url)) { seen.add(v.url); batch.push(v); }
+      }
       if (batch.length >= count) break;
     }
   }

@@ -156,12 +156,12 @@ function formatValue(dv, labels, withAge) {
 export async function commonsImages(query, { signal, limit = 10 } = {}) {
   const params = new URLSearchParams({
     action: 'query', format: 'json', origin: '*', generator: 'search', gsrsearch: query,
-    gsrnamespace: 6, gsrlimit: limit, prop: 'imageinfo', iiprop: 'url|mime', iiurlwidth: 250,
+    gsrnamespace: 6, gsrlimit: limit, prop: 'imageinfo', iiprop: 'url|mime|size', iiurlwidth: 250,
   });
   const data = await getJSON(`https://commons.wikimedia.org/w/api.php?${params}`, { signal, timeout: 6000 });
   return Object.values(data?.query?.pages ?? {})
     .sort((a, b) => a.index - b.index)
     .map((p) => ({ title: p.title.replace(/^File:/, '').replace(/\.[a-z0-9]+$/i, ''), info: p.imageinfo?.[0] }))
     .filter((p) => p.info?.thumburl && /^image\/(jpeg|png|webp|gif)$/.test(p.info.mime))
-    .map((p) => ({ title: p.title, thumb: p.info.thumburl, page: p.info.descriptionurl, w: p.info.thumbwidth, h: p.info.thumbheight, mime: p.info.mime }));
+    .map((p) => ({ title: p.title, thumb: p.info.thumburl, page: p.info.descriptionurl, w: p.info.thumbwidth, h: p.info.thumbheight, mime: p.info.mime, originalWidth: p.info.width }));
 }

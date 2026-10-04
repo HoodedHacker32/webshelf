@@ -2,8 +2,8 @@
 // related searches. Each part loads on its own so one slow source never holds
 // up the others.
 
-import { SITE, searchUrl } from './config.js';
-import { h, svg, $, hostOf } from './dom.js';
+import { SITE, BACKEND, searchUrl } from './config.js';
+import { h, svg, $, hostOf, getJSON } from './dom.js';
 import { getSettings, addHistory } from './store.js';
 import { createSearchbox } from './searchbox.js';
 import { currentProvider, PROVIDERS } from './providers/index.js';
@@ -162,8 +162,20 @@ function errorState(err) {
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let aboveReady = Promise.resolve();
 
+let answerShown = Promise.resolve(false);
+
 async function searchWeb() {
-  const results = await provider.search(query, ctx);
+  // An answer box that understood the search can say what the web results
+  // should be about ("EUR to GBP exchange rate" for "50 euro to pounds").
+  let webQuery = query;
+  try { webQuery = found?.mod.webQuery?.(found.args) || query; } catch { /* keep the search */ }
+  // A bare word might be a ticker ("aapl") or just a word ("cat"): only once the
+  // market card has actually appeared does the search become "aapl stock".
+  if (webQuery !== query && found?.args?.bare) {
+    const shown = await Promise.race([answerShown, wait(2000).then(() => false)]);
+    if (shown !== true) webQuery = query;
+  }
+  const results = await provider.search(webQuery, ctx);
   if (provider.id === 'webshelf') {
     const { server, left } = provider.last;
     $('#serp-source-note').replaceChildren(
@@ -366,18 +378,34 @@ async function factOrDefinition() {
 
 /* Images -------------------------------------------------------------- */
 
+// Images like Google's image row: Bing Images through our server, each opening
+// the Images tab; Wikimedia Commons (linked to each file) if the server is asleep.
+async function serverImages() {
+  if (!BACKEND.searxngUrl) return [];
+  const data = await getJSON(`${BACKEND.searxngUrl}/search?q=${encodeURIComponent(query)}&format=json&categories=images&language=en&safesearch=1`, { ...ctx, timeout: 4000 });
+  const size = (text) => String(text ?? '').match(/(\d+)\s*[x××]\s*(\d+)/);
+  return (data.results ?? []).filter((r) => r.thumbnail_src || r.img_src).slice(0, 12).map((r) => {
+    const dims = size(r.resolution);
+    return { title: r.title || query, thumb: r.thumbnail_src || r.img_src, page: searchUrl(query, 'images.html'), w: dims ? Number(dims[1]) : null, h: dims ? Number(dims[2]) : null, own: true };
+  });
+}
+
 async function loadImages() {
-  let images;
-  try { images = await wiki.commonsImages(query, ctx); } catch { return; }
+  let images = await imagesEarly;
+  if (images.length < 3) {
+    try { images = await wiki.commonsImages(query, ctx); } catch { return; }
+  }
   if (images.length < 3) return;
   const strip = $('#serp-images');
   const slot = h('li', { class: 'result-images' }, strip);
   strip.replaceChildren(
-    h('div', { class: 'image-strip-list' }, images.map((img) => h('a', { href: img.page, target: target(), rel: 'noreferrer', title: img.title },
+    h('div', { class: 'image-strip-list' }, images.map((img) => h('a', { href: img.page, target: img.own ? null : target(), rel: 'noreferrer', title: img.title },
       h('img', { src: img.thumb, alt: img.title, loading: 'lazy', referrerpolicy: 'no-referrer', height: '110',
         width: img.w && img.h ? String(Math.min(220, Math.round((img.w * 110) / img.h))) : null })))),
     h('p', { class: 'image-strip-more' },
-      h('a', { href: `https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(query)}&title=Special:MediaSearch&type=image`, rel: 'noreferrer' }, 'More images on Wikimedia Commons')));
+      images[0].own
+        ? h('a', { href: searchUrl(query, 'images.html') }, `More images for ${query}`)
+        : h('a', { href: `https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(query)}&title=Special:MediaSearch&type=image`, rel: 'noreferrer' }, 'More images on Wikimedia Commons')));
   strip.hidden = false;
   placeInList(slot, 3);
 }
@@ -521,7 +549,9 @@ async function fillTopic(title, ent, panel, subject) {
     if (img.mime !== 'image/jpeg' || /signature|autograph|logo|map|flag|coat of arms/i.test(img.title)) continue;
     if (seenFiles.has(fileOf(img.thumb))) continue;
     seenFiles.add(fileOf(img.thumb));
-    photos.push(img.thumb);
+    // Commons serves 500px as a standard size; 250px looks soft in the header.
+    // (Only for originals at least that wide: Commons won't scale up.)
+    photos.push(img.originalWidth >= 500 ? img.thumb.replace(/\/250px-/, '/500px-') : img.thumb);
   }
   const tiles = data?.tiles ?? [];
   if (!photos.length && !tiles.length) {
@@ -649,6 +679,10 @@ let panelDecided;
 const panelKnown = new Promise((resolve) => { panelDecided = resolve; });
 let worksDecided;
 const worksKnown = new Promise((resolve) => { worksDecided = resolve; });
+let imagesDecided;
+const imagesKnown = new Promise((resolve) => { imagesDecided = resolve; });
+// The image row's request starts with the page, so it's usually ready with the results.
+let imagesEarly = Promise.resolve([]);
 let questionsDecided;
 const questionsKnown = new Promise((resolve) => { questionsDecided = resolve; });
 
@@ -747,14 +781,19 @@ if (query) {
   // now, alongside everything else; the ranking and band panel reuse it.
   if (query.trim().split(/\s+/).length <= 5 && !looksLikeQuestion(query)) musicArtist(query, ctx);
   const answering = loadAnswer();
+  answerShown = answering;
   loadWiki(answering);
   // Anything that sits above the results (an instant answer, the topic header)
   // is placed before the results show.
   // On topic pages the works carousels join them, so they go in with the results.
-  aboveReady = Promise.allSettled([answering, panelKnown, worksKnown, questionsKnown]);
+  if (!looksLikeQuestion(query)) imagesEarly = serverImages().catch(() => []);
+  aboveReady = Promise.allSettled([answering, panelKnown, worksKnown, questionsKnown, imagesKnown]);
   loadResults();
   // Images rarely answer a question, so the strip is for plain searches only.
-  Promise.all([answering, panelKnown]).then(([answered]) => { if (!answered && !topicTitle && !looksLikeQuestion(query)) loadImages(); });
+  Promise.all([answering, panelKnown]).then(([answered]) => {
+    if (!answered && !topicTitle && !looksLikeQuestion(query)) loadImages().finally(imagesDecided);
+    else imagesDecided();
+  });
   related().catch(() => {});
 }
 

@@ -230,6 +230,12 @@ async function renderCoin({ id }, signal) {
   });
 }
 
+// Web results about the share or coin: "aapl stock" finds finance pages,
+// where "aapl" alone finds aapl.org.
+export function webQuery(args) {
+  return args.kind === 'coin' ? `${args.id.replace(/-/g, ' ')} price` : `${args.text} stock`;
+}
+
 export async function render(args, { signal }) {
   return args.kind === 'coin' ? renderCoin(args, signal) : renderShare(args, signal);
 }

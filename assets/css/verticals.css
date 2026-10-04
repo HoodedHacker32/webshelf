@@ -104,3 +104,12 @@
   .viewer { width: 100vw; max-height: 100vh; height: 100vh; border: 0; }
   .viewer-image { max-height: calc(100vh - 300px); }
 }
+
+/* Usage rights: All images / Free to reuse. The current one is pressed in. */
+.image-filters { display: flex; gap: 6px; margin: -4px 0 14px; padding-left: calc(var(--lead-in) - var(--page-margin)); }
+.image-filters .btn[aria-current="page"] {
+  background: var(--pressed);
+  border-color: var(--bevel-deep) var(--bevel-hi) var(--bevel-hi) var(--bevel-deep);
+  box-shadow: inset 1px 1px 0 var(--bevel-lo);
+  font-weight: 700;
+}

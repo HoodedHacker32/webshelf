@@ -60,9 +60,37 @@ async function inTurn(url, run) {
   }
 }
 
+// Answers from these slow-changing, rate-limited sources are kept for the
+// browser session (this tab only), so going back or searching a related
+// thing doesn't ask again. Small answers only; storage may be unavailable.
+const KEEP = new Set(['en.wikipedia.org', 'www.wikidata.org', 'commons.wikimedia.org', 'musicbrainz.org']);
+const KEEP_FOR = 30 * 60 * 1000;
+const kept = (url) => {
+  try {
+    if (!KEEP.has(new URL(url).hostname)) return undefined;
+    const entry = JSON.parse(sessionStorage.getItem(`ws:${url}`) ?? 'null');
+    return entry && Date.now() - entry.t < KEEP_FOR ? entry.v : undefined;
+  } catch { return undefined; }
+};
+const keep = (url, value) => {
+  try {
+    if (!KEEP.has(new URL(url).hostname)) return;
+    const text = JSON.stringify({ t: Date.now(), v: value });
+    if (text.length < 200_000) sessionStorage.setItem(`ws:${url}`, text);
+  } catch { /* full or unavailable: just don't keep it */ }
+};
+
 // Fetch JSON with a timeout. Throws on network errors and non-2xx answers.
 // "Too many requests" gets one retry after a pause.
 export async function getJSON(url, options = {}) {
+  const saved = kept(url);
+  if (saved !== undefined) return saved;
+  const value = await getFresh(url, options);
+  keep(url, value);
+  return value;
+}
+
+async function getFresh(url, options) {
   try {
     return await inTurn(url, () => fetchJSON(url, options));
   } catch (err) {

@@ -399,3 +399,11 @@ When a search names something with a Wikipedia article (a person, place, work or
 - **Band panel.** For a band or artist with no Wikipedia article, the About plate is titled with the artist's name and carries a one-line description (Band · country · since year), the official site, **Listen** and **Profiles** rows of small raised buttons, and "From MusicBrainz (CC0)". It uses the same compact card on phones, credited "From MusicBrainz".
 - **Posters.** Film and TV covers are posters (TVmaze for TV, the Wikipedia article's poster for films); a "Posters from TVmaze" credit sits under a carousel that uses them. Non-poster images are still fitted inside the frame.
 
+## Images, videos and answer-box searches (October 2026 pass)
+
+- **Images tab.** Two usage-rights buttons sit above the grid: "All images" (default: Bing Images, Openverse and Commons through the search server) and "Free to reuse" (openly licensed only, from Openverse, with creator and licence). The current one is pressed in. A question searches for its subject ("how tall is the eiffel tower" shows the tower, not clip art of "tall"). If a thumbnail fails, the original image loads instead.
+- **Image row on the All tab.** Up to twelve Bing images after result 3, each opening the Images tab, with "More images for …" under them; Commons is the fallback. Its request starts with the page so it's ready with the results.
+- **Videos tab.** Bing Videos (which covers YouTube) leads, three results per turn, then Dailymotion, PeerTube and Vimeo through the server; the Internet Archive takes a turn, matched on titles only.
+- **Web results under answer boxes.** When an answer box understood the search, the web results are searched with a clean version of it: "EUR to GBP exchange rate", "convert miles to kilometers", "AAPL stock".
+- **Topic header.** Commons photos load at 500px; a lone fact tile centres its text.
+

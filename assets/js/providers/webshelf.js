@@ -52,7 +52,7 @@ export default {
   async search(query, ctx = {}) {
     const official = officialSites(query, ctx);
     const fromServer = BACKEND.searxngUrl
-      ? searxng.search(query, { ...ctx, timeout: 6000 }).then((r) => (r.length ? r : null)).catch(() => null)
+      ? searxng.search(query, { ...ctx, timeout: 4500 }).then((r) => (r.length ? r : null)).catch(() => null)
       : Promise.resolve(null);
     const fromMwmbl = mwmbl.search(query, ctx).catch(() => null);
 
