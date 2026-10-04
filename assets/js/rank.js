@@ -14,9 +14,32 @@
 
 import { getJSON } from './dom.js';
 
-// How much each engine's ranking counts. Bing's index is the largest we reach.
-const ENGINE_WEIGHT = { bing: 1, brave: 1, wikipedia: 0.8, wikidata: 0.5, mwmbl: 0.55 };
-const RRF_K = 20;
+// Every number the ranking uses, in one place. A result's score is:
+//   agreement × WEIGHTS.agreement      (sum over engines of engine weight / (rrfK + position))
+// + authority × WEIGHTS.authority      (1 for the most visited site, falling to 0 at the 50,000th)
+// + titleShare × WEIGHTS.titleMatch    (share of the search's words in the title)
+// − missingShare × WEIGHTS.missingWords (share of the words found nowhere: title, snippet or address)
+// + WEIGHTS.navigational               if the address spells the search ("gordonramsay.com")
+// + WEIGHTS.officialHome / officialPage if it's the official site (home page / other page)
+// + WEIGHTS.severalEngines             if more than one engine found it
+export const WEIGHTS = {
+  // How much each engine's ranking counts. Bing's index is the largest we reach.
+  engines: { bing: 1, brave: 1, wikipedia: 0.8, wikidata: 0.5, mwmbl: 0.55 },
+  otherEngine: 0.5,
+  // Reciprocal-rank fusion constant: lower lets an engine's top results stand out more.
+  rrfK: 20,
+  // Agreement comes out around 0 to 0.13; this brings it to about 0 to 2.5.
+  agreement: 20,
+  // Kept modest so a good small site or forum can still outrank a big one:
+  // the difference between the 10th and 10,000th most visited site is 0.2.
+  authority: 0.35,
+  titleMatch: 0.5,
+  missingWords: 1.5,
+  navigational: 1.5,
+  officialHome: 6,
+  officialPage: 3,
+  severalEngines: 0.3,
+};
 
 // "www.en.m.wikipedia.org" -> "wikipedia.org" style lookups try each suffix.
 const suffixes = (host) => {
@@ -42,6 +65,9 @@ export function normaliseUrl(url) {
 /* Lists, loaded once and cached by the browser. ------------------------- */
 
 let lists = null;
+// For tools that run outside a browser (tools/golden.mjs): hand over the lists
+// read from disk, in the shape rank() uses.
+export function useLists(data) { lists = Promise.resolve(data); }
 async function loadLists() {
   if (!lists) {
     const text = (path) => fetch(path).then((r) => (r.ok ? r.text() : '')).catch(() => '');
@@ -96,9 +122,10 @@ const STOP = new Set(['a', 'an', 'the', 'to', 'in', 'into', 'of', 'on', 'at', 'b
 const words = (text) => String(text ?? '').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 1);
 
 // lists: [{ engine, results }] where each result is { url, title, snippet, ... }.
+// data (optional, for tests): { rank: Map(host -> place), farms: Set(host), size }.
 // Returns { results, left } with left = how many AI-farm results were removed.
-export async function rank(query, lists, { officialHosts = [] } = {}) {
-  const { rank: top, farms, size } = await loadLists();
+export async function rank(query, lists, { officialHosts = [], data = null } = {}) {
+  const { rank: top, farms, size } = data ?? await loadLists();
   // Little words ("to", "in", "the") match almost any page, so only the words
   // that carry meaning count; the address check still uses them all
   // ("theguardian.com" for "the guardian").
@@ -113,10 +140,10 @@ export async function rank(query, lists, { officialHosts = [] } = {}) {
     results.forEach((r, i) => {
       const key = normaliseUrl(r.url);
       const engines = r.engines?.length ? r.engines : [engine];
-      const weight = Math.max(...engines.map((e) => ENGINE_WEIGHT[e] ?? 0.5));
+      const weight = Math.max(...engines.map((e) => WEIGHTS.engines[e] ?? WEIGHTS.otherEngine));
       const entry = merged.get(key) ?? { ...r, url: r.url, engines: new Set(), agreement: 0 };
       engines.forEach((e) => entry.engines.add(e));
-      entry.agreement += weight / (RRF_K + i + 1);
+      entry.agreement += weight / (WEIGHTS.rrfK + i + 1);
       if (!entry.snippet?.length && r.snippet?.length) entry.snippet = r.snippet;
       merged.set(key, entry);
     });
@@ -146,13 +173,13 @@ export async function rank(query, lists, { officialHosts = [] } = {}) {
     let path = '/';
     try { path = new URL(entry.url).pathname; } catch { /* keep "/" */ }
 
-    const score = entry.agreement * 20          // about 0 to 2.5
-      + authority * 0.6
-      + inTitle * 0.5
-      - (1 - covered) * 1.5
-      + (navigational ? 1.5 : 0)
-      + (isOfficial ? (path.length <= 1 ? 6 : 3) : 0)
-      + (entry.engines.size > 1 ? 0.3 : 0);
+    const score = entry.agreement * WEIGHTS.agreement
+      + authority * WEIGHTS.authority
+      + inTitle * WEIGHTS.titleMatch
+      - (1 - covered) * WEIGHTS.missingWords
+      + (navigational ? WEIGHTS.navigational : 0)
+      + (isOfficial ? (path.length <= 1 ? WEIGHTS.officialHome : WEIGHTS.officialPage) : 0)
+      + (entry.engines.size > 1 ? WEIGHTS.severalEngines : 0);
     scored.push({ ...entry, engines: [...entry.engines], score });
   }
   scored.sort((a, b) => b.score - a.score);

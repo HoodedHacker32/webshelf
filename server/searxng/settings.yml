@@ -37,7 +37,8 @@ general:
 
 search:
   safe_search: 1
-  autocomplete: ""
+  # Query suggestions while typing (the search box asks /autocompleter).
+  autocomplete: "duckduckgo"
   default_lang: "en"
   formats:
     - html

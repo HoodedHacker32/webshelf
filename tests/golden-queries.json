@@ -1,0 +1,16 @@
+[
+  { "q": "gordon ramsay", "expect": ["gordonramsay.com"], "within": 2 },
+  { "q": "eiffel tower", "expect": ["toureiffel.paris"], "within": 2 },
+  { "q": "radiohead", "expect": ["radiohead.com"], "within": 2 },
+  { "q": "empire fall", "expect": ["empirefall.co"], "within": 1 },
+  { "q": "nvidia", "expect": ["nvidia.com"], "within": 2 },
+  { "q": "manchester united", "expect": ["manutd.com"], "within": 2 },
+  { "q": "python", "expect": ["python.org"], "within": 3 },
+  { "q": "barack obama", "expect": ["wikipedia.org", "obamalibrary.gov", "barackobama.com", "obamafoundation.org"], "within": 2 },
+  { "q": "taylor swift", "expect": ["taylorswift.com", "wikipedia.org"], "within": 2 },
+  { "q": "harry potter", "expect": ["wizardingworld.com", "harrypotter.com", "wikipedia.org"], "within": 3 },
+  { "q": "inception", "expect": ["wikipedia.org", "imdb.com"], "within": 3 },
+  { "q": "best pizza recipe", "expect": ["allrecipes.com", "recipetineats.com", "acouplecooks.com", "anitalianinmykitchen.com", "foodandwine.com", "simplyrecipes.com", "bbcgoodfood.com", "seriouseats.com"], "within": 3 },
+  { "q": "coronavirus", "expect": ["who.int", "cdc.gov", "nhs.uk", "wikipedia.org"], "within": 3 },
+  { "q": "chocolate chip cookies", "expect": ["allrecipes.com", "sallysbakingaddiction.com", "nestle.com", "verynestle.nestle.com", "bbcgoodfood.com", "wikipedia.org", "tasty.co"], "within": 3 }
+]
