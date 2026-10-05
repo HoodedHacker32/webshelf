@@ -106,7 +106,7 @@ function resultItem(r, index) {
     h('p', { class: 'result-about-title' }, 'About this result'),
     h('p', null, `Found by ${provider.name}. ${provider.about}`),
     provider.id === 'webshelf'
-      ? h('p', null, `${SITE.name} merged the engines’ results, ranked them with open rules and left out known AI content farms. It doesn’t personalise results. `, h('a', { href: 'settings.html#ranking' }, 'How results are ranked'))
+      ? h('p', null, `${SITE.name} merged the engines’ results, ranked them with open rules and left out known AI content farms. It doesn’t personalise results. `, h('a', { href: 'about.html#ranking' }, 'How results are ranked'))
       : h('p', null, `Results appear in the order ${provider.name} returned them. ${SITE.name} doesn’t personalise them.`),
     h('p', null, `Source: ${r.source} · Site: ${host}`));
 
@@ -197,7 +197,7 @@ async function featuredSnippet() {
     h('p', { class: 'answer-note' }, heading
       ? 'The answer and the passage are quoted from the page’s search snippet, not written by Webshelf. '
       : 'Quoted from the page’s search snippet, not written by Webshelf. ',
-      h('a', { href: 'settings.html#ranking' }, 'About featured snippets'))));
+      h('a', { href: 'about.html#snippets' }, 'About featured snippets'))));
 }
 
 // Engines start some snippets with the page's date ("Jul 27, 2026 · …"); a
@@ -370,7 +370,7 @@ async function searchWeb() {
     $('#serp-source-note').replaceChildren(
       'Web results from ', server ? 'Bing and ' : '', h('a', { href: 'https://mwmbl.org' }, 'Mwmbl'),
       server ? '' : ` (${SITE.name}’s search server is waking up)`,
-      ', ranked by ', h('a', { href: 'settings.html#ranking' }, SITE.name),
+      ', ranked by ', h('a', { href: 'about.html#ranking' }, SITE.name),
       left ? `. ${left} result${left === 1 ? '' : 's'} from AI content farms left out` : '',
       `. ${SITE.name} uses no AI.`);
   }

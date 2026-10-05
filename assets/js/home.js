@@ -15,5 +15,5 @@ document.getElementById('home-search').replaceChildren(createSearchbox({ autofoc
 
 const repo = document.querySelector('[data-repo-links]');
 if (SITE.repoUrl && repo) {
-  repo.append(h('a', { href: SITE.repoUrl }, 'About'), h('a', { href: SITE.repoUrl }, 'Source code'));
+  repo.append(h('a', { href: SITE.repoUrl }, 'Source code'));
 }

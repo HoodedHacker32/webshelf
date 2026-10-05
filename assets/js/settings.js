@@ -119,21 +119,3 @@ $('#home-clear').addEventListener('click', () => {
 });
 
 showHome();
-
-/* Privacy list -------------------------------------------------------- */
-
-const SERVICES = [
-  ['Webshelf’s search server (on Render, in the US)', 'Every search, which it passes on to Bing and Mwmbl (and to Bing Images and Bing Videos for the image row and the Images and Videos tabs), plus share symbols for prices (from Twelve Data). With suggestions on, also what you type, which it passes on to Bing. It keeps no record of searches; Render, its host, may keep standard request logs for a short time.'],
-  ['Bing (Microsoft)', 'Image and video thumbnails from Bing load from Microsoft’s servers, which see your IP address but not your search.'],
-  ['Mwmbl', 'Every search, directly, when the search server is waking up.'],
-  ['MusicBrainz', 'Short searches that aren’t on Wikipedia, to recognise bands and artists.'],
-  ['Openverse, Dailymotion, SepiaSearch, the Internet Archive', 'Searches on the Images and Videos tabs.'],
-  ['CoinGecko and Twelve Data', 'Searches for a share or cryptocurrency price.'],
-  ['Wikipedia and Wikidata', 'Every search, for the knowledge panel, “Did you mean” and related searches. Also what you type, if suggestions are on.'],
-  ['Wiktionary', 'Words you look up with “define”.'],
-  ['Open-Meteo', 'Place names or your saved location, for weather and time searches.'],
-  ['Frankfurter', 'Currency codes, for currency conversions.'],
-  ['Wikimedia Commons', 'Every search that isn’t answered by a tool, for the image strip.'],
-  ['The websites in your results', 'Only when you click a result.'],
-];
-$('#privacy-list').replaceChildren(...SERVICES.map(([who, what]) => h('div', { class: 'privacy-item' }, h('dt', null, who), h('dd', null, what))));

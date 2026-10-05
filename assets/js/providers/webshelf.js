@@ -44,7 +44,7 @@ export default {
   id: 'webshelf',
   name: 'Webshelf ranking',
   about: 'Results from Bing (through our search server) and Mwmbl, merged and ranked by Webshelf using open signals: agreement between engines, how widely used a site is, how well its title matches, and the official website of what you searched for.',
-  home: 'settings.html#ranking',
+  home: 'about.html#ranking',
   verticals: ['all'],
   // What the engines behind the server can do. SearXNG's Bing connector can't
   // fetch later pages or filter by date (Bing needs JavaScript for both), and

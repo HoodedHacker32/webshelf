@@ -37,7 +37,7 @@ Entirely AI-free. There is no AI tab, AI mode or AI summary, now or later. Every
 - **Games removed:** no Snake, Pac-Man, Minesweeper, Solitaire, dinosaur game, tic-tac-toe, barrel roll, askew, recursion, anagram, Thanos or zerg rush.
 - **No "I'm Feeling Lucky" button.**
 - **Stocks:** Twelve Data through the search server's proxy (`TWELVE_DATA_KEY` on Render; without it the demo key covers only AAPL). Coins from CoinGecko.
-- **Open data sources in use:** Wikipedia and Wikidata (knowledge panel, facts, office holders, spelling fallback), MusicBrainz (bands, lyrics cards), TVmaze (TV posters), Wiktionary (definitions), Open-Meteo (weather, geocoding, time zones), Frankfurter (ECB exchange rates), Openverse and Wikimedia Commons (images). Settings lists every service and when it's asked.
+- **Open data sources in use:** Wikipedia and Wikidata (knowledge panel, facts, office holders, spelling fallback), MusicBrainz (bands, lyrics cards), TVmaze (TV posters), Wiktionary (definitions), Open-Meteo (weather, geocoding, time zones), Frankfurter (ECB exchange rates), Openverse and Wikimedia Commons (images). The Privacy page lists every service and when it's asked.
 - **Search operators and Easy dorking:** operators work in every search and are checked against each result; Easy dorking (opt-in in Settings) adds a form that writes them, for research and finding pages directly.
 - **Name lives in one config value** so a rename is a one-line change.
 
@@ -62,7 +62,7 @@ Entirely AI-free. There is no AI tab, AI mode or AI summary, now or later. Every
 2. Familiar behaviour, own identity. Keep the search behaviours people know; never borrow another company's look.
 3. Honest sourcing. Every answer and panel names where its data came from.
 4. Free and forkable. No paid services, no keys in the code, no build step.
-5. Plain about where searches go. Searches go to Webshelf's search server and on to the engines it asks; features call their data sources (Wikipedia, Wikidata, MusicBrainz, Open-Meteo and others) only when a query needs them, and Settings lists every one. No accounts, no ads, no record of searches kept by Webshelf.
+5. Plain about where searches go. Searches go to Webshelf's search server and on to the engines it asks; features call their data sources (Wikipedia, Wikidata, MusicBrainz, Open-Meteo and others) only when a query needs them, and the Privacy page lists every one. No accounts, no ads, no record of searches kept by Webshelf.
 
 ## Accessibility & Inclusion
 

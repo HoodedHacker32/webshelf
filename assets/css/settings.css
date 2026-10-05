@@ -42,6 +42,9 @@ p.setting-status { min-height: 22px; margin-top: 8px; }
 .radio-help { color: var(--meta); }
 
 .settings-prose { margin-top: 12px; color: var(--ink-2); max-width: 62ch; }
+ul.settings-prose { padding-left: 1.25em; list-style: square; }
+ul.settings-prose li + li { margin-top: 6px; }
+ul.settings-prose li::marker { color: var(--meta); }
 .privacy-list { margin-top: 8px; }
 .privacy-item { padding: 8px 0; border-bottom: 1px solid var(--bevel-lo); }
 .privacy-item dt { font-weight: 700; }

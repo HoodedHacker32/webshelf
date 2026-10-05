@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy - Webshelf</title>
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Webshelf's privacy policy: where your searches go, what stays in your browser, and what Webshelf keeps (nothing).">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Webshelf">
+  <meta property="og:title" content="Privacy - Webshelf">
+  <meta property="og:description" content="Webshelf is a free, open-source search engine with no AI: web results, images, videos and instant answers, ranked by rules anyone can read.">
+  <meta property="og:image" content="https://hoodedhacker32.github.io/webshelf/assets/icons/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#e7e7e7">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="search" type="application/opensearchdescription+xml" title="Webshelf" href="opensearch.xml">
+  <script>
+    (function () {
+      var t = 'auto';
+      try { t = JSON.parse(localStorage.getItem('webshelf:settings') || '{}').theme || 'auto'; } catch (e) {}
+      var dark = t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+  <link rel="icon" href="logos/pixel-icon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/redaction-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/serp.css">
+  <link rel="stylesheet" href="assets/css/settings.css">
+  <script type="module" src="assets/js/info.js"></script>
+</head>
+<body class="settings-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="toolbar">
+    <a class="toolbar-logo logo" href="index.html" data-logo="pixel-lockup" data-label="Webshelf home">
+      <img src="logos/pixel-lockup.svg" alt="Webshelf home" width="186" height="53">
+    </a>
+    <div class="toolbar-search" id="info-search"></div>
+    <nav class="toolbar-links" aria-label="Site"><a href="settings.html">Settings</a></nav>
+  </header>
+
+  <main class="settings" id="main">
+    <h1 class="settings-title">Privacy</h1>
+    <p class="settings-intro">Last updated 5 October 2026.</p>
+
+    <section class="settings-section" aria-labelledby="p-short">
+      <h2 id="p-short">In short</h2>
+      <ul class="settings-prose">
+        <li>Webshelf has no accounts, no ads, no analytics and no cookies.</li>
+        <li>Webshelf keeps no record of your searches. Its search server passes each search on and forgets it.</li>
+        <li>To find results and answers, your searches are sent to the search engines and open-data services listed below. Each of them sees your search and your IP address, as any website you visit would, and has its own privacy policy.</li>
+        <li>Your settings and (if you choose) your search history stay in your browser.</li>
+      </ul>
+    </section>
+
+    <section class="settings-section" id="browser" aria-labelledby="p-browser">
+      <h2 id="p-browser">What stays in your browser</h2>
+      <p class="settings-prose">Webshelf saves these in your browser’s own storage, on this device only. They are never sent to Webshelf, and you can clear them at any time in <a href="settings.html">Settings</a> or by clearing this site’s data in your browser:</p>
+      <ul class="settings-prose">
+        <li>your settings (theme, results source, safe search, language and the rest);</li>
+        <li>your recent searches, if “Remember my searches on this device” is on;</li>
+        <li>a location for weather and time, if you set one.</li>
+      </ul>
+      <p class="settings-prose">Answers from Wikipedia, Wikidata and similar services are kept for up to half an hour in the browser tab’s session storage, so the same lookup isn’t repeated. It is cleared when the tab closes.</p>
+    </section>
+
+    <section class="settings-section" id="searches" aria-labelledby="p-searches">
+      <h2 id="p-searches">Where your searches go</h2>
+      <p class="settings-prose">Each service, what it receives and when:</p>
+      <dl class="privacy-list">
+        <div class="privacy-item"><dt>GitHub Pages (hosts this site)</dt><dd>The pages you open, including the address of a results page, which contains your search. GitHub’s privacy statement applies.</dd></div>
+        <div class="privacy-item"><dt>Webshelf’s search server (on Render, in the US)</dt><dd>Every search, which it passes on to Bing and Mwmbl (and to Bing Images and Bing Videos for the image row and the Images and Videos tabs), plus share symbols for prices (from Twelve Data). With suggestions on, also what you type, which it passes on to Bing. It keeps no record of searches; Render, its host, may keep standard request logs for a short time.</dd></div>
+        <div class="privacy-item"><dt>Bing (Microsoft)</dt><dd>Image and video thumbnails from Bing load from Microsoft’s servers, which see your IP address but not your search.</dd></div>
+        <div class="privacy-item"><dt>Mwmbl</dt><dd>Every search, directly, while the search server is waking up.</dd></div>
+        <div class="privacy-item"><dt>Wikipedia and Wikidata</dt><dd>Every search, for the knowledge panel, answers, spelling and related searches. Also what you type, if suggestions are on and the search server is waking up.</dd></div>
+        <div class="privacy-item"><dt>Wikimedia Commons</dt><dd>Searches that aren’t answered by a tool, for photos in the image row and topic headers.</dd></div>
+        <div class="privacy-item"><dt>MusicBrainz</dt><dd>Short searches that aren’t on Wikipedia, to recognise bands and artists, and song searches for lyrics cards.</dd></div>
+        <div class="privacy-item"><dt>TVmaze</dt><dd>The IMDb numbers of TV shows in a topic’s carousel, for their posters.</dd></div>
+        <div class="privacy-item"><dt>Openverse, Dailymotion, SepiaSearch, the Internet Archive</dt><dd>Searches on the Images and Videos tabs.</dd></div>
+        <div class="privacy-item"><dt>CoinGecko and Twelve Data</dt><dd>Searches for a share or cryptocurrency price.</dd></div>
+        <div class="privacy-item"><dt>Wiktionary</dt><dd>Words you look up with “define”.</dd></div>
+        <div class="privacy-item"><dt>Open-Meteo</dt><dd>Place names or your saved location, for weather and time searches.</dd></div>
+        <div class="privacy-item"><dt>Frankfurter</dt><dd>Currency codes, for currency conversions.</dd></div>
+        <div class="privacy-item"><dt>The websites in your results</dt><dd>Only when you click a result. Webshelf’s links don’t tell them which search you came from.</dd></div>
+      </dl>
+      <p class="settings-prose">Your country, for questions like “who is the current president”, is worked out on your device from its time zone or your saved location. Nothing is looked up to find it.</p>
+    </section>
+
+    <section class="settings-section" id="contact" aria-labelledby="p-contact">
+      <h2 id="p-contact">Questions</h2>
+      <p class="settings-prose">Webshelf is open source, so everything above can be checked in <a href="https://github.com/HoodedHacker32/webshelf">its code</a>. To ask about privacy or report a problem, <a href="https://github.com/HoodedHacker32/webshelf/issues">open an issue on GitHub</a>.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-row">
+      <p>Webshelf</p>
+      <div class="site-footer-links">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="settings.html">Settings</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About - Webshelf</title>
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="About Webshelf, a free, open-source search engine with no AI: how results are ranked, where answers come from, and how it was made.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Webshelf">
+  <meta property="og:title" content="About - Webshelf">
+  <meta property="og:description" content="Webshelf is a free, open-source search engine with no AI: web results, images, videos and instant answers, ranked by rules anyone can read.">
+  <meta property="og:image" content="https://hoodedhacker32.github.io/webshelf/assets/icons/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#e7e7e7">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="search" type="application/opensearchdescription+xml" title="Webshelf" href="opensearch.xml">
+  <script>
+    (function () {
+      var t = 'auto';
+      try { t = JSON.parse(localStorage.getItem('webshelf:settings') || '{}').theme || 'auto'; } catch (e) {}
+      var dark = t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+  <link rel="icon" href="logos/pixel-icon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/redaction-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/serp.css">
+  <link rel="stylesheet" href="assets/css/settings.css">
+  <script type="module" src="assets/js/info.js"></script>
+</head>
+<body class="settings-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="toolbar">
+    <a class="toolbar-logo logo" href="index.html" data-logo="pixel-lockup" data-label="Webshelf home">
+      <img src="logos/pixel-lockup.svg" alt="Webshelf home" width="186" height="53">
+    </a>
+    <div class="toolbar-search" id="info-search"></div>
+    <nav class="toolbar-links" aria-label="Site"><a href="settings.html">Settings</a></nav>
+  </header>
+
+  <main class="settings" id="main">
+    <h1 class="settings-title">About Webshelf</h1>
+    <p class="settings-intro">A free, open-source search engine with no AI.</p>
+
+    <section class="settings-section" aria-labelledby="a-what">
+      <h2 id="a-what">What it is</h2>
+      <p class="settings-prose">Webshelf works the way web search did before AI summaries took over the top of the page: one list of results you can scan, tools that work right on the page, and a panel about the thing you searched for. It has no accounts and no ads.</p>
+      <p class="settings-prose">There is no AI anywhere in it: no summaries, no chat, no generated answers. Results come from search engines; answers come from open data such as Wikidata and Wikipedia, or are quoted word for word from the pages they come from; and the calculator, converters and other tools are ordinary code running in your browser.</p>
+    </section>
+
+    <section class="settings-section" id="ranking" aria-labelledby="a-ranking">
+      <h2 id="a-ranking">How results are ranked</h2>
+      <p class="settings-prose">Webshelf asks Bing (through its search server) and Mwmbl, then puts the results in order itself, using rules anyone can read in <code>assets/js/rank.js</code>. A result ranks higher when:</p>
+      <ul class="settings-prose">
+        <li>several engines found it, and placed it high (an engine whose top results mostly lack the words you searched for counts for less on that search);</li>
+        <li>its site is widely used, going by the <a href="https://tranco-list.eu">Tranco list</a> of the 50,000 most visited websites;</li>
+        <li>its title contains the words you searched for, or its address spells them (<span class="num">gordonramsay.com</span> for “gordon ramsay”);</li>
+        <li>it’s the official website of what you searched for, as listed by Wikidata or MusicBrainz.</li>
+      </ul>
+      <p class="settings-prose">No site takes more than two places until every other site has had its turn, except when you search one site with <code>site:</code>.</p>
+      <p class="settings-prose">Sites known for mass-produced AI content, from the public <a href="https://github.com/laylavish/uBlockOrigin-HUGE-AI-Blocklist">HUGE AI Blocklist</a>, are left out, and the footer of each results page says how many. Results are never personalised.</p>
+    </section>
+
+    <section class="settings-section" id="snippets" aria-labelledby="a-snippets">
+      <h2 id="a-snippets">Answers, featured snippets and spelling</h2>
+      <p class="settings-prose"><strong>Answer boxes.</strong> Questions with a known shape (“how tall is the eiffel tower”, “when was ww2”, “who is the taoiseach”) are answered from Wikidata, and “what is” questions quote the opening of the Wikipedia article asked about. Each box names and links its source.</p>
+      <p class="settings-prose"><strong>Featured snippets.</strong> For other questions, Webshelf looks through the top five results’ snippets for the passage that covers your question best. If the question wants a short answer (a date, an age, an amount or a measurement) and the passage contains one, that answer is shown as the heading and highlighted in the passage. The answer and the passage are the page’s own words, found by pattern, never written or summarised, so check the page when it matters.</p>
+      <p class="settings-prose"><strong>Spelling.</strong> A word that people never search for, when a close spelling of it is searched for often, is corrected (“Showing results for”), with a link to search for exactly what you typed. When it’s less clear, Webshelf asks “Did you mean”.</p>
+    </section>
+
+    <section class="settings-section" id="made" aria-labelledby="a-made">
+      <h2 id="a-made">How Webshelf was made</h2>
+      <ul class="settings-prose">
+        <li><strong>Name, logos and brand:</strong> designed and drawn by a human, the project’s owner, a logo designer. No AI was used for them.</li>
+        <li><strong>Programming:</strong> the code was generated by Claude Opus 5.5, Anthropic’s AI model, under the owner’s direction and review.</li>
+        <li><strong>The product uses no AI:</strong> nothing Webshelf shows you is generated, summarised or rewritten by a model.</li>
+      </ul>
+    </section>
+
+    <section class="settings-section" id="source" aria-labelledby="a-source">
+      <h2 id="a-source">Open source</h2>
+      <p class="settings-prose">Webshelf’s code is free software under the <a href="https://github.com/HoodedHacker32/webshelf/blob/main/LICENSE">GNU Affero General Public License 3.0</a>: you can read it, change it and run your own copy, as long as you share your changes the same way. The name and logos are not covered by that licence; <a href="https://github.com/HoodedHacker32/webshelf/blob/main/BRAND.md">BRAND.md</a> says how they may be used. The data sources and their licences are listed in <a href="https://github.com/HoodedHacker32/webshelf/blob/main/NOTICE.md">NOTICE.md</a>.</p>
+      <p class="settings-prose"><a href="https://github.com/HoodedHacker32/webshelf">Source code on GitHub</a> · <a href="https://github.com/HoodedHacker32/webshelf/issues">Report a problem</a> · <a href="privacy.html">Privacy</a></p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-row">
+      <p>Webshelf</p>
+      <div class="site-footer-links">
+        <a href="index.html">Home</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="settings.html">Settings</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
