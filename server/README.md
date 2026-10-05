@@ -4,7 +4,7 @@ Webshelf's web results come from this server: [SearXNG](https://docs.searxng.org
 
 There are two ways to run it:
 
-- **The live setup: one container on Render** (`container/`). Render builds `container/Dockerfile` from this repo (root directory `server/container`, free plan, Virginia region, environment variable `PORT=7860`). Render provides HTTPS, so Caddy only adds the browser-access headers and the share-price proxy. The free plan sleeps after 15 minutes without visits; the site falls back to Mwmbl while it wakes, and `.github/workflows/keep-awake.yml` visits it through the day. Optional environment variable: `TWELVE_DATA_KEY` (without it, share prices use Twelve Data's `demo` key, which only covers AAPL).
+- **The live setup: one container on Render** (`container/`). Render builds `container/Dockerfile` from this repo (root directory `server/container`, free plan, Virginia region, environment variable `PORT=7860`). Render provides HTTPS, so Caddy only adds the browser-access headers and the share-price proxy. The free plan sleeps after 15 minutes without visits; the site falls back to Mwmbl while it wakes, and an UptimeRobot monitor (free plan, the owner's account) visits `/healthz` every 5 minutes to keep it awake. `.github/workflows/keep-awake.yml` wakes it by hand (Actions → Run workflow). Optional environment variable: `TWELVE_DATA_KEY` (without it, share prices use Twelve Data's `demo` key, which only covers AAPL).
 - **A virtual machine** (`compose.yaml`, `setup.sh`), for example Oracle Cloud's Always Free tier, which needs a card to sign up. Steps below.
 
 Both use the same engine list.

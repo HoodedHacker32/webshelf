@@ -1,15 +1,13 @@
 # Render's free plan puts the search server to sleep after 15 minutes without
-# visits, and waking it takes up to a minute. This visits it every 10 minutes,
-# day and night, so searches are usually instant. (GitHub runs scheduled jobs
-# a few minutes late at busy times, hence 10 rather than 15.)
-# Cost: Actions minutes are free for public repos. On Render, one service
-# awake all month uses about 744 of the free plan's 750 instance hours.
+# visits, and waking it takes up to a minute. UptimeRobot (free plan) visits
+# https://webshelf-search-us.onrender.com/healthz every 5 minutes to keep it
+# awake; GitHub's own schedule ran only every few hours, so it isn't used.
+# This workflow stays as a manual "wake it now" button (Actions > Keep search
+# server awake > Run workflow).
 
 name: Keep search server awake
 
 on:
-  schedule:
-    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
