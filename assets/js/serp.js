@@ -23,6 +23,7 @@ import { mountTools, pageUrl } from './searchtools.js';
 import { mountDorking, elsewhereLinks, siteSearchUrl } from './dorking.js';
 import { peopleAsk, paaBlock } from './paa.js';
 import './theme.js';
+import './keys.js';
 
 const params = new URLSearchParams(location.search);
 const query = (params.get('q') ?? '').trim();

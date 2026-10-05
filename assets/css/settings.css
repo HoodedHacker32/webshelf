@@ -53,6 +53,21 @@ ul.settings-prose li::marker { color: var(--meta); }
 .operator-list { margin-top: 8px; max-width: 62ch; }
 .operator-list > div { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr); gap: 4px 16px; padding: 8px 0; border-bottom: 1px solid var(--bevel-lo); }
 .operator-list dt code { white-space: nowrap; }
+/* Keys drawn as raised keycaps, the same bevel as buttons. */
+kbd {
+  display: inline-block;
+  min-width: 1.7em;
+  padding: 0 5px;
+  border: 1px solid;
+  border-color: var(--bevel-hi) var(--bevel-deep) var(--bevel-deep) var(--bevel-hi);
+  background: var(--chrome);
+  box-shadow: inset -1px -1px 0 var(--bevel-lo);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  line-height: 1.5;
+  text-align: center;
+}
 .operator-list dd { margin: 0; color: var(--ink-2); }
 @media (max-width: 559px) {
   .operator-list > div { grid-template-columns: 1fr; }

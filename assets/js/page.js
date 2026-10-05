@@ -7,6 +7,7 @@ import { getSettings, addHistory } from './store.js';
 import { createSearchbox } from './searchbox.js';
 import { mountLogos, rockBook } from './logo.js';
 import './theme.js';
+import './keys.js';
 
 // Point the tabs at the same search on each page.
 export function mountTabs(query) {
