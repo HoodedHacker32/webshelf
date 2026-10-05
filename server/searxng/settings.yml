@@ -77,30 +77,39 @@ engines:
     weight: 0.4
   - name: openverse
     disabled: false
+    timeout: 5.0
   # Images. Tested from Render, 2026-10-05: Flickr, DeviantArt and ArtStation
   # match searches well; Pinterest, Imgur, Pixabay and Pexels more loosely.
   # Bing Images often answers a server with unrelated pictures, so it counts
   # least, and the Images tab drops any image whose title doesn't match.
   # Wallhaven (no titles), Unsplash (parsing errors) and DuckDuckGo (access
-  # denied) didn't work.
+  # denied) didn't work. They answer more slowly than web engines, so they
+  # get 5 seconds; the Images tab waits up to 8.
   - name: bing images
     weight: 0.3
   - name: flickr
     disabled: false
+    timeout: 5.0
   - name: deviantart
     disabled: false
     inactive: false
+    timeout: 5.0
   - name: artstation
     disabled: false
+    timeout: 5.0
   - name: pinterest
     disabled: false
+    timeout: 5.0
   - name: imgur
     disabled: false
+    timeout: 5.0
   - name: pixabay images
     disabled: false
+    timeout: 5.0
   - name: pexels
     disabled: false
     weight: 0.6
+    timeout: 5.0
   - name: bing
     disabled: false
     weight: 2

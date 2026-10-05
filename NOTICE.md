@@ -33,6 +33,7 @@ Each card names its source on the page.
 | [Open-Meteo](https://open-meteo.com) | Weather, place lookup, time zones | CC BY 4.0 |
 | [Frankfurter](https://frankfurter.dev) | European Central Bank reference exchange rates | Free use with attribution |
 | [Openverse](https://openverse.org) | Images tab (openly licensed images; the viewer names each creator and licence) | Per image, Creative Commons or public domain |
+| [Flickr](https://www.flickr.com), [DeviantArt](https://www.deviantart.com), [ArtStation](https://www.artstation.com), [Pinterest](https://www.pinterest.com), [Imgur](https://imgur.com), [Pixabay](https://pixabay.com), [Pexels](https://www.pexels.com), Bing Images, through Webshelf's SearXNG server | Images tab and image row | Each image belongs to its creator; thumbnails link to the page they come from |
 | [Dailymotion](https://www.dailymotion.com), [SepiaSearch](https://sepiasearch.org) (PeerTube), [Internet Archive](https://archive.org) | Videos tab | Results link to each video's page |
 | YouTube thumbnails (`i.ytimg.com`) | Videos tab, for YouTube links found in the web results | Thumbnails link to the video |
 | [Twelve Data](https://twelvedata.com) | Share prices and charts (free key) | Display with attribution |

@@ -1,5 +1,7 @@
-// Images tab. By default our search server's image search (Bing Images,
-// Openverse and Wikimedia Commons, merged). "Free to reuse" searches only
+// Images tab. By default our search server's image search (Flickr,
+// DeviantArt, ArtStation, Pinterest, Imgur, Pixabay, Pexels, Openverse,
+// Wikimedia Commons and Bing Images), each source taking turns and every
+// image checked against the search. "Free to reuse" searches only
 // openly licensed images, from Openverse directly, with each image's creator
 // and licence; it's also the fallback while the server is asleep.
 
@@ -13,7 +15,9 @@ import { parseQuestion, parseDefinition } from './qa.js';
 const { query, ctx, track, target } = setupPage({
   page: 'images.html',
   title: 'Images',
-  sources: [['Bing Images', 'https://www.bing.com/images'], ['Openverse', 'https://openverse.org'], ['Wikimedia Commons', 'https://commons.wikimedia.org']],
+  sources: [['Flickr', 'https://www.flickr.com'], ['DeviantArt', 'https://www.deviantart.com'], ['ArtStation', 'https://www.artstation.com'],
+    ['Pinterest', 'https://www.pinterest.com'], ['Imgur', 'https://imgur.com'], ['Pixabay', 'https://pixabay.com'], ['Pexels', 'https://www.pexels.com'],
+    ['Openverse', 'https://openverse.org'], ['Wikimedia Commons', 'https://commons.wikimedia.org'], ['Bing Images', 'https://www.bing.com/images']],
 });
 
 const grid = $('#results');
@@ -32,6 +36,25 @@ const STOP = new Set(['how', 'what', 'who', 'when', 'where', 'why', 'is', 'are',
 const subject = parseQuestion(query)?.subject ?? parseDefinition(query)?.subject
   ?? (query.split(/\s+/).filter((w) => !STOP.has(w.toLowerCase())).join(' ') || query);
 
+// Relevance. Bing Images, asked by a server, often answers with unrelated
+// pictures (Cookie Monster costumes for "legend of zelda wallpapers"), so an
+// image is kept only when its title or address has the words that matter:
+// all of them for a one- or two-word subject, most of them for a longer one.
+// Words that describe the kind of picture ("wallpaper", "hd", "4k") don't
+// count, since any image can claim them.
+const KIND_WORDS = new Set([...STOP, 'wallpaper', 'wallpapers', 'background', 'backgrounds', 'hd', '4k', '1080p', 'desktop', 'iphone', 'phone',
+  'android', 'pics', 'pic', 'free', 'cute', 'aesthetic', 'art', 'drawing', 'drawings', 'png', 'jpg', 'gif', 'gifs', 'for', 'and', 'with', 'on']);
+const norm = (text) => String(text ?? '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
+const core = [...new Set(norm(subject).match(/[\p{L}\p{N}]+/gu) ?? [])].filter((w) => !KIND_WORDS.has(w) && w.length > 1);
+const needed = core.length <= 2 ? core.length : Math.ceil(core.length * 0.6);
+function relevant(item) {
+  if (!core.length) return true;
+  const decode = (url) => { try { return decodeURIComponent(url ?? ''); } catch { return url ?? ''; } };
+  const text = norm(`${item.title} ${decode(item.page)} ${decode(item.full)}`).replace(/[_\-./]+/g, ' ');
+  const has = (w) => text.includes(w) || (w.endsWith('s') && text.includes(w.slice(0, -1)));
+  return core.filter(has).length >= needed;
+}
+
 // Like Google's "Usage rights": everything, or only images free to reuse.
 grid.before(h('nav', { class: 'image-filters', 'aria-label': 'Usage rights' },
   [['All images', null], ['Free to reuse', 'free']].map(([label, rights]) => h('a', {
@@ -44,7 +67,18 @@ const LICENCES = { cc0: 'CC0 (public domain)', pdm: 'Public domain', by: 'CC BY'
 async function fromServer(n) {
   const data = await getJSON(`${BACKEND.searxngUrl}/search?q=${encodeURIComponent(subject)}&format=json&categories=images&language=en&safesearch=1&pageno=${n}`, { ...ctx, timeout: 8000 });
   const size = (text) => String(text ?? '').match(/(\d+)\s*[x×\u00d7]\s*(\d+)/);
-  return (data.results ?? []).filter((r) => r.img_src && /^https?:/.test(r.img_src)).map((r) => {
+  // Each source takes a turn, so no one site (or one confused engine) fills
+  // the grid; within a source, its own order is kept.
+  const bySource = new Map();
+  for (const r of data.results ?? []) {
+    const source = r.engines?.[0] ?? r.engine ?? 'other';
+    if (!bySource.has(source)) bySource.set(source, []);
+    bySource.get(source).push(r);
+  }
+  const queues = [...bySource.values()];
+  const mixed = [];
+  while (queues.some((q) => q.length)) for (const q of queues) if (q.length) mixed.push(q.shift());
+  return mixed.filter((r) => r.img_src && /^https?:/.test(r.img_src)).map((r) => {
     const dims = size(r.resolution);
     const commons = /wikimedia\.org/.test(r.url ?? '');
     return {
@@ -91,10 +125,13 @@ function tile(item, i) {
   const img = h('img', { src: item.thumb, alt: item.title, loading: i < (innerWidth < 760 ? 4 : 12) ? 'eager' : 'lazy', referrerpolicy: 'no-referrer', width: String(Math.round(ratio * 180)), height: '180' });
   // Openverse's thumbnail service sometimes fails; the original image is next,
   // and only a tile whose image can't load at all is hidden.
-  img.addEventListener('error', () => {
+  const failed = () => {
     if (img.src !== item.full && item.full) img.src = item.full;
     else li.hidden = true;
-  });
+  };
+  img.addEventListener('error', failed);
+  // Some hosts answer a blocked image with a 1-pixel placeholder rather than an error.
+  img.addEventListener('load', () => { if (img.naturalWidth < 8 || img.naturalHeight < 8) failed(); });
   const button = h('button', { class: 'image-tile-open', type: 'button', 'aria-haspopup': 'dialog' }, img);
   button.addEventListener('click', () => openViewer(i));
   const li = h('li', { class: 'image-tile', style: `--r: ${ratio.toFixed(3)}` },
@@ -109,11 +146,16 @@ async function load() {
   page += 1;
   moreBox.replaceChildren();
   let batch = [];
+  let fetched = 0;
   const seen = new Set(items.map((i) => i.full));
   try {
     if (mode === 'server') {
-      batch = await track(fromServer(page));
-      if (!batch.length && page === 1) throw new Error('No images from the server');
+      const raw = await track(fromServer(page));
+      fetched = raw.length;
+      if (!raw.length && page === 1) throw new Error('No images from the server');
+      batch = raw.filter(relevant);
+      // Too few relevant images: Openverse's openly licensed ones fill in.
+      if (page === 1 && batch.length < 12) batch.push(...await track(openverse(1)).catch(() => []));
     } else if (mode === 'openverse') {
       batch = await track(openverse(page));
     }
@@ -133,7 +175,7 @@ async function load() {
   }
   status.replaceChildren('Images for ', h('b', null, query),
     mode === 'server' ? '' : ` · ${total.toLocaleString()} openly licensed`);
-  const more = mode === 'server' ? batch.length > 0 && page < 5 : mode === 'openverse' && batch.length && items.length < total;
+  const more = mode === 'server' ? fetched > 0 && page < 5 : mode === 'openverse' && batch.length && items.length < total;
   if (more) {
     const button = h('button', { class: 'btn more-btn', type: 'button' }, 'More images');
     button.addEventListener('click', () => load());
