@@ -11,7 +11,7 @@ import { findAnswer } from './answers/index.js';
 import { mountLogos, rockBook } from './logo.js';
 import * as wiki from './wiki.js';
 import { loadEntity, loadWorks, entityId, fetchSubject, worksOnScreen, values, shownProps } from './entity.js';
-import { parseQuestion, parseDefinition, resolveSubject, factAnswer, questionsFor, kindsShown, leadSentences, contentTerms, highlight, KINDS, looksLikeQuestion } from './qa.js';
+import { parseQuestion, parseDefinition, resolveSubject, factAnswer, questionsFor, kindsShown, leadSentences, contentTerms, highlight, KINDS, looksLikeQuestion, EXACT_SUBJECT, subjectMatches } from './qa.js';
 import { icon } from './icons.js';
 import { musicArtist } from './rank.js';
 import { mountTabs } from './page.js';
@@ -166,7 +166,13 @@ async function featuredSnippet() {
   if (found || !looksLikeQuestion(query) || await answerShown) return;
   const terms = contentTerms(plain);
   if (!terms.length) return;
-  const top = all.slice(0, 5);
+  // A page about a namesake ("The Battle of Hastings (album)") doesn't answer
+  // a question that doesn't ask about one.
+  const namesake = /\((album|film|song|single|band|novel|book|tv series|miniseries|video game|play|musical|ep|soundtrack|board game)\)/i;
+  const top = all.slice(0, 5).filter((r) => {
+    const m = namesake.exec(runs(r.title).map((x) => (typeof x === 'string' ? x : x.textContent)).join(''));
+    return !m || plain.toLowerCase().includes(m[1].toLowerCase());
+  });
   const text = (r) => withoutDate(r.snippet).map((x) => x.text).join('');
   const pick = findSnippet(plain, top.map(text), terms);
   // "Who is …" questions have no short answer to find, and a passage that
@@ -574,6 +580,7 @@ async function factOrDefinition() {
   if (!subj) return null;
   const name = plainName(subj.title);
   if (factQ) {
+    if (EXACT_SUBJECT.has(factQ.kind) && !subjectMatches(factQ.subject, subj)) return null;
     const [a, lead] = await Promise.all([factAnswer(factQ.kind, subj.entity, ctx), leadOf(subj.title)]);
     if (!a) return null;
     await queueQuestions(subj, [factQ.kind]);

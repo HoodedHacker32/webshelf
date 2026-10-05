@@ -53,3 +53,8 @@ test('a count is a number followed by what was asked about, never a lone year', 
   const counted = ['An adult human body has 206 bones, which make up the skeleton and protect the organs of the body.'];
   assert.equal(answerOf(findSnippet('how many bones are in the human body', counted, ['bone', 'human', 'body'])), '206 bones');
 });
+
+test('a "when" question takes the whole span when the passage gives one', () => {
+  const texts = ['World War II, or the Second World War (1 September 1939 – 2 September 1945), was a global conflict between two coalitions.'];
+  assert.equal(answerOf(findSnippet('when was world war 2', texts, ['world', 'war', '2'])), '1 September 1939 – 2 September 1945');
+});

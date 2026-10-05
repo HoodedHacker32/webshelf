@@ -54,7 +54,16 @@ export const KINDS = {
   architect: ['Architect', (n) => `Who designed ${n}?`, ['P84']],
   visitors: ['Visitors per year', (n) => `How many people visit ${n}?`, ['P1174']],
   language: ['Official language', (n) => `What language is spoken in ${n}?`, ['P37']],
+  // Events: a date (point in time, publication, first performance, founding)
+  // or a span (start to end). Asked as "when was X", "when did X start".
+  when: ['Date', (n) => `When was ${n}?`, ['P585', 'P580', 'P577', 'P1191', 'P571']],
+  started: ['Started', (n) => `When did ${n} start?`, ['P580', 'P571', 'P585']],
+  ended: ['Ended', (n) => `When did ${n} end?`, ['P582', 'P576', 'P585']],
 };
+
+// Kinds whose subject must be the article found (by its title or a redirect
+// to it): "when was the battle of hastings" must not answer about an album.
+export const EXACT_SUBJECT = new Set(['when', 'started', 'ended']);
 
 // Facts about a role someone can leave: if it has ended, there is no current answer.
 const CURRENT_ONLY = new Set(['spouse', 'ceo', 'headOfState', 'headOfGov', 'residence']);
@@ -83,6 +92,11 @@ const PATTERNS = [
   ['netWorth', /^(?:what is )?(.+?)(?:'s)? net worth$/],
   ['location', /^where is (?:the )?(.+)$/],
   ['length', /^how long is (?:the )?(.+)$/], ['length', /^(?:the )?length of (?:the )?(.+)$/],
+  // Last, so "when was X born / founded / built" are read as those first.
+  ['started', /^when did (?:the )?(.+?) (?:start|begin)$/], ['started', /^what year did (?:the )?(.+?) (?:start|begin)$/],
+  ['ended', /^when did (?:the )?(.+?) (?:end|finish|stop)$/], ['ended', /^what year did (?:the )?(.+?) (?:end|finish)$/],
+  ['when', /^when (?:was|were|is|did) (?:the )?(.+?)(?: happen| take place| occur)?$/],
+  ['when', /^what (?:year|date) (?:was|were|did) (?:the )?(.+?)(?: happen| take place| occur)?$/],
 ];
 
 export function parseQuestion(query) {
@@ -145,7 +159,7 @@ export async function factAnswer(kind, entity, { signal } = {}) {
   const claims = entity.claims;
   // The first property with a usable (non-deprecated) value: Everest's "height" is deprecated, its elevation isn't.
   const pid = answerProp(entity, kind);
-  if (!pid) return null;
+  if (!pid && !EXACT_SUBJECT.has(kind)) return null;
 
   if (kind === 'age') {
     const born = parseTime(values(claims, 'P569')[0]);
@@ -154,6 +168,32 @@ export async function factAnswer(kind, entity, { signal } = {}) {
     return died?.date
       ? { answer: `Died aged ${ageBetween(born.date, died.date)}`, note: `${fmtDate(born)} – ${fmtDate(died)}` }
       : { answer: `${ageBetween(born.date)} years`, note: `Born ${fmtDate(born)}` };
+  }
+
+  if (EXACT_SUBJECT.has(kind)) {
+    const time = (p) => {
+      const dv = best(claims, p)[0]?.mainsnak?.datavalue;
+      return dv?.type === 'time' ? parseTime(dv) : null;
+    };
+    const start = time('P580');
+    const end = time('P582');
+    if (kind === 'when' && start && end) {
+      const years = end.year - start.year;
+      return { answer: `${fmtDate(start)} – ${fmtDate(end)}`, note: years >= 1 ? `About ${years} year${years === 1 ? '' : 's'}` : '' };
+    }
+    const one = pid ? time(pid) : null;
+    // A yearly day ("when is christmas"): Wikidata's day in the year.
+    if (!one && kind === 'when') {
+      const day = values(claims, 'P837')[0]?.value?.id;
+      if (!day) return null;
+      const label = labelText((await getEntities([day], 'labels', signal).catch(() => ({})))[day]);
+      // Wikidata's labels say "December 25"; the rest of the page says "25 December".
+      return label ? { answer: label.replace(/^([A-Z][a-z]+) (\d{1,2})$/, '$2 $1'), note: 'Every year' } : null;
+    }
+    if (!one) return null;
+    // Asked when something ended, a date it started is no answer.
+    if (kind === 'ended' && pid === 'P585' && start) return null;
+    return { answer: fmtDate(one), note: kind === 'when' && start && !end ? 'Start date; Wikidata gives no end' : '' };
   }
 
   // Counts that change over time: the latest figure only.
@@ -190,7 +230,19 @@ export async function resolveSubject(text, { signal } = {}) {
   if (!hit) return null;
   const qid = info.ids?.[hit.title] ?? null;
   const entity = await fetchSubject({ qid, title: hit.title }, { signal });
-  return entity ? { title: hit.title, entity } : null;
+  return entity ? { title: hit.title, entity, redirect: hit.redirecttitle ?? null } : null;
+}
+
+// Whether a question's subject is exactly the article found, by its title or a
+// redirect to it: "ww2" is World War II (a redirect), "world war 2" is too
+// (Roman numerals read as numbers), "next eclipse" is no particular eclipse.
+const ROMAN = { i: '1', ii: '2', iii: '3', iv: '4', v: '5', vi: '6', vii: '7', viii: '8' };
+const sameName = (text) => String(text ?? '').toLowerCase()
+  .replace(/\s*\(.*?\)\s*/g, ' ').replace(/^the\s+/, '').replace(/[^a-z0-9]+/g, ' ').trim()
+  .split(' ').map((w) => ROMAN[w] ?? w).join(' ');
+export function subjectMatches(text, subj) {
+  const want = sameName(text);
+  return Boolean(want && (want === sameName(subj.title) || (subj.redirect && want === sameName(subj.redirect))));
 }
 
 // Up to five questions Wikidata can answer about a subject, in a sensible order.

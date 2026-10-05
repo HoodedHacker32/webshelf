@@ -21,7 +21,8 @@ const re = (source) => new RegExp(source, 'giu');
 // The kinds of short answer, each with the patterns that find it, best first.
 const KINDS = {
   ago: [re(`${RANGE}\\s?(?:${TIME_UNITS})(?: or so| or more)? ago`), re(DATE)],
-  when: [re(DATE), re(`${RANGE}\\s?(?:${TIME_UNITS}) ago`)],
+  // A span ("1 September 1939 – 2 September 1945", "from 1939 to 1945") before a single date.
+  when: [re(`(?:from |between )?(?:${DATE})\\s?(?:–|—|-|to|until|and)\\s?(?:${DATE})`), re(DATE), re(`${RANGE}\\s?(?:${TIME_UNITS}) ago`)],
   age: [re(`${RANGE}[- ]years?[- ]old`), re(`aged? ${RANGE}`), re(`${RANGE} years`)],
   amount: [re(`${RANGE}\\s?(?:${MEASURE_UNITS})(?![\\p{L}])`)],
   measure: [re(`${RANGE}\\s?(?:${MEASURE_UNITS})(?![\\p{L}])`)],
