@@ -107,6 +107,29 @@
       </div>
     </section>
 
+    <section class="settings-section" id="dorking" aria-labelledby="s-dorking">
+      <h2 id="s-dorking">Advanced search</h2>
+
+      <div class="setting">
+        <label class="check"><input type="checkbox" id="opt-dorking" data-setting="dorking"> Easy dorking</label>
+        <p class="setting-help">Adds a Dorking button to the results page: a form that writes search operators for you, with starting points such as PDF documents or government sites, and a “this site” link on each result. For research, and for finding pages directly.</p>
+      </div>
+
+      <p class="settings-prose">Operators work in any search, with or without Easy dorking:</p>
+      <dl class="operator-list">
+        <div><dt><code>"sea level rise"</code></dt><dd>These words together, in this order.</dd></div>
+        <div><dt><code>-opinion</code></dt><dd>Leave out results with this word. <code>-"a phrase"</code> works too.</dd></div>
+        <div><dt><code>ireland OR scotland</code></dt><dd>Either word.</dd></div>
+        <div><dt><code>site:gov.ie</code></dt><dd>Only this site or domain, and its subdomains. <code>site:edu</code> matches every .edu address. Several, joined by OR, mean any of them.</dd></div>
+        <div><dt><code>-site:pinterest.com</code></dt><dd>Leave out this site.</dd></div>
+        <div><dt><code>filetype:pdf</code></dt><dd>Only addresses ending in .pdf (or any other extension). <code>ext:pdf</code> is the same.</dd></div>
+        <div><dt><code>intitle:annual</code></dt><dd>The word must be in the page title.</dd></div>
+        <div><dt><code>inurl:research</code></dt><dd>The word must be in the address.</dd></div>
+        <div><dt><code>intext:warming</code></dt><dd>The word must be in the text shown under the result.</dd></div>
+      </dl>
+      <p class="settings-prose">Webshelf checks every result against the operators and tells you when none match. Bing, where most results come from, often ignores <code>site:</code> and <code>filetype:</code> when Webshelf’s server asks, so a results page with few matches links the same search on DuckDuckGo, Brave, Mojeek and Bing, which apply them.</p>
+    </section>
+
     <section class="settings-section" id="location" aria-labelledby="s-location">
       <h2 id="s-location">Weather and time</h2>
 

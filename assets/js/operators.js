@@ -5,7 +5,12 @@
 //   site:example.com only that site (and its subdomains)
 //   filetype:pdf     only addresses ending in .pdf (also ext:pdf)
 //   intitle:word     the word must be in the title
+//   inurl:word       the word must be in the address
+//   intext:word      the word must be in the text (the snippet, here)
 //   a OR b           either word (passed to the engines; nothing to check here)
+//
+// Several site: (or filetype:) values mean any of them: no page is on two
+// sites at once.
 //
 // The whole query still goes to the engines, which understand most of these.
 // Results are then checked here too, because not every engine does.
@@ -17,10 +22,10 @@
 // colon never breaks a search.
 
 const TOKEN = /(-?)"([^"]*)"|(-?)(\w+):(?:"([^"]*)"|(\S+))|(\S+)/g;
-const OPERATORS = new Set(['site', 'filetype', 'ext', 'intitle']);
+const OPERATORS = new Set(['site', 'filetype', 'ext', 'intitle', 'inurl', 'intext']);
 
 export function parseQuery(query) {
-  const parsed = { words: [], phrases: [], exclude: [], site: [], filetype: [], intitle: [], hasOr: false };
+  const parsed = { words: [], phrases: [], exclude: [], site: [], filetype: [], intitle: [], inurl: [], intext: [], hasOr: false };
   for (const m of String(query ?? '').matchAll(TOKEN)) {
     const [, phraseNeg, phrase, opNeg, opName, opQuoted, opValue, word] = m;
     if (phrase !== undefined) {
@@ -39,13 +44,13 @@ export function parseQuery(query) {
       else parsed.words.push(text.toLowerCase());
     }
   }
-  parsed.any = Boolean(parsed.phrases.length || parsed.exclude.length || parsed.site.length || parsed.filetype.length || parsed.intitle.length);
+  parsed.any = Boolean(parsed.phrases.length || parsed.exclude.length || parsed.site.length || parsed.filetype.length || parsed.intitle.length || parsed.inurl.length || parsed.intext.length);
   return parsed;
 }
 
 // The words to rank by and to look things up with: no operators, no quotes.
 export function plainQuery(parsed) {
-  return [...parsed.phrases, ...parsed.words, ...parsed.intitle].join(' ').trim();
+  return [...parsed.phrases, ...parsed.words, ...parsed.intitle, ...parsed.intext].join(' ').trim();
 }
 
 const textOf = (runsOrText) => (Array.isArray(runsOrText) ? runsOrText.map((r) => r.text).join('') : String(runsOrText ?? '')).toLowerCase();
@@ -55,12 +60,16 @@ const pathOf = (url) => { try { return new URL(url).pathname.toLowerCase(); } ca
 // Each check: does this result satisfy the operator?
 function checks(parsed) {
   const list = [];
-  for (const site of parsed.site) {
-    const want = site.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '');
-    list.push({ label: `site:${site}`, ok: (r) => { const h = hostOf(r.url); return h === want || h.endsWith(`.${want}`); } });
+  if (parsed.site.length) {
+    const wants = parsed.site.map((site) => site.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, ''));
+    list.push({ label: parsed.site.map((s) => `site:${s}`).join(' OR '), ok: (r) => { const h = hostOf(r.url); return wants.some((w) => h === w || h.endsWith(`.${w}`)); } });
   }
-  for (const type of parsed.filetype) list.push({ label: `filetype:${type}`, ok: (r) => pathOf(r.url).endsWith(`.${type}`) });
+  if (parsed.filetype.length) {
+    list.push({ label: parsed.filetype.map((t) => `filetype:${t}`).join(' OR '), ok: (r) => parsed.filetype.some((t) => pathOf(r.url).endsWith(`.${t}`)) });
+  }
   for (const word of parsed.intitle) list.push({ label: `intitle:${word}`, ok: (r) => textOf(r.title).includes(word) });
+  for (const word of parsed.inurl) list.push({ label: `inurl:${word}`, ok: (r) => r.url.toLowerCase().includes(word) });
+  for (const word of parsed.intext) list.push({ label: `intext:${word}`, ok: (r) => textOf(r.snippet).includes(word) });
   for (const phrase of parsed.phrases) {
     list.push({ label: `"${phrase}"`, ok: (r) => `${textOf(r.title)} ${textOf(r.snippet)} ${r.url.toLowerCase()}`.includes(phrase) });
   }
@@ -69,6 +78,8 @@ function checks(parsed) {
     if (name === 'site') list.push({ label: `-site:${value}`, ok: (r) => !hostOf(r.url).endsWith(value.replace(/^www\./, '')) });
     else if (name === 'filetype') list.push({ label: `-filetype:${value}`, ok: (r) => !pathOf(r.url).endsWith(`.${value}`) });
     else if (name === 'intitle') list.push({ label: `-intitle:${value}`, ok: (r) => !textOf(r.title).includes(value) });
+    else if (name === 'inurl') list.push({ label: `-inurl:${value}`, ok: (r) => !r.url.toLowerCase().includes(value) });
+    else if (name === 'intext') list.push({ label: `-intext:${value}`, ok: (r) => !textOf(r.snippet).includes(value) });
     else list.push({ label: `-${ex}`, ok: (r) => !`${textOf(r.title)} ${textOf(r.snippet)} ${r.url.toLowerCase()}`.includes(ex) });
   }
   return list;

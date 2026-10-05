@@ -47,6 +47,14 @@ p.setting-status { min-height: 22px; margin-top: 8px; }
 .privacy-item dt { font-weight: 700; }
 .privacy-item dd { margin: 2px 0 0; color: var(--ink-2); }
 
+.operator-list { margin-top: 8px; max-width: 62ch; }
+.operator-list > div { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr); gap: 4px 16px; padding: 8px 0; border-bottom: 1px solid var(--bevel-lo); }
+.operator-list dt code { white-space: nowrap; }
+.operator-list dd { margin: 0; color: var(--ink-2); }
+@media (max-width: 559px) {
+  .operator-list > div { grid-template-columns: 1fr; }
+}
+
 .settings-saved {
   position: fixed;
   left: 50%;

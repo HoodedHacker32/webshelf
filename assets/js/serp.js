@@ -17,6 +17,7 @@ import { musicArtist } from './rank.js';
 import { mountTabs } from './page.js';
 import { parseQuery, plainQuery, applyOperators } from './operators.js';
 import { mountTools, pageUrl } from './searchtools.js';
+import { mountDorking, elsewhereLinks, siteSearchUrl } from './dorking.js';
 import { peopleAsk, paaBlock } from './paa.js';
 import './theme.js';
 
@@ -49,6 +50,7 @@ $('#serp-h1').textContent = `${SITE.name} results for ${query}`;
 $('#serp-search').replaceChildren(createSearchbox({ value: query }));
 mountTabs(query);
 mountTools({ query, tools, settings, supports: provider.supports ?? {} });
+if (settings.dorking) mountDorking({ parsed, open: params.get('dork') === '1' });
 addHistory(query);
 mountLogos().then(() => { if (pending) rockBook($('#toolbar')); });
 
@@ -121,7 +123,10 @@ function resultItem(r, index) {
 
   return h('li', { class: 'result' },
     h('h3', { class: 'result-title' }, h('a', { href: r.url, target, rel }, runs(r.title))),
-    h('div', { class: 'result-meta' }, h('cite', { class: 'result-cite' }, address(r.url)), toggle),
+    h('div', { class: 'result-meta' }, h('cite', { class: 'result-cite' }, address(r.url)), toggle,
+      settings.dorking && !parsed.site.length
+        ? h('a', { class: 'result-about-btn result-site', href: siteSearchUrl(host, plain), 'aria-label': `Search this site only (${host})` }, 'this site')
+        : null),
     r.snippet.length ? h('p', { class: 'result-snippet' }, runs(r.snippet)) : null,
     r.sitelinks?.length ? h('ul', { class: 'sitelinks', 'aria-label': `More from ${host}` }, r.sitelinks.map((l) => h('li', null,
       h('a', { href: l.url, target, rel }, runs(l.title).length ? runs(l.title) : address(l.url)),
@@ -382,8 +387,8 @@ async function loadResults() {
   if (filtered.unmet.length) {
     notices.append(h('p', { class: 'serp-notice' }, 'No results matched ',
       filtered.unmet.flatMap((u, i) => [i ? ', ' : '', h('b', null, u)]),
-      '. The search engines Webshelf can reach don’t always support ', filtered.unmet.length > 1 ? 'these operators' : 'this operator',
-      '; try the search without ', filtered.unmet.length > 1 ? 'them' : 'it', '.'));
+      '. The engines Webshelf’s server asks often ignore operators, so few of their results fit. Search without ', filtered.unmet.length > 1 ? 'them' : 'it',
+      ', or run the same search on ', ...elsewhereLinks(query), '.'));
   }
   if (provider.id === 'webshelf' && BACKEND.searxngUrl && !provider.last.server) notices.append(degradedNotice());
   list.before(notices);

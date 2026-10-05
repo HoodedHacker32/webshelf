@@ -16,6 +16,7 @@ export const DEFAULTS = {
   home: null,              // { name, lat, lon, tz }
   safeSearch: 1,           // 0 off | 1 moderate | 2 strict
   language: 'en',          // results language, a SearXNG language code
+  dorking: false,          // the operator form on the results page
 };
 
 function read(key, fallback) {

@@ -42,3 +42,29 @@ test('an operator no result meets is named', () => {
   assert.deepEqual(out.results, []);
   assert.deepEqual(out.unmet, ['filetype:pdf']);
 });
+
+test('inurl:, intext: and several sites', () => {
+  const p = parseQuery('climate inurl:report intext:warming site:bbc.co.uk OR site:gov.uk');
+  assert.deepEqual(p.inurl, ['report']);
+  assert.deepEqual(p.intext, ['warming']);
+  assert.equal(plainQuery(p), 'climate warming');
+  const list = [
+    r('https://www.bbc.co.uk/news/report-1', 'Climate', 'global warming'),
+    r('https://www.gov.uk/report/2', 'Climate', 'warming trends'),
+    r('https://example.com/report', 'Climate', 'warming'),
+    r('https://www.gov.uk/guide', 'Climate', 'warming'),
+  ];
+  assert.deepEqual(applyOperators(list, p).results.map((x) => x.url), ['https://www.bbc.co.uk/news/report-1', 'https://www.gov.uk/report/2']);
+});
+
+test('the dorking form builds the search it describes', async () => {
+  const { buildQuery, fieldsFrom } = await import('../assets/js/dorking.js');
+  const q = buildQuery({ all: 'climate report', exact: 'sea level', any: 'ireland scotland', none: 'blog', site: 'gov.ie gov.uk', notsite: 'pinterest.com', filetype: 'pdf', intitle: 'annual', inurl: 'research' });
+  assert.equal(q, 'climate report "sea level" ireland OR scotland -blog site:gov.ie OR site:gov.uk -site:pinterest.com filetype:pdf intitle:annual inurl:research');
+  const f = fieldsFrom(parseQuery(q));
+  assert.equal(f.exact, 'sea level');
+  assert.equal(f.site, 'gov.ie gov.uk');
+  assert.equal(f.notsite, 'pinterest.com');
+  assert.equal(f.filetype, 'pdf');
+  assert.equal(f.inurl, 'research');
+});

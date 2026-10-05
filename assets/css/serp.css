@@ -506,6 +506,8 @@
 @media (max-width: 759px) {
   .toolbar-tabs { grid-column: 1 / -1; grid-row: 3; margin-top: 6px; overflow-x: auto; scrollbar-width: none; }
   .tab { flex: none; }
+  /* Five tabs (with Dorking on) fit a 360px phone without scrolling. */
+  .toolbar-tabs:has(.dork-toggle) .tab { padding-inline: 10px; }
 }
 @media (pointer: coarse) {
   .tab { padding-top: 10px; padding-bottom: 9px; }
@@ -573,6 +575,38 @@
 .tools-check { display: inline-flex; align-items: center; gap: 6px; }
 @media (max-width: 759px) {
   .search-tools { padding-left: var(--page-margin); }
+}
+
+/* Easy dorking: the operator form (settings: Advanced search) ------------- */
+
+.dork-toggle { margin-left: auto; cursor: pointer; }
+.dork-toggle + .tools-toggle { margin-left: 0; }
+.dork-toggle[aria-expanded="true"] { background: var(--pressed); box-shadow: inset 1px 1px 0 var(--bevel-lo); }
+.dork-panel {
+  padding: 14px var(--page-margin) 16px calc(var(--page-margin) + 186px + 28px);
+  border-bottom: 1px solid var(--bevel-lo);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+.dork-panel[hidden] { display: none; }
+.dork-form { max-width: 760px; }
+.dork-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.dork-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+.dork-field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.dork-field label { color: var(--ink-2); }
+.dork-field .field { width: 100%; min-height: 32px; font-size: var(--text-sm); }
+.dork-result { display: flex; align-items: baseline; gap: 8px; margin-top: 14px; padding: 8px 10px; background: var(--field); box-shadow: inset 1px 1px 0 var(--bevel-lo), inset -1px -1px 0 var(--bevel-hi); }
+.dork-preview-label { flex: none; color: var(--meta); }
+.dork-preview { min-width: 0; font-family: var(--font-mono); font-size: var(--text-mono); overflow-wrap: anywhere; color: var(--ink); }
+.dork-preview.is-empty { color: var(--meta); font-family: var(--font-ui); font-size: var(--text-sm); }
+.dork-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; }
+.dork-elsewhere { color: var(--ink-2); }
+.dork-note { max-width: 64ch; margin-top: 10px; color: var(--meta); }
+.result-site { margin-left: 2px; text-decoration: none; }
+.result-site:hover { text-decoration: underline; }
+@media (max-width: 759px) {
+  .dork-panel { padding-left: var(--page-margin); }
+  .dork-fields { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Notices above results: unmet operators, reduced results ------------------ */
