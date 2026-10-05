@@ -8,6 +8,10 @@ use_default_settings:
     # engine that starts failing.
     # Tested from Render, 2026-10-03: Mwmbl, Wikipedia and Bing answer (Bing in
     # English only from a US region, so the service runs in Virginia).
+    # Retested 2026-10-05: Bing now searches only the first word of a query
+    # sent from a server (so Webshelf's ranking trusts it less when its results
+    # lack the other words); Yep and Mojeek deny access, DuckDuckGo times out,
+    # Yahoo returns Bing's results, Qwant shows a CAPTCHA.
     # Google (access denied), Startpage and Qwant (CAPTCHA), Mojeek and
     # DuckDuckGo (timeouts) and Brave (rate limited) are blocked from cloud
     # addresses; Yahoo returns unrelated spam. Blocked engines only add delay.

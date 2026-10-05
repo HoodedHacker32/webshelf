@@ -73,7 +73,19 @@ export default {
 
     // The server already includes Mwmbl, so Mwmbl alone is only used without it.
     const server = await fromServer;
-    const lists = server ? [{ engine: 'server', results: server }] : [];
+    // The server's list is in its own merged order; split it back into each
+    // engine's list, so every engine's results are ranked by its own order.
+    const lists = [];
+    if (server) {
+      const byEngine = new Map();
+      for (const r of server) {
+        for (const e of r.engines?.length ? r.engines : ['server']) {
+          if (!byEngine.has(e)) byEngine.set(e, []);
+          byEngine.get(e).push({ ...r, engines: [e] });
+        }
+      }
+      for (const [engine, results] of byEngine) lists.push({ engine, results });
+    }
     if (!server) {
       const own = await fromMwmbl;
       if (own) lists.push({ engine: 'mwmbl', results: own });
@@ -82,7 +94,7 @@ export default {
 
     const sites = await Promise.race([official, wait(2500).then(() => [])]);
     const host = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; } };
-    const { results, left } = await rank(rankQuery, lists, { officialHosts: sites.map((s) => host(s.url)) });
+    const { results, left } = await rank(rankQuery, lists, { officialHosts: sites.map((s) => host(s.url)), crowd: !/(?:^|\s)site:/i.test(query) });
     this.last = { server: Boolean(server), left, meta: server?.meta ?? { corrections: [], suggestions: [] } };
     // An official site no engine found still belongs first: add it, credited to
     // the open database that names it.

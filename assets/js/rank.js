@@ -3,7 +3,10 @@
 //
 // Each result's score is the sum of:
 //   1. Agreement: reciprocal-rank fusion over every engine that returned it
-//      (a result two engines rank highly beats one engine's favourite).
+//      (a result two engines rank highly beats one engine's favourite). An
+//      engine whose top results mostly lack the words searched for counts for
+//      less on that search (Bing, asked by a server, sometimes searches only
+//      the first word).
 //   2. Authority: the site's place in the Tranco top-50,000 list.
 //   3. Match: every query word present somewhere (missing words cost a lot),
 //      words in the title, and the address itself spelling the query
@@ -22,6 +25,8 @@ import { getJSON } from './dom.js';
 // + WEIGHTS.navigational               if the address spells the search ("gordonramsay.com")
 // + WEIGHTS.officialHome / officialPage if it's the official site (home page / other page)
 // + WEIGHTS.severalEngines             if more than one engine found it
+// Engine weight is scaled, per search, by trust = (share of the search's words
+// its top results contain, on average) ^ WEIGHTS.trustPower, at least trustMin.
 export const WEIGHTS = {
   // How much each engine's ranking counts. Bing's index is the largest we reach.
   engines: { bing: 1, brave: 1, wikipedia: 0.8, wikidata: 0.5, mwmbl: 0.55 },
@@ -39,6 +44,13 @@ export const WEIGHTS = {
   officialHome: 6,
   officialPage: 3,
   severalEngines: 0.3,
+  // How many of an engine's top results its trust is judged on, how sharply
+  // missing words reduce it, and the least it can fall to.
+  trustDepth: 10,
+  trustPower: 2,
+  trustMin: 0.1,
+  // Results from one site before the other sites have had their turn.
+  perHost: 2,
 };
 
 // "www.en.m.wikipedia.org" -> "wikipedia.org" style lookups try each suffix.
@@ -124,7 +136,7 @@ const words = (text) => String(text ?? '').toLowerCase().split(/[^\p{L}\p{N}]+/u
 // lists: [{ engine, results }] where each result is { url, title, snippet, ... }.
 // data (optional, for tests): { rank: Map(host -> place), farms: Set(host), size }.
 // Returns { results, left } with left = how many AI-farm results were removed.
-export async function rank(query, lists, { officialHosts = [], data = null } = {}) {
+export async function rank(query, lists, { officialHosts = [], data = null, crowd = true } = {}) {
   const { rank: top, farms, size } = data ?? await loadLists();
   // Little words ("to", "in", "the") match almost any page, so only the words
   // that carry meaning count; the address check still uses them all
@@ -134,13 +146,30 @@ export async function rank(query, lists, { officialHosts = [], data = null } = {
   const terms = meaningful.length ? meaningful : all;
   const squashed = all.join('');
   const official = new Set(officialHosts.map((h) => h.replace(/^www\./, '').toLowerCase()));
+  const textOf = (r) => `${words(r.title?.map?.((x) => x.text).join('') ?? r.title).join(' ')} ${words(r.snippet?.map?.((x) => x.text).join('') ?? r.snippet).join(' ')} ${words(r.url).join(' ')}`;
+  const coverage = (r) => {
+    if (!terms.length) return 1;
+    const text = textOf(r);
+    return terms.filter((t) => text.includes(t)).length / terms.length;
+  };
+  // Trust in each engine for this search (only judged on searches of two or
+  // more meaningful words; one word is always "covered" by the engine's pick).
+  const trustOf = (results) => {
+    if (terms.length < 2 || !results.length) return 1;
+    const sample = results.slice(0, WEIGHTS.trustDepth);
+    const mean = sample.reduce((sum, r) => sum + coverage(r), 0) / sample.length;
+    return Math.max(WEIGHTS.trustMin, mean ** WEIGHTS.trustPower);
+  };
   const merged = new Map();
+  const trust = {};
 
   for (const { engine, results } of lists) {
+    const engineTrust = trustOf(results);
+    trust[engine] = engineTrust;
     results.forEach((r, i) => {
       const key = normaliseUrl(r.url);
       const engines = r.engines?.length ? r.engines : [engine];
-      const weight = Math.max(...engines.map((e) => WEIGHTS.engines[e] ?? WEIGHTS.otherEngine));
+      const weight = Math.max(...engines.map((e) => WEIGHTS.engines[e] ?? WEIGHTS.otherEngine)) * engineTrust;
       const entry = merged.get(key) ?? { ...r, url: r.url, engines: new Set(), agreement: 0 };
       engines.forEach((e) => entry.engines.add(e));
       entry.agreement += weight / (WEIGHTS.rrfK + i + 1);
@@ -164,8 +193,7 @@ export async function rank(query, lists, { officialHosts = [], data = null } = {
     const inTitle = terms.length ? terms.filter((t) => title.includes(t)).length / terms.length : 0;
     // Every word somewhere (title, snippet or address) matters most: a page about
     // "Gordon" the engineering firm isn't an answer to "gordon ramsay".
-    const text = `${title.join(' ')} ${words(entry.snippet?.map?.((r) => r.text).join('') ?? entry.snippet).join(' ')} ${words(entry.url).join(' ')}`;
-    const covered = terms.length ? terms.filter((t) => text.includes(t)).length / terms.length : 1;
+    const covered = coverage(entry);
     const navigational = squashed.length > 3 && host.replace(/\.[a-z.]+$/, '').replace(/[^a-z0-9]/g, '') === squashed;
 
     const isOfficial = official.has(host) || [...official].some((o) => host.endsWith(`.${o}`));
@@ -183,5 +211,17 @@ export async function rank(query, lists, { officialHosts = [], data = null } = {
     scored.push({ ...entry, engines: [...entry.engines], score });
   }
   scored.sort((a, b) => b.score - a.score);
-  return { results: scored, left };
+  // Host crowding, as classic search had it: at most WEIGHTS.perHost results
+  // from one site before every other site has had its turn; the rest follow.
+  // (Off for site: searches, where every result is from one site.)
+  if (!crowd) return { results: scored, left, trust };
+  const seen = new Map();
+  const first = [];
+  const later = [];
+  for (const r of scored) {
+    const h = hostOfUrl(r.url);
+    seen.set(h, (seen.get(h) ?? 0) + 1);
+    (seen.get(h) <= WEIGHTS.perHost ? first : later).push(r);
+  }
+  return { results: first.concat(later), left, trust };
 }

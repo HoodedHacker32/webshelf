@@ -66,3 +66,26 @@ test('addresses are normalised', () => {
   assert.equal(normaliseUrl('https://www.example.com/a/?utm_source=x#top'), 'https://example.com/a');
   assert.equal(normaliseUrl('https://en.m.wikipedia.org/wiki/Cat'), 'https://en.wikipedia.org/wiki/Cat');
 });
+
+test('an engine whose results lack the searched words counts for less', async () => {
+  const { rank } = await import('../assets/js/rank.js');
+  const r = (url, title) => ({ url, title: [{ text: title }], snippet: [] });
+  // Bing searched only the first word; Mwmbl searched them all.
+  const bing = ['gfs.com', 'gfsstore.com', 'gordon-inc.com', 'gordon.edu'].map((h) => r(`https://${h}/`, 'Gordon Food Service'));
+  const mwmbl = [r('https://example-restaurants.com/ramsay', 'Gordon Ramsay restaurants guide'), r('https://other.example/list', 'Every Gordon Ramsay restaurant')];
+  const { results, trust } = await rank('gordon ramsay restaurants', [{ engine: 'bing', results: bing }, { engine: 'mwmbl', results: mwmbl }],
+    { data: { rank: new Map(), farms: new Set(), size: 50000 } });
+  assert.ok(trust.bing < trust.mwmbl);
+  assert.equal(new URL(results[0].url).hostname, 'example-restaurants.com');
+});
+
+test('one site gets at most two places before the others have had a turn', async () => {
+  const { rank } = await import('../assets/js/rank.js');
+  const r = (url) => ({ url, title: [{ text: 'sourdough starter' }], snippet: [] });
+  const list = ['https://a.com/1', 'https://a.com/2', 'https://a.com/3', 'https://b.com/1'].map(r);
+  const data = { rank: new Map(), farms: new Set(), size: 50000 };
+  const crowded = await rank('sourdough starter', [{ engine: 'bing', results: list }], { data });
+  assert.deepEqual(crowded.results.map((x) => x.url), ['https://a.com/1', 'https://a.com/2', 'https://b.com/1', 'https://a.com/3']);
+  const site = await rank('sourdough starter', [{ engine: 'bing', results: list }], { data, crowd: false });
+  assert.equal(site.results[2].url, 'https://a.com/3');
+});
