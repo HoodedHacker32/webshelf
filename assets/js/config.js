@@ -12,7 +12,7 @@ export const BACKEND = {
 export const SITE = {
   name: 'Webshelf',
   // Link to the public source repository. Footer links are hidden while null.
-  repoUrl: null,
+  repoUrl: 'https://github.com/HoodedHacker32/webshelf',
   // Results provider used when the visitor hasn't picked one in Settings.
   // PLACEHOLDER: the real web results source is still undecided.
   defaultProvider: 'webshelf',
