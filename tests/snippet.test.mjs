@@ -63,3 +63,11 @@ test('a whole date beats a year that comes first', () => {
   const texts = ['Taylor Swift age and birthday 2026: born December 13, 1989, she is 36 in mid-June before turning 37 on December 13.'];
   assert.equal(answerOf(findSnippet("when is taylor swift's birthday", texts, ['taylor', 'swift', 'birthday'])), 'December 13, 1989');
 });
+
+test('a page title can show a snippet is about the question', () => {
+  const texts = ['Watch highlights from the Apollo 11 mission including the launch on July 16, 1969, the landing of the lunar module.',
+    'On July 20, 1969, humans walked on the Moon for the first time. We look back at the legacy of our first small steps.'];
+  const titles = ['Apollo 11 - NASA', 'Apollo 11: The Moon Landing | National Air and Space Museum'];
+  const s = findSnippet('when was the moon landing', texts, ['moon', 'landing'], titles);
+  assert.equal(answerOf(s), 'July 20, 1969');
+});

@@ -98,7 +98,10 @@ export default {
     this.last = { server: Boolean(server), left, meta: server?.meta ?? { corrections: [], suggestions: [] } };
     // An official site no engine found still belongs first: add it, credited to
     // the open database that names it.
-    const missing = page > 1 ? [] : sites.filter((s) => !results.some((r) => host(r.url) === host(s.url)))
+    // Also when the engines found only an inner page of it: the home page is
+    // what the search names, and the inner pages then sit under it as sitelinks.
+    const isHome = (url) => { try { const u = new URL(url); return u.pathname.replace(/\/(?:index\.html?)?$/, '') === '' && !u.search; } catch { return false; } };
+    const missing = page > 1 ? [] : sites.filter((s) => !results.some((r) => host(r.url) === host(s.url) && (isHome(r.url) || !isHome(s.url))))
       .map((s) => ({
         url: s.url,
         title: [{ text: `${s.name} – official website`, bold: false }],

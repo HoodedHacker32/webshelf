@@ -176,7 +176,7 @@ async function featuredSnippet() {
     return !m || plain.toLowerCase().includes(m[1].toLowerCase());
   });
   const text = (r) => withoutDate(r.snippet).map((x) => x.text).join('');
-  const pick = findSnippet(plain, top.map(text), terms);
+  const pick = findSnippet(plain, top.map(text), terms, top.map((r) => r.title.map((x) => x.text).join('')));
   // "Who is …" questions have no short answer to find, and a passage that
   // merely mentions the words isn't an answer either.
   if (!pick || (!pick.answer && /^who\b/i.test(plain))) return;

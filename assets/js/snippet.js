@@ -58,7 +58,9 @@ const words = (text) => text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
 // For a question and the top results' snippets (plain text, best result
 // first), the best passage: { index, passage, answer: { start, end } | null }.
 // `terms` are the question's meaningful words. `index` is which snippet.
-export function findSnippet(question, texts, terms) {
+// `titles` (optional) are the pages' titles: a snippet that doesn't repeat
+// the question's words can still be about it ("Apollo 11: The Moon Landing").
+export function findSnippet(question, texts, terms, titles = []) {
   const kind = answerKind(question);
   const patterns = kind ? [...KINDS[kind]] : [];
   // "How many bones …": a number followed by one of the question's words
@@ -76,7 +78,7 @@ export function findSnippet(question, texts, terms) {
     const all = sentences(text);
     // Whether the snippet is about the question is judged on all of it; the
     // sentence holding the answer only breaks ties.
-    const cover = coverOf(text);
+    const cover = coverOf(`${titles[index] ?? ''} ${text}`);
     all.forEach((s, at) => {
       let answer = null;
       for (const [i, pattern] of patterns.entries()) {
