@@ -3,7 +3,9 @@
 // assets/vendor), downloadable as PNG or SVG. Nothing is sent anywhere.
 
 import { h } from '../dom.js';
-import qrcode from '../../vendor/qrcode.js';
+
+// The library (57 KB) loads only when a QR code is asked for.
+let qrcode = null;
 
 export function match(query) {
   const m = /^(?:make (?:a |me a )?|create (?:a )?|generate (?:a )?)?qr(?: ?code)?(?: generator| maker)?(?:\s+(?:for|of|to|with)?\s*(.+))?$/i.exec(query.trim());
@@ -29,7 +31,8 @@ function download(name, blob) {
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 
-export function render({ text }) {
+export async function render({ text }) {
+  qrcode ??= (await import('../../vendor/qrcode.js')).default;
   const input = h('input', { class: 'field qr-input', type: 'text', value: text, 'aria-label': 'Text or link for the QR code', placeholder: 'Type a link or any text', maxlength: '1200' });
   const picture = h('div', { class: 'qr-picture', role: 'img' });
   const note = h('p', { class: 'answer-note qr-note' });

@@ -780,7 +780,14 @@ async function fillTopic(title, ent, panel, subject) {
   const fileOf = (url) => decodeURIComponent(url).replace(/^.*(?:FilePath\/|\/\d+px-)/, '').replace(/[?#].*$/, '')
     .replace(/_/g, ' ').toLowerCase().replace(/\.[a-z]+$/, '').replace(/\(?\bcrop(ped)?\b\)?/g, '').replace(/[\d\s().,-]+$/g, '').trim();
   const seenFiles = new Set(photos.map(fileOf));
-  for (const img of images) {
+  // Commons is searched by the title alone, so a file has to be named for
+  // the topic (every word of its title), and a creative work takes no Commons
+  // photos at all: "Inception" also finds a Peugeot concept car of that name.
+  const isWork = /\b(?:film|series|sitcom|miniseries|album|single|song|novel|book|video game|musical|opera|play|painting|franchise|episode|soundtrack)\b/i.test(sum.description ?? '');
+  const titleWords = (plainName(sum.title).toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).filter((w) => w.length > 2);
+  const namedFor = (img) => { const t = img.title.toLowerCase(); return titleWords.every((w) => t.includes(w)); };
+  for (const img of isWork ? [] : images) {
+    if (!namedFor(img)) continue;
     if (photos.length >= 3) break;
     if (img.mime !== 'image/jpeg' || /signature|autograph|logo|map|flag|coat of arms/i.test(img.title)) continue;
     if (seenFiles.has(fileOf(img.thumb))) continue;

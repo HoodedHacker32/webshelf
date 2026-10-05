@@ -88,7 +88,7 @@ async function commons() {
 // images share one height and fill the width, the way image searches look.
 function tile(item, i) {
   const ratio = item.w / item.h;
-  const img = h('img', { src: item.thumb, alt: item.title, loading: i < 12 ? 'eager' : 'lazy', referrerpolicy: 'no-referrer', width: String(Math.round(ratio * 180)), height: '180' });
+  const img = h('img', { src: item.thumb, alt: item.title, loading: i < (innerWidth < 760 ? 4 : 12) ? 'eager' : 'lazy', referrerpolicy: 'no-referrer', width: String(Math.round(ratio * 180)), height: '180' });
   // Openverse's thumbnail service sometimes fails; the original image is next,
   // and only a tile whose image can't load at all is hidden.
   img.addEventListener('error', () => {

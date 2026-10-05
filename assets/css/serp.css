@@ -511,7 +511,7 @@
   .toolbar-tabs:has(.dork-toggle) .tab { padding-inline: 10px; }
 }
 @media (pointer: coarse) {
-  .tab { padding-top: 10px; padding-bottom: 9px; }
+  .tab { padding-top: 10px; padding-bottom: 10px; }
   .tab[aria-current="page"] { padding-top: 12px; padding-bottom: 11px; }
 }
 

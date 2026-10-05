@@ -24,20 +24,21 @@ Entirely AI-free. There is no AI tab, AI mode or AI summary, now or later. Every
 
 ## Operating Context
 
-- A static site with no server of its own. Every data source has to be callable from the browser (CORS) and free.
+- A static site (GitHub Pages) plus one small server of its own: Webshelf's search server, SearXNG behind Caddy on Render's free plan (Virginia), which asks the web engines, supplies query suggestions, images and videos, and proxies share prices. Every other data source is called from the browser (CORS) and is free. The server keeps no record of searches.
 - Visitors arrive from the homepage, from a browser address bar (`search.html?q=`), or by following a link to a results page.
 - Phones and desktops are equal first-class targets. Light and dark themes are both required.
 
 ## Capabilities and Constraints
 
-- **Web results:** the owner will pick one API as the single backend later ("not yet"). Until then, results come from a swappable placeholder provider (currently the Mwmbl API, which is free, keyless and CORS-enabled). Keep the provider behind one interface so it can be swapped.
-- **Answers without AI:** facts come from Wikidata statements (an answer box for questions like "how tall is mount everest"), definitions are quoted word for word from the opening of the Wikipedia article asked about, and "Questions about X" lists only questions those sources can answer. Nothing is generated, paraphrased or summarised. Open-ended why/how questions get plain results.
+- **Web results:** "Webshelf ranking" (the default) merges Bing (through the search server) and Mwmbl and orders them with open rules in `assets/js/rank.js`; Mwmbl alone stands in while the server wakes. Since October 2026 Bing, asked by a server, often searches only a query's first word, so the ranking trusts an engine less when its results lack the searched words. A keyed search API would be the lasting fix; that is the owner's decision. Providers stay behind one interface so they can be swapped.
+- **Answers without AI:** facts come from Wikidata statements (an answer box for questions like "how tall is mount everest"), definitions are quoted word for word from the opening of the Wikipedia article asked about, and "Questions about X" lists only questions those sources can answer. Featured snippets quote a top result's own snippet, with a short answer (a time, amount or measurement) lifted out as the heading when the passage holds one. Nothing is generated, paraphrased or summarised.
 - **Instant answers kept:** calculator, unit converter, currency, weather, time zones, dictionary, timer and stopwatch, coin flip, dice, random number generator, colour picker.
 - **Easter eggs:** none, except Atari Breakout.
 - **Games removed:** no Snake, Pac-Man, Minesweeper, Solitaire, dinosaur game, tic-tac-toe, barrel roll, askew, recursion, anagram, Thanos or zerg rush.
 - **No "I'm Feeling Lucky" button.**
-- **Stocks:** Yahoo Finance's chart endpoint works but blocks browser calls, so it needs a proxy. Deferred until a backend exists.
-- **Open data sources in use:** Wikipedia and Wikidata (knowledge panel, suggestions, "Did you mean"), Wiktionary (definitions), Open-Meteo (weather, geocoding, time zones), Frankfurter (ECB exchange rates).
+- **Stocks:** Twelve Data through the search server's proxy (`TWELVE_DATA_KEY` on Render; without it the demo key covers only AAPL). Coins from CoinGecko.
+- **Open data sources in use:** Wikipedia and Wikidata (knowledge panel, facts, office holders, spelling fallback), MusicBrainz (bands, lyrics cards), TVmaze (TV posters), Wiktionary (definitions), Open-Meteo (weather, geocoding, time zones), Frankfurter (ECB exchange rates), Openverse and Wikimedia Commons (images). Settings lists every service and when it's asked.
+- **Search operators and Easy dorking:** operators work in every search and are checked against each result; Easy dorking (opt-in in Settings) adds a form that writes them, for research and finding pages directly.
 - **Name lives in one config value** so a rename is a one-line change.
 
 ## Brand Commitments

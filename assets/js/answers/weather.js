@@ -127,7 +127,7 @@ async function card(where, wantDay, { signal }) {
   const headDay = h('p', { class: 'wx-day' });
   const headDesc = h('p', { class: 'wx-desc' });
   const tabs = h('div', { class: 'wx-tabs', role: 'tablist', 'aria-label': 'Hourly forecast' });
-  const chart = h('div', { class: 'wx-chart', role: 'tabpanel' });
+  const chart = h('div', { class: 'wx-chart', role: 'tabpanel', tabindex: '0' });
   const strip = h('div', { class: 'wx-days', role: 'radiogroup', 'aria-label': 'Day' });
 
   const hoursFor = (i) => {

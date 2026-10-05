@@ -171,7 +171,7 @@ function card(v) {
   thumb.querySelector('img').addEventListener('error', (e) => { e.target.remove(); thumb.classList.add('is-blank'); }, { once: true });
   const meta = [v.site, v.channel, age(v.date)].filter(Boolean).join(' · ');
   return h('li', { class: 'result video' },
-    h('h3', { class: 'result-title' }, h('a', { href: v.url, target, rel: 'noreferrer' }, v.title, time ? h('span', { class: 'visually-hidden' }, `, ${time}`) : '')),
+    h('h2', { class: 'result-title' }, h('a', { href: v.url, target, rel: 'noreferrer' }, v.title, time ? h('span', { class: 'visually-hidden' }, `, ${time}`) : '')),
     h('div', { class: 'result-meta' }, h('cite', { class: 'result-cite' }, crumb(v.url))),
     h('div', { class: 'video-body' },
       thumb,

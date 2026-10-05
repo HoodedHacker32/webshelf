@@ -24,7 +24,7 @@ const termsOf = (query) => query.toLowerCase().replace(/"/g, ' ').split(/\s+/)
 export default {
   id: 'searxng',
   name: 'Webshelf search server',
-  about: 'Our own SearXNG server, which asks several independent search engines at once and merges what they find.',
+  about: 'Webshelf’s own SearXNG server, in the order it merges the engines that answer it (Bing and Mwmbl; Bing, asked by a server, sometimes searches only the first word).',
   get home() { return BACKEND.searxngUrl ?? 'https://docs.searxng.org'; },
   verticals: ['all'],
 
