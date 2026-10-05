@@ -17,6 +17,19 @@ use_default_settings:
       - brave
       - wikipedia
       - wikidata
+      # On trial (disabled below; only used when a search names them with
+      # engines=…): Bing started returning unrelated results to servers in
+      # October 2026, so these are being tested from Render as replacements.
+      - yep
+      - duckduckgo
+      - duckduckgo web
+      - startpage
+      - google
+      - mojeek
+      - qwant
+      - yahoo
+      - wiby
+      - searchmysite
       # Images
       - openverse
       - wikicommons.images
@@ -66,3 +79,25 @@ engines:
   - name: bing
     disabled: false
     weight: 2
+  # On trial, see keep_only.
+  - name: yep
+    disabled: true
+  - name: duckduckgo
+    disabled: true
+  - name: duckduckgo web
+    disabled: true
+  - name: startpage
+    disabled: true
+  - name: google
+    disabled: true
+  - name: mojeek
+    inactive: false
+    disabled: true
+  - name: qwant
+    disabled: true
+  - name: yahoo
+    disabled: true
+  - name: wiby
+    disabled: true
+  - name: searchmysite
+    disabled: true
