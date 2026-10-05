@@ -15,7 +15,12 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
+      # A sleeping server answers 502 for the first few seconds while it
+      # starts, so keep asking (every 10 s, for up to 3 minutes) until it's up.
       - name: Visit the search server
-        run: curl -fsS --max-time 120 -o /dev/null -w "%{http_code} in %{time_total}s\n" https://webshelf-search-us.onrender.com/healthz
+        run: |
+          curl -fsS --retry 18 --retry-all-errors --retry-delay 10 --retry-max-time 180 \
+            --max-time 60 -o /dev/null -w "%{http_code} in %{time_total}s\n" \
+            https://webshelf-search-us.onrender.com/healthz
