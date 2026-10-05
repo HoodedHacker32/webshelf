@@ -25,6 +25,20 @@ use_default_settings:
       - openverse
       - wikicommons.images
       - bing images
+      # Images on trial (disabled below; used only when named with engines=…)
+      - flickr
+      - deviantart
+      - wallhaven
+      - pinterest
+      - imgur
+      - pexels
+      - unsplash
+      - artstation
+      - pixabay images
+      - brave.images
+      - qwant images
+      - yandex images
+      - duckduckgo images
       # Videos
       - youtube
       - dailymotion
@@ -70,3 +84,43 @@ engines:
   - name: bing
     disabled: false
     weight: 2
+  # Image engines on trial, see keep_only.
+  - name: flickr
+    disabled: true
+    inactive: false
+  - name: deviantart
+    disabled: true
+    inactive: false
+  - name: wallhaven
+    disabled: true
+    inactive: false
+  - name: pinterest
+    disabled: true
+    inactive: false
+  - name: imgur
+    disabled: true
+    inactive: false
+  - name: pexels
+    disabled: true
+    inactive: false
+  - name: unsplash
+    disabled: true
+    inactive: false
+  - name: artstation
+    disabled: true
+    inactive: false
+  - name: pixabay images
+    disabled: true
+    inactive: false
+  - name: brave.images
+    disabled: true
+    inactive: false
+  - name: qwant images
+    disabled: true
+    inactive: false
+  - name: yandex images
+    disabled: true
+    inactive: false
+  - name: duckduckgo images
+    disabled: true
+    inactive: false
