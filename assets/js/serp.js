@@ -18,6 +18,7 @@ import { mountTabs } from './page.js';
 import { parseQuery, plainQuery, applyOperators } from './operators.js';
 import { findSnippet } from './snippet.js';
 import { checkSpelling } from './spell.js';
+import { imageMatcher } from './imagematch.js';
 import { mountTools, pageUrl } from './searchtools.js';
 import { mountDorking, elsewhereLinks, siteSearchUrl } from './dorking.js';
 import { peopleAsk, paaBlock } from './paa.js';
@@ -604,7 +605,8 @@ async function serverImages() {
   if (!BACKEND.searxngUrl) return [];
   const data = await getJSON(`${BACKEND.searxngUrl}/search?q=${encodeURIComponent(query)}&format=json&categories=images&language=en&safesearch=1`, { ...ctx, timeout: 4000 });
   const size = (text) => String(text ?? '').match(/(\d+)\s*[x××]\s*(\d+)/);
-  return (data.results ?? []).filter((r) => r.thumbnail_src || r.img_src).slice(0, 12).map((r) => {
+  const about = imageMatcher(query);
+  return (data.results ?? []).filter((r) => (r.thumbnail_src || r.img_src) && about({ title: r.title, page: r.url, full: r.img_src })).slice(0, 12).map((r) => {
     const dims = size(r.resolution);
     return { title: r.title || query, thumb: r.thumbnail_src || r.img_src, page: searchUrl(query, 'images.html'), w: dims ? Number(dims[1]) : null, h: dims ? Number(dims[2]) : null, own: true };
   });
