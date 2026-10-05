@@ -25,18 +25,13 @@ use_default_settings:
       - openverse
       - wikicommons.images
       - bing images
-      # Images on trial (disabled below; used only when named with engines=…)
       - flickr
       - deviantart
-      - wallhaven
+      - artstation
       - pinterest
       - imgur
-      - pexels
-      - unsplash
-      - artstation
       - pixabay images
-      - brave.images
-      - duckduckgo images
+      - pexels
       # Videos
       - youtube
       - dailymotion
@@ -79,40 +74,30 @@ engines:
     weight: 0.4
   - name: openverse
     disabled: false
+  # Images. Tested from Render, 2026-10-05: Flickr, DeviantArt and ArtStation
+  # match searches well; Pinterest, Imgur, Pixabay and Pexels more loosely.
+  # Bing Images often answers a server with unrelated pictures, so it counts
+  # least, and the Images tab drops any image whose title doesn't match.
+  # Wallhaven (no titles), Unsplash (parsing errors) and DuckDuckGo (access
+  # denied) didn't work.
+  - name: bing images
+    weight: 0.3
+  - name: flickr
+    disabled: false
+  - name: deviantart
+    disabled: false
+    inactive: false
+  - name: artstation
+    disabled: false
+  - name: pinterest
+    disabled: false
+  - name: imgur
+    disabled: false
+  - name: pixabay images
+    disabled: false
+  - name: pexels
+    disabled: false
+    weight: 0.6
   - name: bing
     disabled: false
     weight: 2
-  # Image engines on trial, see keep_only.
-  - name: flickr
-    disabled: true
-    inactive: false
-  - name: deviantart
-    disabled: true
-    inactive: false
-  - name: wallhaven
-    disabled: true
-    inactive: false
-  - name: pinterest
-    disabled: true
-    inactive: false
-  - name: imgur
-    disabled: true
-    inactive: false
-  - name: pexels
-    disabled: true
-    inactive: false
-  - name: unsplash
-    disabled: true
-    inactive: false
-  - name: artstation
-    disabled: true
-    inactive: false
-  - name: pixabay images
-    disabled: true
-    inactive: false
-  - name: brave.images
-    disabled: true
-    inactive: false
-  - name: duckduckgo images
-    disabled: true
-    inactive: false
