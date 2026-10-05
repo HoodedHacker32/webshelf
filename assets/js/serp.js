@@ -205,7 +205,8 @@ async function featuredSnippet() {
 function withoutDate(snippet) {
   const [first, ...rest] = snippet;
   if (!first) return snippet;
-  return [{ ...first, text: first.text.replace(/^[A-Z][a-z]{2} \d{1,2}, \d{4}\s*[·—-]\s*/, '') }, ...rest];
+  // "Jul 27, 2026 · …" and "6 days ago · …" alike.
+  return [{ ...first, text: first.text.replace(/^(?:[A-Z][a-z]{2} \d{1,2}, \d{4}|\d{1,2} (?:minutes?|hours?|days?|weeks?) ago)\s*[·—-]\s*/, '') }, ...rest];
 }
 
 // Newest first; results without a date keep their order, after those with one.

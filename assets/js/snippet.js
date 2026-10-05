@@ -15,14 +15,19 @@ const RANGE = `${QUALIFIER}(?:${NUMBER})(?:\\s?(?:–|-|to|and)\\s?(?:${NUMBER})
 const TIME_UNITS = 'years?|months?|weeks?|days?|hours?|minutes?|seconds?|decades?|centuries|century|millennia|millennium';
 const MEASURE_UNITS = `met(?:re|er)s per second|miles per hour|kilomet(?:re|er)s per hour|km/h|m/s|${TIME_UNITS}|km|kilomet(?:re|er)s?|miles?|met(?:re|er)s?|cm|centimet(?:re|er)s?|mm|millimet(?:re|er)s?|feet|foot|ft|inch(?:es)?|yards?|kg|kilograms?|grams?|g|pounds?|lbs?|tonnes?|tons?|ounces?|oz|°\\s?[CF]|degrees(?: celsius| fahrenheit| c| f)?|mph|kph|light[- ]years?|au|lit(?:re|er)s?|gallons?|calories|kcal|percent|per cent|%|people|inhabitants|residents`;
 const MONTHS = 'january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec';
-const DATE = `\\d{1,2}(?:st|nd|rd|th)? (?:${MONTHS})\\.? \\d{4}|(?:${MONTHS})\\.? \\d{1,2}(?:st|nd|rd|th)?,? \\d{4}|(?:in |since |by )?(?:${MONTHS}) \\d{4}|\\d{4} (?:BC|BCE|AD|CE)|(?:the )?\\d{1,2}(?:st|nd|rd|th) century(?: (?:BC|BCE|AD))?|(?<![\\d,.])(?:1[0-9]|20)\\d{2}(?![\\d,])`;
+// A whole date (day, month and year, or month and year) is a better answer
+// than a year on its own, so they're tried first: in "Birthday 2026: born
+// December 13, 1989", the answer is the second.
+const FULL_DATE = `\\d{1,2}(?:st|nd|rd|th)? (?:${MONTHS})\\.? \\d{4}|(?:${MONTHS})\\.? \\d{1,2}(?:st|nd|rd|th)?,? \\d{4}|(?:in |since |by )?(?:${MONTHS}) \\d{4}`;
+const YEAR = `\\d{4} (?:BC|BCE|AD|CE)|(?:the )?\\d{1,2}(?:st|nd|rd|th) century(?: (?:BC|BCE|AD))?|(?<![\\d,.])(?:1[0-9]|20)\\d{2}(?![\\d,])`;
+const DATE = `${FULL_DATE}|${YEAR}`;
 
 const re = (source) => new RegExp(source, 'giu');
 // The kinds of short answer, each with the patterns that find it, best first.
 const KINDS = {
-  ago: [re(`${RANGE}\\s?(?:${TIME_UNITS})(?: or so| or more)? ago`), re(DATE)],
+  ago: [re(`${RANGE}\\s?(?:${TIME_UNITS})(?: or so| or more)? ago`), re(FULL_DATE), re(YEAR)],
   // A span ("1 September 1939 – 2 September 1945", "from 1939 to 1945") before a single date.
-  when: [re(`(?:from |between )?(?:${DATE})\\s?(?:–|—|-|to|until|and)\\s?(?:${DATE})`), re(DATE), re(`${RANGE}\\s?(?:${TIME_UNITS}) ago`)],
+  when: [re(`(?:from |between )?(?:${DATE})\\s?(?:–|—|-|to|until|and)\\s?(?:${DATE})`), re(FULL_DATE), re(YEAR), re(`${RANGE}\\s?(?:${TIME_UNITS}) ago`)],
   age: [re(`${RANGE}[- ]years?[- ]old`), re(`aged? ${RANGE}`), re(`${RANGE} years`)],
   amount: [re(`${RANGE}\\s?(?:${MEASURE_UNITS})(?![\\p{L}])`)],
   measure: [re(`${RANGE}\\s?(?:${MEASURE_UNITS})(?![\\p{L}])`)],

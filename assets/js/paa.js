@@ -7,6 +7,7 @@
 import { h, svg, getJSON, hostOf } from './dom.js';
 import { icon } from './icons.js';
 import { BACKEND, searchUrl } from './config.js';
+import { parseQuestion, parseDefinition } from './qa.js';
 
 const QUESTION = /^(what|how|why|who|when|where|which|is|are|can|does|do|did|should|will|was|were)\b/i;
 const STOP = new Set(['a', 'an', 'the', 'to', 'in', 'of', 'on', 'for', 'and', 'or', 'is', 'are']);
@@ -21,25 +22,37 @@ async function suggest(text, signal) {
 }
 
 const asQuestion = (text) => {
-  const t = text.trim().replace(/\s+/g, ' ').replace(/\?*$/, '');
+  // A year tacked on the end ("how old is taylor swift 2026") is a search
+  // habit, not part of the question.
+  const t = text.trim().replace(/\s+/g, ' ').replace(/\?*$/, '').replace(/ (?:19|20)\d{2}$/, '');
   return `${t.charAt(0).toUpperCase()}${t.slice(1)}?`;
 };
 
 // Up to `max` questions about the search, most common phrasings first.
 export async function peopleAsk(query, { signal, max = 12 } = {}) {
   if (!BACKEND.searxngUrl) return [];
-  const topic = query.trim().toLowerCase();
+  const typed = query.trim().toLowerCase().replace(/[‘’]/g, "'").replace(/[?!.]+$/, '');
+  if (!words(typed).length || words(typed).length > 6) return [];
+  // A question about something ("when is taylor swift's birthday") gets other
+  // questions about that thing ("how old is taylor swift"), not the same
+  // question with words tacked on ("… birthday zodiac").
+  const isQuestion = QUESTION.test(typed);
+  const subject = isQuestion ? (parseQuestion(typed) ?? parseDefinition(typed))?.subject : null;
+  const topic = subject && words(subject).length <= 3 ? subject : typed;
   const terms = words(topic);
-  if (!terms.length || terms.length > 6) return [];
-  // A search that's already a question ("why is the sky blue") asks for its
-  // own continuations; otherwise question words are put in front of it.
-  // Question words only go in front of short searches (a name, a thing):
-  // in front of a longer one ("best hiking boots for women") the suggestions
-  // that come back just echo the made-up start ("who is best hiking boots …").
-  const isQuestion = QUESTION.test(topic);
-  const prompts = isQuestion ? [`${topic} `, topic]
-    : terms.length <= 2 ? [`what is ${topic}`, `who is ${topic}`, `how ${topic}`, `why ${topic}`, `how to ${topic}`, `is ${topic}`, `${topic} `]
+  // A question with no such subject ("why is the sky blue") asks for its own
+  // continuations. Otherwise question words go in front, but only of short
+  // searches (a name, a thing): in front of a longer one ("best hiking boots
+  // for women") the suggestions just echo the made-up start.
+  const prompts = isQuestion && topic === typed ? [`${topic} `, topic]
+    : terms.length <= 3 && (topic !== typed || terms.length <= 2)
+      ? [`what is ${topic}`, `who is ${topic}`, `how old is ${topic}`, `how ${topic}`, `why ${topic}`, `where ${topic}`, `is ${topic}`, `${topic} `]
       : [`${topic} `];
+  // The search with words added is a refinement, not another question, unless
+  // what's added carries on the sentence ("… but space is black").
+  const refinement = (lower) => lower.startsWith(`${typed} `)
+    && (!/^(?:but|and|if|when|during|at|in|on|after|before|without|instead|or)\b/.test(lower.slice(typed.length + 1))
+      || /\d/.test(lower.slice(typed.length + 1)));
   const lists = await Promise.all(prompts.map((p) => suggest(p, signal).catch(() => [])));
   const seen = new Set();
   const out = [];
@@ -49,7 +62,7 @@ export async function peopleAsk(query, { signal, max = 12 } = {}) {
       const s = list[i];
       if (!s) continue;
       const lower = s.toLowerCase().trim();
-      if (!QUESTION.test(lower) || prompts.some((p) => p.trim() === lower)) continue;
+      if (!QUESTION.test(lower) || prompts.some((p) => p.trim() === lower) || lower === typed || refinement(lower)) continue;
       // Suggestions with search operators in them ("-ai", "site:") aren't questions.
       if (/(?:^|\s)-\S|\b\w+:\S/.test(lower)) continue;
       // "what is how to …": two question openings is a joined-up suggestion, not a question.

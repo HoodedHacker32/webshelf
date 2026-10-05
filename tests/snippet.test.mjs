@@ -58,3 +58,8 @@ test('a "when" question takes the whole span when the passage gives one', () => 
   const texts = ['World War II, or the Second World War (1 September 1939 – 2 September 1945), was a global conflict between two coalitions.'];
   assert.equal(answerOf(findSnippet('when was world war 2', texts, ['world', 'war', '2'])), '1 September 1939 – 2 September 1945');
 });
+
+test('a whole date beats a year that comes first', () => {
+  const texts = ['Taylor Swift age and birthday 2026: born December 13, 1989, she is 36 in mid-June before turning 37 on December 13.'];
+  assert.equal(answerOf(findSnippet("when is taylor swift's birthday", texts, ['taylor', 'swift', 'birthday'])), 'December 13, 1989');
+});

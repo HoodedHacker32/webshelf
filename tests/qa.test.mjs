@@ -19,3 +19,9 @@ test('the subject must be the article found', () => {
   assert.equal(subjectMatches('battle of hastings', { title: 'Battle of Hastings' }), true);
   assert.equal(subjectMatches('next eclipse', { title: 'List of solar eclipses visible from the United States' }), false);
 });
+
+test('birthday questions, with straight or curly apostrophes', () => {
+  assert.deepEqual(parseQuestion("when is taylor swift's birthday"), { kind: 'born', subject: 'taylor swift' });
+  assert.deepEqual(parseQuestion('When is Taylor Swift’s birthday?'), { kind: 'born', subject: 'taylor swift' });
+  assert.deepEqual(parseQuestion('taylor swift birthday'), { kind: 'born', subject: 'taylor swift' });
+});

@@ -70,7 +70,8 @@ const CURRENT_ONLY = new Set(['spouse', 'ceo', 'headOfState', 'headOfGov', 'resi
 
 const PATTERNS = [
   ['age', /^how old (?:is|was) (.+)$/], ['age', /^(.+?)(?:'s)? age$/], ['age', /^age of (.+)$/],
-  ['born', /^when (?:was|is) (.+?) born$/], ['born', /^(.+?)(?:'s)? (?:birthday|date of birth|birth date)$/], ['born', /^when is (.+?)(?:'s)? birthday$/],
+  ['born', /^when (?:was|is) (.+?) born$/],
+  ['born', /^(?:when is |when's |what is |what's )?(.+?)(?:'s|s')? (?:birthday|date of birth|birth date|birthdate)$/],
   ['birthplace', /^where (?:was|is) (.+?) born$/], ['birthplace', /^(.+?)(?:'s)? (?:birthplace|place of birth)$/],
   ['died', /^when did (.+?) die$/], ['died', /^(.+?)(?:'s)? (?:death date|date of death)$/],
   ['spouse', /^who (?:is|was) (.+?) married to$/], ['spouse', /^who (?:is|was) (.+?)(?:'s)? (?:wife|husband|spouse)$/], ['spouse', /^(.+?)(?:'s)? (?:wife|husband|spouse)$/],
@@ -100,7 +101,8 @@ const PATTERNS = [
 ];
 
 export function parseQuestion(query) {
-  const q = query.trim().toLowerCase().replace(/[?!.]+$/, '').replace(/\s+/g, ' ');
+  // Phones type curly apostrophes ("swift’s").
+  const q = query.trim().toLowerCase().replace(/[‘’]/g, "'").replace(/[?!.]+$/, '').replace(/\s+/g, ' ');
   for (const [kind, re] of PATTERNS) {
     const m = re.exec(q);
     if (m && m[1] && m[1].length > 1) return { kind, subject: m[1].trim() };
