@@ -589,12 +589,18 @@
   font-size: var(--text-sm);
 }
 .dork-panel[hidden] { display: none; }
+/* Opened before first paint (search.html) and filled a moment later: hold
+   the form's height meanwhile, so the results below don't move. */
+.dork-panel:empty { min-height: 590px; }
 .dork-form { max-width: 760px; }
 .dork-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .dork-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
 .dork-field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .dork-field label { color: var(--ink-2); }
 .dork-field .field { width: 100%; min-height: 32px; font-size: var(--text-sm); }
+@media (pointer: coarse) {
+  .dork-field .field, .tools-select { min-height: 44px; }
+}
 .dork-result { display: flex; align-items: baseline; gap: 8px; margin-top: 14px; padding: 8px 10px; background: var(--field); box-shadow: inset 1px 1px 0 var(--bevel-lo), inset -1px -1px 0 var(--bevel-hi); }
 .dork-preview-label { flex: none; color: var(--meta); }
 .dork-preview { min-width: 0; font-family: var(--font-mono); font-size: var(--text-mono); overflow-wrap: anywhere; color: var(--ink); }
@@ -606,6 +612,7 @@
 .result-site:hover { text-decoration: underline; }
 @media (max-width: 759px) {
   .dork-panel { padding-left: var(--page-margin); }
+  .dork-panel:empty { min-height: 1127px; }
   .dork-fields { grid-template-columns: minmax(0, 1fr); }
 }
 

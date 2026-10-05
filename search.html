@@ -56,7 +56,8 @@
   </header>
   <div class="search-tools" id="search-tools" hidden role="group" aria-label="Search tools"></div>
   <div class="dork-panel" id="dork-panel" hidden></div>
-  <script>if (/[?&](time|lang|sort|verbatim)=/.test(location.search)) document.getElementById('search-tools').hidden = false;</script>
+  <script>if (/[?&](time|lang|sort|verbatim)=/.test(location.search)) document.getElementById('search-tools').hidden = false;
+    try { if (/[?&]dork=1/.test(location.search) && JSON.parse(localStorage.getItem('webshelf:settings') || '{}').dorking) document.getElementById('dork-panel').hidden = false; } catch (e) {}</script>
 
   <main class="serp-main" id="main">
     <div class="serp-grid">
