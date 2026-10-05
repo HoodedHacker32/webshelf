@@ -18,8 +18,9 @@ import * as qr from './qr.js';
 import * as percent from './percent.js';
 import * as lyrics from './lyrics.js';
 import * as tracking from './tracking.js';
+import * as leader from './leader.js';
 
-const MODULES = [qr, tracking, percent, lyrics, breakout, timer, coin, dice, random, colour, calculator, currency, units, time, weather, dictionary, market];
+const MODULES = [qr, tracking, leader, percent, lyrics, breakout, timer, coin, dice, random, colour, calculator, currency, units, time, weather, dictionary, market];
 // market is last: a bare ticker ("nvda") is only claimed after every other answer passes.
 
 export function findAnswer(query) {

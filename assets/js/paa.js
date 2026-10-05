@@ -51,9 +51,9 @@ export async function peopleAsk(query, { signal, max = 12 } = {}) {
       const lower = s.toLowerCase().trim();
       if (!QUESTION.test(lower) || prompts.some((p) => p.trim() === lower)) continue;
       // Suggestions with search operators in them ("-ai", "site:") aren't questions.
-      if (/(?:^|\s)-\S|\w+:\S/.test(lower)) continue;
+      if (/(?:^|\s)-\S|\b\w+:\S/.test(lower)) continue;
       // "what is how to …": two question openings is a joined-up suggestion, not a question.
-      if (/^(?:what|how|why|who|when|where|which|is|are|can|does|do)(?:\s+(?:is|are|to|does|do|was|were))?\s+(?:what|how|why|who|when|where|which)/.test(lower)) continue;
+      if (/^(?:what|how|why|who|when|where|which|is|are|can|does|do)(?:\s+(?:is|are|to|does|do|was|were))?\s+(?:what|how|why|who|when|where|which)\b/.test(lower)) continue;
       // About the search: every one of its words is in the question.
       const has = new Set(words(lower));
       if (!terms.every((t) => has.has(t))) continue;

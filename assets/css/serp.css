@@ -51,6 +51,7 @@
 
 .spell { margin: -4px 0 16px; font-size: var(--text-lg); }
 .spell-label { color: var(--meta); font-family: var(--font-ui); font-size: var(--text-md); }
+.spell + .spell-instead { margin-top: -12px; font-size: var(--text-md); }
 
 /* Image strip --------------------------------------------------------- */
 
@@ -654,11 +655,21 @@
 /* People also ask: shares the questions list's look. */
 .paa-note { margin-top: 6px; color: var(--meta); font-family: var(--font-ui); font-size: var(--text-xs); }
 
-/* Featured snippet: the top result's own words, quoted, with its page. */
-.snippetbox { padding: 12px 16px; }
-.snippet-text { margin: 0; padding-left: 14px; border-left: 1px solid var(--bevel-lo); color: var(--ink); font-size: var(--text-lg); line-height: 1.45; }
-.snippet-text b { font-weight: 700; }
-.snippetbox .answer-source { margin-top: 8px; }
+/* Featured snippet: the short answer as a heading, then the top result's own
+   words quoted with the answer highlighted (in the selection colours, the
+   page's own highlighter), then the page it came from. */
+.snippetbox { padding: 14px 16px 12px; }
+.snippet-answer { margin-bottom: 10px; color: var(--ink); font-size: var(--text-3xl); font-weight: 700; line-height: 1.15; overflow-wrap: anywhere; }
+.snippet-text { margin: 0; color: var(--ink-2); font-size: var(--text-lg); line-height: 1.5; }
+.snippetbox.has-answer .snippet-text { font-size: var(--text-md); }
+.snippet-text b { color: var(--ink); font-weight: 700; }
+.snippet-mark { padding: 0 2px; background: var(--selection); color: var(--selection-ink); font-weight: 700; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.snippet-source { display: flex; flex-direction: column; gap: 0; margin-top: 12px; }
+.snippet-title { font-size: var(--text-xl); line-height: 1.3; }
+.snippetbox .answer-note { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--bevel-lo); box-shadow: inset 0 1px 0 var(--bevel-hi); font-family: var(--font-ui); font-size: var(--text-xs); }
+@media (max-width: 759px) {
+  .snippet-answer { font-size: var(--text-2xl); }
+}
 
 /* Sitelinks under a site's home page. */
 .sitelinks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 28px; margin: 10px 0 0 14px; padding: 0; list-style: none; }

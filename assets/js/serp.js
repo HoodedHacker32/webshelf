@@ -16,6 +16,8 @@ import { icon } from './icons.js';
 import { musicArtist } from './rank.js';
 import { mountTabs } from './page.js';
 import { parseQuery, plainQuery, applyOperators } from './operators.js';
+import { findSnippet } from './snippet.js';
+import { checkSpelling } from './spell.js';
 import { mountTools, pageUrl } from './searchtools.js';
 import { mountDorking, elsewhereLinks, siteSearchUrl } from './dorking.js';
 import { peopleAsk, paaBlock } from './paa.js';
@@ -163,18 +165,33 @@ function shortTitle(titleRuns, host) {
 async function featuredSnippet() {
   if (found || !looksLikeQuestion(query) || await answerShown) return;
   const terms = contentTerms(plain);
-  if (terms.length < 2) return;
-  const text = (r) => r.snippet.map((x) => x.text).join('');
-  const pick = all.slice(0, 3).find((r) => {
-    const t = text(r);
-    const has = new Set(contentTerms(t));
-    return t.length >= 100 && terms.filter((w) => has.has(w)).length / terms.length >= 0.6;
-  });
-  if (!pick) return;
+  if (!terms.length) return;
+  const top = all.slice(0, 5);
+  const text = (r) => withoutDate(r.snippet).map((x) => x.text).join('');
+  const pick = findSnippet(plain, top.map(text), terms);
+  // "Who is …" questions have no short answer to find, and a passage that
+  // merely mentions the words isn't an answer either.
+  if (!pick || (!pick.answer && /^who\b/i.test(plain))) return;
+  const r = top[pick.index];
+  // The featured page is the first result, so it isn't listed again below.
+  all = all.filter((x) => x !== r);
   const target = settings.newTab ? '_blank' : null;
-  $('#serp-answer').replaceChildren(h('section', { class: 'answer snippetbox raised', 'aria-label': `From ${hostOf(pick.url)}` },
-    h('blockquote', { class: 'snippet-text', cite: pick.url }, runs(withoutDate(pick.snippet))),
-    h('p', { class: 'answer-source' }, 'From ', h('a', { href: pick.url, target, rel: 'noreferrer' }, runs(pick.title)), ` · ${hostOf(pick.url)}`)));
+  const { passage, answer } = pick;
+  const marked = (part) => highlight(part, terms).map((x) => (x.bold ? h('b', null, x.text) : x.text));
+  const quote = answer
+    ? [...marked(passage.slice(0, answer.start)), h('mark', { class: 'snippet-mark' }, passage.slice(answer.start, answer.end)), ...marked(passage.slice(answer.end))]
+    : marked(passage);
+  const heading = answer ? passage.slice(answer.start, answer.end) : null;
+  $('#serp-answer').replaceChildren(h('section', { class: `answer snippetbox raised${heading ? ' has-answer' : ''}`, 'aria-label': heading ? `Answer: ${heading}` : `From ${hostOf(r.url)}` },
+    heading ? h('p', { class: 'snippet-answer' }, heading.replace(/^\p{Ll}/u, (c) => c.toUpperCase())) : null,
+    h('blockquote', { class: 'snippet-text', cite: r.url }, quote),
+    h('p', { class: 'snippet-source' },
+      h('cite', { class: 'result-cite' }, address(r.url)),
+      h('a', { class: 'snippet-title', href: r.url, target, rel: 'noreferrer' }, runs(r.title))),
+    h('p', { class: 'answer-note' }, heading
+      ? 'The answer and the passage are quoted from the page’s search snippet, not written by Webshelf. '
+      : 'Quoted from the page’s search snippet, not written by Webshelf. ',
+      h('a', { href: 'settings.html#ranking' }, 'About featured snippets'))));
 }
 
 // Engines start some snippets with the page's date ("Jul 27, 2026 · …"); a
@@ -607,12 +624,28 @@ async function loadImages() {
 
 /* Wikipedia: spelling, related searches ------------------------------- */
 
+// The words of a suggested spelling, with the changed ones in bold italics.
+function respelled(suggestion, original) {
+  const typed = new Set(original.toLowerCase().split(/\s+/));
+  return suggestion.split(/(\s+)/).map((w) => (!w.trim() || typed.has(w.toLowerCase()) ? w : h('b', null, h('i', null, w))));
+}
+
 function spelling(suggestion) {
   if (!suggestion || suggestion.toLowerCase() === query.toLowerCase()) return;
   $('#serp-spell').replaceChildren(h('p', { class: 'spell' },
-    h('span', { class: 'spell-label' }, 'Did you mean '),
-    h('a', { href: searchUrl(suggestion) }, h('b', null, h('i', null, suggestion))),
+    h('span', { class: 'spell-label' }, 'Did you mean: '),
+    h('a', { href: pageUrl(suggestion, tools, 1) }, respelled(suggestion, query)),
     h('span', { class: 'spell-label' }, '?')));
+}
+
+// After an automatic correction: what was searched, and the way back.
+function corrected(original) {
+  $('#serp-spell').replaceChildren(h('p', { class: 'spell' },
+    h('span', { class: 'spell-label' }, 'Showing results for '),
+    h('a', { href: pageUrl(query, tools, 1) }, respelled(query, original))),
+  h('p', { class: 'spell spell-instead' },
+    h('span', { class: 'spell-label' }, 'Search instead for '),
+    h('a', { href: `${pageUrl(original, tools, 1)}&spell=0` }, original)));
 }
 
 async function related() {
@@ -915,7 +948,7 @@ async function loadWiki(answering) {
   // so only offer one when none of its top articles shares a word with the search.
   const typed = contentTerms(query);
   const someMatch = info.hits.some((hit) => contentTerms(hit.title).some((t) => typed.includes(t)));
-  if (!title && !someMatch) spelling(info.suggestion);
+  if (!title && !someMatch && !$('#serp-spell').childElementCount) spelling(info.suggestion);
   // A topic would compete with an instant answer, so only one of them shows.
   if (!(title && !(await answering))) {
     worksDecided();
@@ -1001,6 +1034,17 @@ if (query && page > 1) {
   loadResults();
   related().catch(() => {});
 } else if (query) {
+  // Spelling: a clear misspelling reloads the page with the corrected search
+  // (before any results show); a possible one is offered as "Did you mean".
+  const original = params.get('from');
+  if (original) corrected(original);
+  else if (params.get('spell') !== '0' && !found && !parsed.any && !tools.verbatim) {
+    checkSpelling(query, ctx).then((fix) => {
+      if (!fix) return;
+      if (fix.auto && !resultsOnScreen) location.replace(`${pageUrl(fix.text, tools, 1)}&from=${encodeURIComponent(query)}`);
+      else spelling(fix.text);
+    }).catch(() => {});
+  }
   // MusicBrainz is slow (about two seconds for a band), so its lookup starts
   // now, alongside everything else; the ranking and band panel reuse it.
   if (query.trim().split(/\s+/).length <= 5 && !looksLikeQuestion(query)) musicArtist(query, ctx);
