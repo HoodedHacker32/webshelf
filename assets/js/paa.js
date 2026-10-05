@@ -33,8 +33,13 @@ export async function peopleAsk(query, { signal, max = 12 } = {}) {
   if (!terms.length || terms.length > 6) return [];
   // A search that's already a question ("why is the sky blue") asks for its
   // own continuations; otherwise question words are put in front of it.
+  // Question words only go in front of short searches (a name, a thing):
+  // in front of a longer one ("best hiking boots for women") the suggestions
+  // that come back just echo the made-up start ("who is best hiking boots …").
   const isQuestion = QUESTION.test(topic);
-  const prompts = isQuestion ? [`${topic} `, topic] : [`what is ${topic}`, `who is ${topic}`, `how ${topic}`, `why ${topic}`, `how to ${topic}`, `is ${topic}`, `${topic} `];
+  const prompts = isQuestion ? [`${topic} `, topic]
+    : terms.length <= 2 ? [`what is ${topic}`, `who is ${topic}`, `how ${topic}`, `why ${topic}`, `how to ${topic}`, `is ${topic}`, `${topic} `]
+      : [`${topic} `];
   const lists = await Promise.all(prompts.map((p) => suggest(p, signal).catch(() => [])));
   const seen = new Set();
   const out = [];
