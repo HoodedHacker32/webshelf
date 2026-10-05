@@ -1,8 +1,20 @@
 # Notices
 
+## Licence
+
+Webshelf's code is © 2026 HoodedHacker32, licensed under the GNU Affero General Public License 3.0 (`LICENSE`). If you run a modified version for others to use, you must offer them its source code under the same licence.
+
+The Webshelf name and logos are not covered by that licence: they are all rights reserved. `BRAND.md` says how they may be used, and what a fork needs to change.
+
+## How Webshelf was made
+
+- **Name, logo and brand:** designed by a human, the project's owner, a logo designer. The pixel-art logo on the site is the owner's logo redrawn on a pixel grid, in the style the owner chose, with every change approved by the owner; the redrawing was done in code.
+- **Programming:** written by Claude, Anthropic's AI coding assistant, directed and reviewed by the owner. This includes the code for the page layouts and styles, which the owner chose and approved.
+- **The product uses no AI.** Nothing Webshelf shows is generated, summarised or rewritten by a model: results come from search engines, answers are quoted from open data and the pages they come from, and the tools run as ordinary code in your browser.
+
 ## Code and assets
 
-- **Logo files** in `logos/` are the Webshelf owner's own work and are not covered by the code licence.
+- **Logo files** in `logos/` and the icons made from them in `assets/icons/` are the Webshelf owner's own work and are not covered by the code licence (see `BRAND.md`).
 - **UI icons** in `assets/js/icons.js` use path data from Google's [Material Icons](https://github.com/google/material-design-icons), Apache License 2.0.
 - **Fonts** in `assets/fonts/`: Redaction and Redaction 35 (MCKL Inc., SIL Open Font License 1.1 / LGPL 2.1) and Courier Prime (The Courier Prime Project Authors, SIL Open Font License 1.1). Licence texts sit beside the font files.
 - Weather icons, dice outlines and everything else in `assets/` were written for Webshelf.
@@ -13,7 +25,7 @@ Each card names its source on the page.
 
 | Source | Used for | Licence |
 |---|---|---|
-| [Mwmbl](https://mwmbl.org) | Web results (placeholder) | Results link to third-party pages |
+| [Mwmbl](https://mwmbl.org) | Web results | Results link to third-party pages |
 | [Wikipedia](https://en.wikipedia.org) | Knowledge panel text, suggestions, "Did you mean" | CC BY-SA 4.0 |
 | [Wikidata](https://www.wikidata.org) | Knowledge panel facts | CC0 |
 | [Wikimedia Commons](https://commons.wikimedia.org) | Image strip on results pages (thumbnails link to each file's page and licence) | Per file, mostly CC BY / CC BY-SA / public domain |
