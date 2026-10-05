@@ -15,11 +15,9 @@ and this page says how you may use them.
 
 ## Who designed it
 
-The Webshelf name, logo and brand were designed by a human: the project's
-owner, a logo designer. The pixel-art logo on the site is the owner's own logo
-redrawn on a pixel grid; the owner chose the style and approved every change,
-and the redrawing was done in code (`tools/build_pixel_logo.py`). No image
-generator was used for any of it.
+The Webshelf name, logos and brand were designed and drawn by a human: the
+project's owner, a logo designer. That includes the pixel-art logo used on the
+site. No AI or image generator was used for any of it.
 
 ## Using the name and logo
 
