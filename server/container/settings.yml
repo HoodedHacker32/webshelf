@@ -36,8 +36,6 @@ use_default_settings:
       - artstation
       - pixabay images
       - brave.images
-      - qwant images
-      - yandex images
       - duckduckgo images
       # Videos
       - youtube
@@ -113,12 +111,6 @@ engines:
     disabled: true
     inactive: false
   - name: brave.images
-    disabled: true
-    inactive: false
-  - name: qwant images
-    disabled: true
-    inactive: false
-  - name: yandex images
     disabled: true
     inactive: false
   - name: duckduckgo images
