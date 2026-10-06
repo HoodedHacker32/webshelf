@@ -39,6 +39,8 @@ export function match(query) {
   if (m) return { kind: 'stock', text: m[1].replace(/^\$/, ''), symbol: false };
   // A bare ticker ("aapl", "nvda") is checked against the dictionary at render time.
   if (/^[a-z]{2,5}$/.test(q)) return { kind: 'stock', text: q, symbol: true, bare: true };
+  // A ticker with its market ("vod.l" for London, "birg.ir" for Dublin).
+  if (/^[a-z0-9]{1,6}\.[a-z]{1,2}$/.test(q)) return { kind: 'stock', text: q, symbol: true };
   return null;
 }
 
@@ -80,10 +82,9 @@ async function findShare({ text, symbol, bare }, signal) {
     if (bare && await isWord(text, signal)) return null;
     return exact[0];
   }
-  // A company name: the best match whose name starts with what was typed,
-  // else Yahoo's own first answer ("google" finds Alphabet).
-  const named = list.filter((s) => s.name.toLowerCase().startsWith(lower)).sort((a, b) => home(a) - home(b));
-  return named[0] ?? exact[0] ?? list[0] ?? null;
+  // A company name: Yahoo's own first answer, which knows a company's main
+  // listing ("google" finds Alphabet, "bank of ireland" the Dublin shares).
+  return list[0] ?? null;
 }
 
 // Ranges: label, Yahoo's range, CoinGecko days.
