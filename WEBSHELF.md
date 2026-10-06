@@ -26,7 +26,7 @@ Hosted as a static GitHub Pages site on a `github.io` subdomain (no custom domai
 | Instant answers | Kept: calculator, unit converter, currency, weather, time zones, dictionary, timer and stopwatch, coin flip, dice, random number, colour picker. |
 | Easter eggs and games | All removed except Atari Breakout (query `atari breakout`). |
 | "I'm Feeling Lucky" | Not included. |
-| Stocks | Market summary card with chart. Shares: Twelve Data (free key in `assets/js/config.js`; the placeholder `demo` key only covers AAPL). Coins: CoinGecko, keyless. Yahoo, Stooq, Nasdaq and Cboe all block browser calls. |
+| Stocks | Market summary card with chart. Shares: Yahoo Finance's public feeds through the search server (`server/container/market.py`, cached and shared between visitors; browsers can't call Yahoo directly). Coins: CoinGecko, keyless. |
 | Ranking | Webshelf ranks results itself (`assets/js/rank.js`, rules only, no AI): engine agreement (reciprocal-rank fusion), Tranco top-50,000 popularity, all-words and title match, navigational addresses, and the official website from Wikidata or MusicBrainz (added first if no engine found it). AI content farms (HUGE AI Blocklist) are left out. Lists refresh with `tools/update_lists.py`. |
 | Bands | MusicBrainz panel (official site, Listen, Profiles) when Wikipedia has no article. |
 | Posters | TV from TVmaze by IMDb id; films use the poster image Wikipedia's article uses. No keys or accounts. |
@@ -128,7 +128,7 @@ Full table in `research/design-tokens-2022.md`. Key values:
    - Marginalia gives free non-commercial keys by email. Its shared `public` key is constantly rate-limited.
    - SearXNG needs a server. Free cloud servers get CAPTCHA-blocked by most engines, and the owner rejected the hosting options offered for now.
    - To add a source, write a file in `assets/js/providers/` and register it in `providers/index.js`.
-2. **Stocks:** get a free Twelve Data key, or proxy share prices through our own server once it exists.
+2. **Stocks:** done: Yahoo Finance through the search server, no keys.
 3. **Design:** settled (see section 1, "Look"). Tokens live in `assets/css/tokens.css`.
 4. **Research stays private:** `research/` is git-ignored because it holds archived Google pages; never publish it.
 5. **Fill the capture gaps** above if more reference is needed, starting with featured snippets.
@@ -152,4 +152,4 @@ python -m http.server 8417
 | `assets/js/wiki.js` | Wikipedia and Wikidata: suggestions, "Did you mean", knowledge panel. |
 | `PRODUCT.md`, `.impeccable/` | Impeccable's product record, direction contract and review captures. |
 
-Data sources the browser calls, all free: Mwmbl (results), Wikipedia and Wikidata, Wiktionary, Open-Meteo, Frankfurter (European Central Bank rates), Openverse (images), Dailymotion, SepiaSearch and the Internet Archive (videos), CoinGecko (coins) and Twelve Data (shares, needs a free key). Settings and search history live in the visitor's browser only.
+Data sources the browser calls, all free: Mwmbl (results), Wikipedia and Wikidata, Wiktionary, Open-Meteo, Frankfurter (European Central Bank rates), Openverse (images), Dailymotion, SepiaSearch and the Internet Archive (videos), CoinGecko (coins); share prices come from Yahoo Finance through the search server. Settings and search history live in the visitor's browser only.

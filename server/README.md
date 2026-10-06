@@ -1,10 +1,10 @@
 # Webshelf search server
 
-Webshelf's web results come from this server: [SearXNG](https://docs.searxng.org), which asks several independent search engines at once and merges what they find. [Caddy](https://caddyserver.com) sits in front of it. Caddy provides HTTPS, lets the Webshelf site read the results, and passes share-price requests to `market.py`, which holds the share-price keys and keeps every answer for a while so all visitors share one lookup.
+Webshelf's web results come from this server: [SearXNG](https://docs.searxng.org), which asks several independent search engines at once and merges what they find. [Caddy](https://caddyserver.com) sits in front of it. Caddy provides HTTPS, lets the Webshelf site read the results, and passes share-price requests to `market.py`, which fetches them from Yahoo Finance's public feeds (no key) and keeps every answer for a while so all visitors share one lookup.
 
 There are two ways to run it:
 
-- **The live setup: one container on Render** (`container/`). Render builds `container/Dockerfile` from this repo (root directory `server/container`, free plan, Virginia region, environment variable `PORT=7860`). Render provides HTTPS, so Caddy only adds the browser-access headers and passes `/market/` to `market.py` (started alongside SearXNG). The free plan sleeps after 15 minutes without visits; the site falls back to Mwmbl while it wakes, and an UptimeRobot monitor (free plan, the owner's account) visits `/healthz` every 5 minutes to keep it awake. `.github/workflows/keep-awake.yml` wakes it by hand (Actions → Run workflow). Environment variables for share prices: `TWELVE_DATA_KEY` (needed; Twelve Data's `demo` key no longer answers Webshelf's requests) and, optionally, `FINNHUB_KEY` (a free Finnhub key answers US share prices, leaving Twelve Data's 800 requests a day for charts). `market.py` keeps prices for 5 minutes and charts for 10 minutes to a day, stays inside Twelve Data's free limits (8 a minute, 800 a day; `TWELVE_DATA_PER_MINUTE` and `TWELVE_DATA_PER_DAY` change them) and serves the last answer it kept when they run out.
+- **The live setup: one container on Render** (`container/`). Render builds `container/Dockerfile` from this repo (root directory `server/container`, free plan, Virginia region, environment variable `PORT=7860`). Render provides HTTPS, so Caddy only adds the browser-access headers and passes `/market/` to `market.py` (started alongside SearXNG). The free plan sleeps after 15 minutes without visits; the site falls back to Mwmbl while it wakes, and an UptimeRobot monitor (free plan, the owner's account) visits `/healthz` every 5 minutes to keep it awake. `.github/workflows/keep-awake.yml` wakes it by hand (Actions → Run workflow). Share prices need no keys: `market.py` keeps today's chart (which carries the price) for 2 minutes and longer charts for up to a day, asks Yahoo at most 60 times a minute (`YAHOO_PER_MINUTE` changes it), waits 5 minutes if Yahoo says it's had too many, and serves the last answer it kept whenever Yahoo can't be reached.
 - **A virtual machine** (`compose.yaml`, `setup.sh`), for example Oracle Cloud's Always Free tier, which needs a card to sign up. Steps below.
 
 Both use the same engine list.
@@ -12,12 +12,13 @@ Both use the same engine list.
 | File | What it does |
 |---|---|
 | `compose.yaml` | Runs SearXNG, Valkey (SearXNG's rate limiter store) and Caddy. |
-| `Caddyfile` | HTTPS, browser access for the Webshelf site only, and the `/market/` proxy to Twelve Data. |
+| `Caddyfile` | HTTPS, browser access for the Webshelf site only, and the `/market/` route to `market.py`. |
+| `container/market.py` | Share prices from Yahoo Finance, cached and shared between visitors (run by `compose.yaml` here, and inside the Render container). |
 | `searxng/settings.yml` | Which engines are used, JSON output, safe search, the rate limiter. |
 | `searxng/limiter.toml` | Rate-limiter settings. |
 | `setup.sh` | Installs Docker, opens the firewall, writes `.env` and starts everything. |
 
-`.env` is created on the server and never committed. It holds the secret key and the Twelve Data key.
+`.env` is created on the server and never committed. It holds the secret key.
 
 ## 1. Create the server (Oracle Cloud)
 
@@ -54,7 +55,6 @@ The script:
 
 - installs Docker
 - opens ports 80 and 443 in the server's own firewall, because Oracle's Ubuntu image blocks them even after step 4
-- asks for your Twelve Data key (press Enter to skip)
 - starts everything and runs a test search
 
 It finishes by printing the server's address, such as `https://203-0-113-7.sslip.io`. [sslip.io](https://sslip.io) turns the IP address into a hostname, so HTTPS works without buying a domain. To use your own domain instead, point it at the IP and run `./setup.sh search.yourdomain.org`.
@@ -76,7 +76,6 @@ Web results then come from the server, and share prices go through it with the k
 | See what's happening | `sudo docker compose logs --tail 100 -f` |
 | Update SearXNG and Caddy | `sudo docker compose pull && sudo docker compose up -d` |
 | Change engines | Edit `searxng/settings.yml`, then `sudo docker compose restart searxng` |
-| Add or change the Twelve Data key | Edit `.env`, then `sudo docker compose up -d caddy` |
 | See which engines are failing | Open `https://YOUR_HOST/stats` |
 
 Engines were tested one by one from Render (October 2026). **Bing** answers (in English only from a US region, which is why the live server runs in Virginia), as do **Mwmbl**, **Wikipedia** and **Wikidata**; Bing Images and Bing Videos, Openverse, Wikimedia Commons, YouTube, Dailymotion, SepiaSearch (PeerTube) and Vimeo cover the Images and Videos tabs. Google (access denied), Startpage and Qwant (CAPTCHAs), Mojeek and DuckDuckGo (timeouts) are blocked from cloud addresses and left out; Brave rate-limits and is kept in case it recovers; Yahoo returned unrelated spam. Bing ranks above Mwmbl (engine weights 2 and 0.4).

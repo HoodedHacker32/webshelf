@@ -1,15 +1,15 @@
-"""Share prices for Webshelf, shared by every visitor.
+"""Share prices for Webshelf, from Yahoo Finance's public chart and search
+feeds, shared by every visitor.
 
-Caddy sends /market/quote and /market/time_series here. Each answer is kept
-for a while (a price for 5 minutes, a chart for 10 minutes to a day), so a
-thousand people looking at Apple cost about as much as one. Requests to Twelve
-Data are kept inside its free plan (8 a minute, 800 a day, both settable);
-when they run out, the last answer kept is served, however old.
+Caddy sends /market/search and /market/chart here. Each answer is kept for a
+while (today's chart for 2 minutes, longer charts for up to a day, a symbol
+search for a day), so a thousand people looking at Apple cost about as much as
+one. Requests to Yahoo are held to a gentle pace (60 a minute, settable); if
+Yahoo is slow, refuses or is out of reach, the last answer kept is served,
+however old.
 
-Optional: FINNHUB_KEY (free plan: 60 requests a minute, no daily cap) answers
-price requests for US shares, leaving Twelve Data for charts.
-
-Standard library only, so it runs on the Python already in the SearXNG image.
+No keys. Standard library only, so it runs on the Python already in the
+SearXNG image.
 """
 
 import json
@@ -17,94 +17,115 @@ import os
 import re
 import threading
 import time
-import urllib.parse
 import urllib.error
+import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-TD = 'https://api.twelvedata.com'
-TD_KEY = os.environ.get('TWELVE_DATA_KEY') or 'demo'
-FH_KEY = os.environ.get('FINNHUB_KEY') or None
-PER_MINUTE = int(os.environ.get('TWELVE_DATA_PER_MINUTE', '8'))
-PER_DAY = int(os.environ.get('TWELVE_DATA_PER_DAY', '800'))
-US = {'XNAS', 'XNYS', 'ARCX', 'BATS', 'XASE', 'IEXG', 'XNGS', 'XNCM', 'XNMS'}
-ALLOWED = {'symbol', 'mic_code', 'interval', 'outputsize', 'order', 'start_date'}
-FRESH = {'quote': 300, '5min': 600, '30min': 1800, '1day': 3 * 3600, '1week': 12 * 3600, '1month': 24 * 3600}
+HOSTS = ['https://query1.finance.yahoo.com', 'https://query2.finance.yahoo.com']
+PER_MINUTE = int(os.environ.get('YAHOO_PER_MINUTE', '60'))
+# Chart ranges the card offers, each with its interval and how long it's kept.
+RANGES = {
+    '1d': ('5m', 120), '5d': ('30m', 600), '1mo': ('1d', 3600), '6mo': ('1d', 3 * 3600),
+    'ytd': ('1d', 3 * 3600), '1y': ('1d', 6 * 3600), '5y': ('1wk', 12 * 3600), 'max': ('1mo', 24 * 3600),
+}
+SEARCH_FRESH = 24 * 3600
+SYMBOL = re.compile(r'[A-Za-z0-9.\-^=]{1,20}')
+TYPES = {'EQUITY', 'ETF', 'INDEX', 'MUTUALFUND'}
+# Browsers' own request headers; Yahoo turns away scripts that don't send them.
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36',
+    'Accept': 'application/json',
+    'Accept-Language': 'en-US,en;q=0.9',
+}
 
 cache = {}            # key -> (saved at, body bytes)
 lock = threading.Lock()
-recent = []           # times of Twelve Data requests in the last minute
-day = {'date': None, 'used': 0}
+recent = []           # times of requests to Yahoo in the last minute
+pause = {'until': 0}  # after Yahoo says "too many requests", wait
 
 
-def budget():
-    """Take one Twelve Data request from the allowance, if any is left."""
+def allowed():
+    """Take one request from the per-minute allowance, if any is left."""
     now = time.time()
-    today = time.strftime('%Y-%m-%d', time.gmtime(now))
     with lock:
-        if day['date'] != today:
-            day['date'], day['used'] = today, 0
+        if now < pause['until']:
+            return False
         recent[:] = [t for t in recent if now - t < 60]
-        if day['used'] >= PER_DAY - 5 or len(recent) >= PER_MINUTE:
+        if len(recent) >= PER_MINUTE:
             return False
         recent.append(now)
-        day['used'] += 1
         return True
 
 
-def spent_for_today():
-    with lock:
-        day['used'] = PER_DAY
-
-
-def fetch(url):
-    req = urllib.request.Request(url, headers={'User-Agent': 'Webshelf share prices (github.com/HoodedHacker32/webshelf)'})
-    try:
-        with urllib.request.urlopen(req, timeout=10) as res:
-            return json.loads(res.read().decode('utf-8'))
-    except urllib.error.HTTPError as err:
-        # Twelve Data says why in the body ("run out of API credits for the day").
+def fetch(path):
+    for host in HOSTS:
         try:
-            return {'status': 'error', **json.loads(err.read().decode('utf-8'))}
-        except ValueError:
-            return {'status': 'error', 'message': str(err)}
+            req = urllib.request.Request(host + path, headers=HEADERS)
+            with urllib.request.urlopen(req, timeout=8) as res:
+                return json.loads(res.read().decode('utf-8'))
+        except urllib.error.HTTPError as err:
+            if err.code == 429:
+                with lock:
+                    pause['until'] = time.time() + 300
+                return None
+            if err.code == 404:
+                return {}
+        except (urllib.error.URLError, TimeoutError, ValueError):
+            pass
+    return None
 
 
-def from_finnhub(params):
-    data = fetch(f"https://finnhub.io/api/v1/quote?symbol={urllib.parse.quote(params['symbol'])}&token={FH_KEY}")
-    if not data or not data.get('t'):
+def search(text):
+    data = fetch('/v1/finance/search?' + urllib.parse.urlencode(
+        {'q': text, 'quotesCount': 10, 'newsCount': 0, 'listsCount': 0, 'enableFuzzyQuery': 'false'}))
+    if data is None:
         return None
-    # Twelve Data's shape, so the page reads either the same way.
+    return {'quotes': [
+        {'symbol': q['symbol'], 'name': q.get('longname') or q.get('shortname') or q['symbol'],
+         'exchange': q.get('exchDisp') or q.get('exchange'), 'type': q.get('quoteType')}
+        for q in data.get('quotes', []) if q.get('symbol') and q.get('quoteType') in TYPES
+    ]}
+
+
+def chart(symbol, span):
+    interval = RANGES[span][0]
+    data = fetch(f'/v8/finance/chart/{urllib.parse.quote(symbol)}?' + urllib.parse.urlencode(
+        {'range': span, 'interval': interval, 'includePrePost': 'false'}))
+    if data is None:
+        return None
+    result = ((data.get('chart') or {}).get('result') or [None])[0]
+    if not result:
+        return {'error': 'Unknown symbol'}
+    meta = result.get('meta', {})
+    quote = ((result.get('indicators') or {}).get('quote') or [{}])[0]
+    times = result.get('timestamp') or []
+    closes = quote.get('close') or []
+    opens = [v for v in (quote.get('open') or []) if v is not None]
+    keep = ('symbol', 'currency', 'exchangeName', 'fullExchangeName', 'instrumentType', 'longName', 'shortName',
+            'regularMarketPrice', 'regularMarketTime', 'regularMarketDayHigh', 'regularMarketDayLow',
+            'regularMarketVolume', 'fiftyTwoWeekHigh', 'fiftyTwoWeekLow', 'previousClose', 'chartPreviousClose',
+            'exchangeTimezoneName', 'currentTradingPeriod')
     return {
-        'symbol': params['symbol'], 'close': data['c'], 'change': data['d'], 'percent_change': data['dp'],
-        'open': data['o'], 'high': data['h'], 'low': data['l'], 'previous_close': data['pc'],
-        'timestamp': data['t'], 'is_market_open': time.time() - data['t'] < 20 * 60, 'source': 'finnhub',
+        'meta': {k: meta[k] for k in keep if k in meta},
+        'open': opens[0] if span == '1d' and opens else None,
+        'points': [[t, round(c, 4)] for t, c in zip(times, closes) if c is not None],
     }
 
 
-def answer(path, params):
-    key = path + '?' + urllib.parse.urlencode(sorted(params.items()))
-    fresh_for = FRESH.get('quote' if path == 'quote' else params.get('interval', ''), 600)
+def answer(key, fresh_for, make):
     with lock:
         kept = cache.get(key)
     if kept and time.time() - kept[0] < fresh_for:
         return kept[1]
-    body = None
-    try:
-        if path == 'quote' and FH_KEY and params.get('mic_code') in US:
-            data = from_finnhub(params)
-            if data:
-                body = json.dumps(data).encode()
-        if body is None and budget():
-            data = fetch(f'{TD}/{path}?{urllib.parse.urlencode({**params, "apikey": TD_KEY})}')
-            if data.get('status') == 'error':
-                if 'for the day' in str(data.get('message', '')):
-                    spent_for_today()
-            else:
-                body = json.dumps(data).encode()
-    except Exception:  # noqa: BLE001 - any failure falls back to what's kept
-        body = None
-    if body is not None:
+    data = None
+    if allowed():
+        try:
+            data = make()
+        except Exception:  # noqa: BLE001 - any failure falls back to what's kept
+            data = None
+    if data is not None:
+        body = json.dumps(data, separators=(',', ':')).encode()
         with lock:
             cache[key] = (time.time(), body)
             if len(cache) > 5000:
@@ -113,19 +134,27 @@ def answer(path, params):
         return body
     if kept:
         return kept[1]
-    return json.dumps({'status': 'error', 'message': 'Share prices are busy; try again in a minute.'}).encode()
+    return json.dumps({'error': 'Share prices are busy; try again in a minute.'}).encode()
 
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):  # noqa: N802 - the standard library's name
         url = urllib.parse.urlparse(self.path)
         path = url.path.strip('/')
-        params = {k: v[0] for k, v in urllib.parse.parse_qs(url.query).items() if k in ALLOWED}
-        if path not in ('quote', 'time_series') or not re.fullmatch(r'[A-Za-z0-9.\-^=/]{1,20}', params.get('symbol', '')):
+        params = {k: v[0] for k, v in urllib.parse.parse_qs(url.query).items()}
+        body = None
+        if path == 'search':
+            text = params.get('q', '').strip()[:60]
+            if text:
+                body = answer('s:' + text.lower(), SEARCH_FRESH, lambda: search(text))
+        elif path == 'chart':
+            symbol, span = params.get('symbol', ''), params.get('range', '1d')
+            if SYMBOL.fullmatch(symbol) and span in RANGES:
+                body = answer(f'c:{symbol.upper()}:{span}', RANGES[span][1], lambda: chart(symbol, span))
+        if body is None:
             self.send_response(404)
             self.end_headers()
             return
-        body = answer(path, params)
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.send_header('Cache-Control', 'public, max-age=60')
@@ -138,4 +167,5 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    ThreadingHTTPServer(('127.0.0.1', 8090), Handler).serve_forever()
+    host = os.environ.get('MARKET_HOST', '127.0.0.1')
+    ThreadingHTTPServer((host, int(os.environ.get('MARKET_PORT', '8090'))), Handler).serve_forever()

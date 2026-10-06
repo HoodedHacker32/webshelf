@@ -394,7 +394,7 @@ When a search names something with a Wikipedia article (a person, place, work or
 ## Market summary
 
 - Shares ("aapl", "apple stock", "$tsla", "nasdaq: nvda") and coins ("bitcoin", "eth price") get a raised plate: "Market summary › Name", exchange and ticker, the price large, the change in green or red with ▲/▼, the time and the source, then range buttons (1D to Max), a sunken chart and a two-column table of key figures. The 1D chart has a dashed previous-close rule. The chart is drawn at its shown width so its axis text stays its real size.
-- A bare ticker only counts when it is a real symbol and not a dictionary word, so "cat" and "meta" stay ordinary searches. Shares need a Twelve Data key (`MARKET.twelveDataKey` in `assets/js/config.js`); without a working key the card is simply left out.
+- A bare ticker only counts when it is a real symbol and not a dictionary word, so "cat" and "meta" stay ordinary searches. Share prices come from Yahoo Finance through the search server; when the server or Yahoo can't answer, the card is simply left out.
 
 ## Phones
 

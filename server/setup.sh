@@ -47,11 +47,9 @@ if [ ! -f .env ]; then
     ip="$(curl -fsS https://api.ipify.org)"
     host="${ip//./-}.sslip.io"
   fi
-  read -r -p "Twelve Data API key for share prices (Enter to skip): " td_key || true
   cat > .env <<EOF
 SEARX_HOST=${host}
 SEARXNG_SECRET=$(openssl rand -hex 32)
-TWELVE_DATA_KEY=${td_key:-}
 # Pages allowed to read results in a browser: the GitHub Pages site and a local copy.
 ALLOWED_ORIGINS=^(https://hoodedhacker32\.github\.io|http://localhost:8417)$
 EOF

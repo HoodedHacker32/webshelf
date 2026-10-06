@@ -16,6 +16,7 @@ services:
     env_file: .env
     depends_on:
       - searxng
+      - market
 
   searxng:
     image: docker.io/searxng/searxng:latest
@@ -27,6 +28,16 @@ services:
       - SEARXNG_SECRET=${SEARXNG_SECRET}
     depends_on:
       - valkey
+
+  # Share prices from Yahoo Finance, cached (container/market.py).
+  market:
+    image: docker.io/library/python:3.12-alpine
+    restart: unless-stopped
+    command: python /app/market.py
+    environment:
+      - MARKET_HOST=0.0.0.0
+    volumes:
+      - ./container/market.py:/app/market.py:ro
 
   valkey:
     image: docker.io/valkey/valkey:8-alpine

@@ -36,7 +36,7 @@ Entirely AI-free. There is no AI tab, AI mode or AI summary, now or later. Every
 - **Easter eggs:** none, except Atari Breakout.
 - **Games removed:** no Snake, Pac-Man, Minesweeper, Solitaire, dinosaur game, tic-tac-toe, barrel roll, askew, recursion, anagram, Thanos or zerg rush.
 - **No "I'm Feeling Lucky" button.**
-- **Stocks:** Twelve Data through the search server's proxy (`TWELVE_DATA_KEY` on Render; without it the demo key covers only AAPL). Coins from CoinGecko.
+- **Stocks:** Yahoo Finance's public feeds through the search server (`market.py`), cached and shared between visitors; no keys. Coins from CoinGecko.
 - **Open data sources in use:** Wikipedia and Wikidata (knowledge panel, facts, office holders, spelling fallback), MusicBrainz (bands, lyrics cards), TVmaze (TV posters), Wiktionary (definitions), Open-Meteo (weather, geocoding, time zones), Frankfurter (ECB exchange rates), Openverse and Wikimedia Commons (images). The Privacy page lists every service and when it's asked.
 - **Search operators and Easy dorking:** operators work in every search and are checked against each result; Easy dorking (opt-in in Settings) adds a form that writes them, for research and finding pages directly.
 - **Name lives in one config value** so a rename is a one-line change.

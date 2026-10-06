@@ -4,9 +4,8 @@
 }
 
 # The host provides HTTPS; Caddy adds browser access for Webshelf only and
-# sends share-price requests to market.py, which keeps answers for a while,
-# shares them between visitors and adds the Twelve Data key (host environment
-# variable TWELVE_DATA_KEY; optional FINNHUB_KEY).
+# sends share-price requests to market.py, which fetches them from Yahoo
+# Finance and keeps each answer for a while, shared between visitors.
 :7860 {
 	encode zstd gzip
 	@webshelf header_regexp Origin {$ALLOWED_ORIGINS:^(https://hoodedhacker32\.github\.io|http://localhost:8417)$}
@@ -19,7 +18,7 @@
 	handle @preflight {
 		respond 204
 	}
-	@market path_regexp ^/market/(quote|time_series)$
+	@market path_regexp ^/market/(search|chart)$
 	handle @market {
 		uri strip_prefix /market
 		reverse_proxy 127.0.0.1:8090

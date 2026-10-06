@@ -4,7 +4,8 @@ const BACKEND_URL = 'https://webshelf-search-us.onrender.com';
 
 export const BACKEND = {
   searxngUrl: BACKEND_URL,
-  // Share prices go through the server, which holds the Twelve Data key.
+  // Share prices go through the server, which fetches them from Yahoo Finance
+  // and shares each answer between visitors (server/container/market.py).
   marketUrl: BACKEND_URL ? `${BACKEND_URL}/market` : null,
 };
 
@@ -17,13 +18,6 @@ export const SITE = {
   // PLACEHOLDER: the real web results source is still undecided.
   defaultProvider: 'webshelf',
   resultsPerLoad: 10,
-};
-
-// Share prices. Twelve Data's free key allows 800 requests a day; each share
-// search uses two. PLACEHOLDER: 'demo' only covers AAPL, so other shares show
-// plain results until a real key (or a proxy on our own server) is set here.
-export const MARKET = {
-  twelveDataKey: 'demo',
 };
 
 export const searchUrl = (q, page = 'search.html') => `${page}?q=${encodeURIComponent(q)}`;

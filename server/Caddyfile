@@ -1,7 +1,7 @@
 # Caddy gets a free HTTPS certificate for SEARX_HOST, lets the Webshelf site
 # (and a local copy for testing) read the results, and passes share-price
-# requests to Twelve Data with the key added here, so the key never reaches
-# the public site.
+# requests to market.py (container/market.py), which fetches them from Yahoo
+# Finance and keeps each answer for a while, shared between visitors.
 
 {$SEARX_HOST} {
 	encode zstd gzip
@@ -27,15 +27,10 @@
 	}
 
 	# Share prices: only the two calls the market card makes.
-	@market path_regexp ^/market/(quote|time_series)$
+	@market path_regexp ^/market/(search|chart)$
 	handle @market {
 		uri strip_prefix /market
-		rewrite * {path}?{query}&apikey={$TWELVE_DATA_KEY:demo}
-		reverse_proxy https://api.twelvedata.com {
-			header_up Host api.twelvedata.com
-			# Twelve Data sends its own CORS header; ours is the one that counts.
-			header_down -Access-Control-Allow-Origin
-		}
+		reverse_proxy market:8090
 	}
 	handle /market/* {
 		respond 404

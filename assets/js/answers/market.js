@@ -1,12 +1,12 @@
 // Market summary: a share or cryptocurrency price with a chart and key figures.
-// Shares come from Twelve Data (free key, set in config.js); its symbol search
-// needs no key. Cryptocurrencies come from CoinGecko, which needs no key.
+// Shares come from Yahoo Finance through our search server, which shares each
+// answer between visitors (server/container/market.py); browsers can't ask
+// Yahoo themselves. Cryptocurrencies come from CoinGecko, which needs no key.
 
 import { h, getJSON } from '../dom.js';
-import { MARKET, BACKEND } from '../config.js';
+import { BACKEND } from '../config.js';
 import { lineChart } from './chart.js';
 
-const TD = 'https://api.twelvedata.com';
 const CG = 'https://api.coingecko.com/api/v3';
 
 // Coins people search for by name or symbol, mapped to CoinGecko ids.
@@ -42,6 +42,8 @@ export function match(query) {
   return null;
 }
 
+// Yahoo gives London prices in pence as "GBp"; finance pages write GBX.
+const CURRENCY = { GBp: 'GBX', ZAc: 'ZAC', ILA: 'ILA' };
 const money = (v, cur = 'USD') => {
   const digits = Math.abs(v) >= 1 ? 2 : Math.abs(v) >= 0.01 ? 4 : 8;
   return `${v.toLocaleString(undefined, { minimumFractionDigits: Math.min(2, digits), maximumFractionDigits: digits })} ${cur}`;
@@ -59,52 +61,43 @@ async function isWord(text, signal) {
   } catch { return false; }
 }
 
+async function market(path, signal) {
+  const data = await getJSON(`${BACKEND.marketUrl}/${path}`, { signal });
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+// A share's home market first: a symbol with no exchange suffix ("AAPL",
+// not "AAPL.TO") trades in the US, where the main listing usually is.
+const home = (s) => (s.symbol.includes('.') ? 1 : 0);
 async function findShare({ text, symbol, bare }, signal) {
-  const data = await getJSON(`${TD}/symbol_search?symbol=${encodeURIComponent(text)}&outputsize=12`, { signal });
-  const list = (data?.data ?? []).filter((s) => ['Common Stock', 'ETF', 'Depositary Receipt', 'American Depositary Receipt'].includes(s.instrument_type));
-  const home = (s) => (s.country === 'United States' ? 0 : 1);
-  const exact = list.filter((s) => s.symbol.toLowerCase() === text.toLowerCase()).sort((a, b) => home(a) - home(b));
+  const data = await market(`search?q=${encodeURIComponent(text)}`, signal);
+  const list = (data.quotes ?? []).filter((s) => s.type === 'EQUITY' || s.type === 'ETF');
+  const lower = text.toLowerCase();
+  const exact = list.filter((s) => s.symbol.toLowerCase() === lower || s.symbol.toLowerCase().split('.')[0] === lower).sort((a, b) => home(a) - home(b));
   if (symbol) {
     if (!exact.length) return null;
     if (bare && await isWord(text, signal)) return null;
     return exact[0];
   }
-  // A company name: the best match whose name starts with what was typed.
-  const named = list.filter((s) => s.instrument_name.toLowerCase().startsWith(text.toLowerCase())).sort((a, b) => home(a) - home(b));
-  return named[0] ?? exact[0] ?? null;
+  // A company name: the best match whose name starts with what was typed,
+  // else Yahoo's own first answer ("google" finds Alphabet).
+  const named = list.filter((s) => s.name.toLowerCase().startsWith(lower)).sort((a, b) => home(a) - home(b));
+  return named[0] ?? exact[0] ?? list[0] ?? null;
 }
 
-// With our server, it adds the key; otherwise the browser sends the key in config.js.
-async function td(path, signal) {
-  const url = BACKEND.marketUrl ? `${BACKEND.marketUrl}/${path}` : `${TD}/${path}&apikey=${encodeURIComponent(MARKET.twelveDataKey)}`;
-  const data = await getJSON(url, { signal });
-  if (data?.status === 'error') throw new Error(data.message ?? 'Twelve Data error');
-  return data;
-}
-
-// Ranges: label, Twelve Data interval and points, CoinGecko days.
+// Ranges: label, Yahoo's range, CoinGecko days.
 const RANGES = [
-  ['1D', '5min', 79, 1], ['5D', '30min', 66, 5], ['1M', '1day', 23, 30], ['6M', '1day', 128, 180],
-  ['YTD', '1day', null, 'ytd'], ['1Y', '1day', 253, 365], ['5Y', '1week', 262, 1825], ['Max', '1month', 600, 'max'],
+  ['1D', '1d', 1], ['5D', '5d', 5], ['1M', '1mo', 30], ['6M', '6mo', 180],
+  ['YTD', 'ytd', 'ytd'], ['1Y', '1y', 365], ['5Y', '5y', 1825], ['Max', 'max', 'max'],
 ];
 const ytdDays = () => Math.ceil((Date.now() - Date.UTC(new Date().getUTCFullYear(), 0, 1)) / 864e5);
 
-async function shareSeries(share, range, signal) {
-  const [, interval, size] = RANGES.find((r) => r[0] === range);
-  let path = `time_series?symbol=${encodeURIComponent(share.symbol)}&mic_code=${share.mic_code}&interval=${interval}&order=ASC`;
-  path += range === 'YTD' ? `&start_date=${new Date().getUTCFullYear()}-01-01` : `&outputsize=${size}`;
-  const data = await td(path, signal);
-  const points = (data.values ?? []).map((v) => ({ x: new Date(v.datetime.replace(' ', 'T')), y: Number(v.close) }));
-  // One day means the latest trading day only.
-  if (range === '1D' && points.length) {
-    const day = points.at(-1).x.toDateString();
-    return points.filter((p) => p.x.toDateString() === day);
-  }
-  return points;
-}
+const shareChart = (share, range, signal) => market(`chart?symbol=${encodeURIComponent(share.symbol)}&range=${RANGES.find((r) => r[0] === range)[1]}`, signal);
+const pointsOf = (data) => (data.points ?? []).map(([t, y]) => ({ x: new Date(t * 1000), y }));
 
 async function coinSeries(id, range, signal) {
-  let days = RANGES.find((r) => r[0] === range)[3];
+  let days = RANGES.find((r) => r[0] === range)[2];
   if (days === 'ytd') days = ytdDays();
   const data = await getJSON(`${CG}/coins/${id}/market_chart?vs_currency=usd&days=${days}`, { signal });
   return (data.prices ?? []).map(([t, y]) => ({ x: new Date(t), y }));
@@ -173,35 +166,43 @@ function card({ path, name, sub, price, change, pct, when, credit, stats, series
 const rangeWords = { '1D': 'today', '5D': 'past 5 days', '1M': 'past month', '6M': 'past 6 months', YTD: 'year to date', '1Y': 'past year', '5Y': 'past 5 years', Max: 'all time' };
 
 async function renderShare(args, signal) {
-  if (!BACKEND.marketUrl && !MARKET.twelveDataKey) return null;
-  const share = await findShare(args, signal);
-  if (!share) return null;
-  let q;
+  if (!BACKEND.marketUrl) return null;
+  let share; let today;
   try {
-    q = await td(`quote?symbol=${encodeURIComponent(share.symbol)}&mic_code=${share.mic_code}`, signal);
-  } catch { return null; } // Not covered by this key: plain results instead.
-  const n = (k) => (q[k] == null ? NaN : Number(q[k]));
-  const price = n('close');
-  const when = new Date(Number(q.last_quote_at ?? q.timestamp) * 1000)
+    share = await findShare(args, signal);
+    if (!share) return null;
+    // Today's chart carries the price and the day's figures too.
+    today = await shareChart(share, '1D', signal);
+  } catch (err) {
+    if (err.name === 'AbortError') throw err;
+    return null; // Prices unavailable: plain results instead.
+  }
+  const q = today.meta ?? {};
+  const n = (v) => (v == null ? NaN : Number(v));
+  const price = n(q.regularMarketPrice);
+  if (!Number.isFinite(price)) return null;
+  const prev = n(q.previousClose ?? q.chartPreviousClose);
+  const when = new Date(n(q.regularMarketTime) * 1000)
     .toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+  const session = q.currentTradingPeriod?.regular;
+  const open = session && Date.now() / 1000 >= session.start && Date.now() / 1000 < session.end;
   const fmt = (v) => (Number.isFinite(v) ? v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '–');
   return card({
-    name: q.name ?? share.instrument_name,
-    sub: { line: `${q.exchange ?? share.exchange}: ${q.symbol ?? share.symbol}`, currency: q.currency ?? share.currency },
+    name: q.longName ?? share.name,
+    sub: { line: `${share.exchange}: ${share.symbol}`, currency: CURRENCY[q.currency] ?? q.currency ?? 'USD' },
     price,
-    change: n('change'),
-    pct: n('percent_change'),
-    when: `${when} · ${q.is_market_open ? 'Market open' : 'Market closed'}`,
-    credit: q.source === 'finnhub'
-      ? h('span', null, 'Price from ', h('a', { href: 'https://finnhub.io', rel: 'noreferrer' }, 'Finnhub'), ', chart from ', h('a', { href: 'https://twelvedata.com', rel: 'noreferrer' }, 'Twelve Data'), ', may be delayed')
-      : h('span', null, 'Prices from ', h('a', { href: 'https://twelvedata.com', rel: 'noreferrer' }, 'Twelve Data'), ', may be delayed'),
-    baseline: n('previous_close'),
+    change: price - prev,
+    pct: ((price - prev) / prev) * 100,
+    when: `${when} · ${open ? 'Market open' : 'Market closed'}`,
+    credit: h('span', null, 'Prices from ', h('a', { href: `https://finance.yahoo.com/quote/${encodeURIComponent(share.symbol)}`, rel: 'noreferrer' }, 'Yahoo Finance'), ', may be delayed'),
+    baseline: prev,
     stats: [
-      ['Open', fmt(n('open'))], ['High', fmt(n('high'))], ['Low', fmt(n('low'))], ['Prev close', fmt(n('previous_close'))],
-      ['52-wk high', fmt(Number(q.fifty_two_week?.high))], ['52-wk low', fmt(Number(q.fifty_two_week?.low))],
-      ['Volume', compact(n('volume'))], ['Avg volume', compact(n('average_volume'))],
+      ['Open', fmt(n(today.open))], ['High', fmt(n(q.regularMarketDayHigh))], ['Low', fmt(n(q.regularMarketDayLow))], ['Prev close', fmt(prev)],
+      ['52-wk high', fmt(n(q.fiftyTwoWeekHigh))], ['52-wk low', fmt(n(q.fiftyTwoWeekLow))],
+      ['Volume', compact(n(q.regularMarketVolume))],
     ],
-    series: (range) => shareSeries(share, range, signal),
+    // The first chart (today) is the one already fetched.
+    series: async (range) => pointsOf(range === '1D' ? today : await shareChart(share, range, signal)),
     ranges: RANGES.map((r) => r[0]),
     path: null,
   });
