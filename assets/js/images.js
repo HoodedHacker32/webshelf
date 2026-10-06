@@ -8,7 +8,9 @@
 import { h, svg, $, getJSON, hostOf } from './dom.js';
 import { icon } from './icons.js';
 import { setupPage } from './page.js';
-import { BACKEND, searchUrl } from './config.js';
+import { BACKEND } from './config.js';
+import { filterRow } from './searchtools.js';
+import { getSettings } from './store.js';
 import * as wiki from './wiki.js';
 import { parseQuestion, parseDefinition } from './qa.js';
 import { imageMatcher } from './imagematch.js';
@@ -28,6 +30,7 @@ const viewer = $('#viewer');
 const items = [];
 const free = new URLSearchParams(location.search).get('rights') === 'free';
 let page = 0;
+let toppedUp = false;
 let total = 0;
 let mode = free || !BACKEND.searxngUrl ? 'openverse' : 'server';
 
@@ -40,17 +43,65 @@ const subject = parseQuestion(query)?.subject ?? parseDefinition(query)?.subject
 // Only images about the search (see imagematch.js).
 const relevant = imageMatcher(subject);
 
+// Filters, in the address like the All tab's tools: size, kind and shape.
+// Colour isn't offered: telling an image's colours means reading its pixels,
+// which other sites' images don't allow.
+const tools = filterRow({
+  query,
+  page: 'images.html',
+  keep: ['rights'],
+  filters: [
+    ['size', 'Size', [['', 'Any size'], ['large', 'Large'], ['medium', 'Medium'], ['small', 'Small']]],
+    ['type', 'Type', [['', 'Any type'], ['photo', 'Photos'], ['art', 'Artwork'], ['gif', 'GIFs']]],
+    ['shape', 'Shape', [['', 'Any shape'], ['tall', 'Tall'], ['square', 'Square'], ['wide', 'Wide'], ['panoramic', 'Panoramic']]],
+  ],
+});
+const { size: wantSize, type: wantType, shape: wantShape } = tools.current;
+
 // Like Google's "Usage rights": everything, or only images free to reuse.
-grid.before(h('nav', { class: 'image-filters', 'aria-label': 'Usage rights' },
-  [['All images', null], ['Free to reuse', 'free']].map(([label, rights]) => h('a', {
-    class: 'btn btn-small', href: `${searchUrl(query, 'images.html')}${rights ? `&rights=${rights}` : ''}`,
-    'aria-current': (rights === 'free') === free ? 'page' : null,
-  }, label))));
+const rightsNote = free
+  ? 'Only images their creators let anyone reuse (Creative Commons and public domain), from Openverse. Each has its licence: some ask for credit, or rule out changes or selling.'
+  : 'Most images belong to their creators. To use one, check its page, or choose Free to reuse.';
+grid.before(h('div', { class: 'image-tools' },
+  h('nav', { class: 'image-filters', 'aria-label': 'Usage rights' },
+    [['All images', ''], ['Free to reuse', 'free']].map(([label, rights]) => h('a', {
+      class: 'btn btn-small', href: tools.urlFor({ rights }),
+      'aria-current': (rights === 'free') === free ? 'page' : null,
+    }, label))),
+  h('div', { class: 'image-menus' }, tools.menus),
+  h('p', { class: 'image-rights-note' }, rightsNote)),
+h('nav', { class: 'image-related', 'aria-label': 'Related searches', hidden: true }));
+
+// What a filter asks of an image: sizes by the longer side in pixels, shapes
+// by width over height. An image whose size isn't known can't be judged, so
+// a size or shape filter leaves it out. Kinds go by source: Flickr and Pexels
+// are photo sites, DeviantArt and ArtStation art sites; Openverse labels its own.
+const SIZES = { large: (l) => l >= 1200, medium: (l) => l >= 400 && l < 1200, small: (l) => l < 400 };
+const SHAPES = { tall: (r) => r < 0.85, square: (r) => r >= 0.85 && r <= 1.18, wide: (r) => r > 1.18 && r <= 2, panoramic: (r) => r > 2 };
+const KIND_OF = { flickr: 'photo', pexels: 'photo', unsplash: 'photo', deviantart: 'art', artstation: 'art' };
+function fits(item) {
+  if ((wantSize || wantShape) && !item.known) return false;
+  if (wantShape && !SHAPES[wantShape]?.(item.w / item.h)) return false;
+  // Openverse was asked for these already, by its own measures.
+  if (item.vetted) return true;
+  if (wantSize && !SIZES[wantSize]?.(Math.max(item.w, item.h))) return false;
+  if (wantType === 'gif' && item.format !== 'gif') return false;
+  if ((wantType === 'photo' || wantType === 'art') && item.kind !== wantType) return false;
+  return true;
+}
+const OPENVERSE_FILTERS = [
+  wantSize ? `&size=${wantSize}` : '',
+  wantShape ? `&aspect_ratio=${wantShape === 'panoramic' ? 'wide' : wantShape}` : '',
+  wantType === 'photo' ? '&category=photograph' : wantType === 'art' ? '&category=illustration' : '',
+  wantType === 'gif' ? '&extension=gif' : '',
+].join('');
 
 const LICENCES = { cc0: 'CC0 (public domain)', pdm: 'Public domain', by: 'CC BY', 'by-sa': 'CC BY-SA', 'by-nd': 'CC BY-ND', 'by-nc': 'CC BY-NC', 'by-nc-sa': 'CC BY-NC-SA', 'by-nc-nd': 'CC BY-NC-ND' };
 
 async function fromServer(n) {
-  const data = await getJSON(`${BACKEND.searxngUrl}/search?q=${encodeURIComponent(subject)}&format=json&categories=images&language=en&safesearch=1&pageno=${n}`, { ...ctx, timeout: 8000 });
+  // The engines only offer GIFs when asked for them by name.
+  const words = wantType === 'gif' ? `${subject} gif` : subject;
+  const data = await getJSON(`${BACKEND.searxngUrl}/search?q=${encodeURIComponent(words)}&format=json&categories=images&language=en&safesearch=1&pageno=${n}`, { ...ctx, timeout: 8000 });
   const size = (text) => String(text ?? '').match(/(\d+)\s*[x×\u00d7]\s*(\d+)/);
   // Each source takes a turn, so no one site (or one confused engine) fills
   // the grid; within a source, its own order is kept.
@@ -66,13 +117,18 @@ async function fromServer(n) {
   return mixed.filter((r) => r.img_src && /^https?:/.test(r.img_src)).map((r) => {
     const dims = size(r.resolution);
     const commons = /wikimedia\.org/.test(r.url ?? '');
+    const format = String(r.img_format ?? '').toLowerCase().replace(/^image\//, '').replace('jpeg', 'jpg')
+      || (r.img_src.match(/\.(jpe?g|png|gif|webp|svg)(?:[?#]|$)/i)?.[1].toLowerCase().replace('jpeg', 'jpg') ?? '');
     return {
       title: r.title || 'Untitled',
       thumb: r.thumbnail_src || r.img_src,
       full: r.img_src,
       page: r.url || r.img_src,
+      known: Boolean(dims),
       w: dims ? Number(dims[1]) : 4,
       h: dims ? Number(dims[2]) : 3,
+      format,
+      kind: KIND_OF[r.engines?.[0] ?? r.engine] ?? null,
       creator: r.author || null,
       licence: commons ? 'See the file page for its licence' : 'Reuse rights unknown: check the source',
       licenceUrl: commons ? r.url : null,
@@ -81,15 +137,18 @@ async function fromServer(n) {
 }
 
 async function openverse(n) {
-  const data = await getJSON(`https://api.openverse.org/v1/images/?q=${encodeURIComponent(subject)}&page_size=20&page=${n}&mature=false`, { ...ctx, timeout: 10000 });
+  const data = await getJSON(`https://api.openverse.org/v1/images/?q=${encodeURIComponent(subject)}&page_size=20&page=${n}&mature=false${OPENVERSE_FILTERS}`, { ...ctx, timeout: 10000 });
   total = data.result_count ?? 0;
   return (data.results ?? []).map((r) => ({
     title: r.title || 'Untitled',
     thumb: r.thumbnail,
     full: r.url,
     page: r.foreign_landing_url,
+    known: Boolean(r.width && r.height),
     w: r.width || 4,
     h: r.height || 3,
+    format: r.filetype ?? '',
+    vetted: true,
     creator: r.creator,
     creatorUrl: r.creator_url,
     licence: `${LICENCES[r.license] ?? r.license?.toUpperCase()}${r.license_version && !['cc0', 'pdm'].includes(r.license) ? ` ${r.license_version}` : ''}`,
@@ -100,7 +159,7 @@ async function openverse(n) {
 async function commons() {
   const list = await wiki.commonsImages(subject, { ...ctx, limit: 50 });
   total = list.length;
-  return list.map((r) => ({ title: r.title, thumb: r.thumb, full: r.thumb, page: r.page, w: r.w || 4, h: r.h || 3, creator: null, licence: 'See the file page for its licence', licenceUrl: r.page }));
+  return list.map((r) => ({ title: r.title, thumb: r.thumb, full: r.thumb, page: r.page, known: Boolean(r.w && r.h), w: r.w || 4, h: r.h || 3, creator: null, licence: 'See the file page for its licence', licenceUrl: r.page }));
 }
 
 // Justified rows: each tile grows in proportion to its shape, so a row's
@@ -138,24 +197,35 @@ async function load() {
       const raw = await track(fromServer(page));
       fetched = raw.length;
       if (!raw.length && page === 1) throw new Error('No images from the server');
-      batch = raw.filter(relevant);
+      batch = raw.filter(relevant).filter(fits);
+      // A filter leaves few: the next pages are looked through too.
+      while (tools.active && batch.length < 12 && fetched && page < 3) {
+        page += 1;
+        const next = await track(fromServer(page)).catch(() => []);
+        fetched = next.length;
+        batch.push(...next.filter(relevant).filter(fits));
+      }
       // Too few relevant images: Openverse's openly licensed ones fill in.
-      if (page === 1 && batch.length < 12) batch.push(...await track(openverse(1)).catch(() => []));
+      if (!toppedUp && items.length + batch.length < 12) {
+        toppedUp = true;
+        batch.push(...(await track(openverse(1)).catch(() => [])).filter(fits));
+      }
     } else if (mode === 'openverse') {
-      batch = await track(openverse(page));
+      batch = (await track(openverse(page))).filter(fits);
     }
   } catch (err) {
     if (err.name === 'AbortError') return;
     // Server asleep: Openverse. Openverse refusing (it limits anonymous use): Commons.
     if (page === 1 && mode === 'server') { mode = 'openverse'; page = 0; return load(); }
-    if (page === 1 && mode === 'openverse') { mode = 'commons'; batch = await track(commons()).catch(() => []); }
+    if (page === 1 && mode === 'openverse') { mode = 'commons'; batch = (await track(commons()).catch(() => [])).filter(fits); }
   }
   batch = batch.filter((i) => !seen.has(i.full) && seen.add(i.full));
   const start = items.length;
   items.push(...batch);
   grid.append(...batch.map((item, i) => tile(item, start + i)));
   if (!items.length) {
-    status.replaceChildren('No images found for ', h('b', null, query), '. Try fewer or different words.');
+    status.replaceChildren('No images found for ', h('b', null, query),
+      tools.active ? ['. ', h('a', { href: tools.urlFor({ size: '', type: '', shape: '' }) }, 'Search without filters'), '.'] : '. Try fewer or different words.');
     return;
   }
   status.replaceChildren('Images for ', h('b', null, query),
@@ -190,7 +260,8 @@ function openViewer(i) {
       h('h2', { class: 'viewer-title', id: 'viewer-title' }, item.title),
       h('p', { class: 'viewer-meta' },
         item.creator ? ['By ', item.creatorUrl ? h('a', { href: item.creatorUrl, rel: 'noreferrer' }, item.creator) : item.creator, ' · '] : '',
-        item.licenceUrl ? h('a', { href: item.licenceUrl, rel: 'noreferrer' }, item.licence) : item.licence),
+        item.licenceUrl ? h('a', { href: item.licenceUrl, rel: 'noreferrer' }, item.licence) : item.licence,
+        item.known ? h('span', { class: 'viewer-size num' }, ` · ${item.w.toLocaleString()} × ${item.h.toLocaleString()}${item.format ? ` ${item.format.toUpperCase()}` : ''}`) : ''),
       h('p', { class: 'viewer-actions' },
         h('a', { class: 'btn', href: item.page, target, rel: 'noreferrer' }, `Visit ${hostOf(item.page)}`),
         h('a', { class: 'viewer-full', href: item.full, target, rel: 'noreferrer' }, 'Open full image'))));
@@ -202,4 +273,30 @@ viewer.addEventListener('keydown', (e) => {
 });
 viewer.addEventListener('click', (e) => { if (e.target === viewer) viewer.close(); });
 
+/* Related searches ----------------------------------------------------- */
+
+// Chips that narrow the search, as Google's image chips did: what people
+// search for after these words (the server's suggestions), shown as the words
+// they add. Ones that only mean "pictures" again, or lead off to a shop or a
+// sign-in, aren't images refinements and are left out.
+const NOT_REFINEMENTS = /^(?:pictures?|images?|photos?|pics?|ai|ai generated|tickets?|official (?:site|website)|near me|login|price|prices|stock|for sale|reddit|wiki|wikipedia)$/;
+async function relatedChips() {
+  if (!BACKEND.searxngUrl || !getSettings().suggestions) return;
+  const res = await fetch(`${BACKEND.searxngUrl}/autocompleter?q=${encodeURIComponent(subject)}`, { signal: AbortSignal.timeout(4000) });
+  const data = await res.json();
+  const list = Array.isArray(data?.[1]) ? data[1] : Array.isArray(data) ? data : [];
+  const base = subject.toLowerCase();
+  const chips = [...new Set(list.map((t) => String(t).toLowerCase()))]
+    .filter((t) => t.startsWith(`${base} `))
+    .map((t) => [t, t.slice(base.length + 1).trim()])
+    .filter(([, added]) => added && added.split(' ').length <= 3 && !NOT_REFINEMENTS.test(added))
+    .slice(0, 8);
+  if (chips.length < 2) return;
+  const nav = $('.image-related');
+  nav.replaceChildren(h('ul', { class: 'image-related-list' }, chips.map(([full, added]) =>
+    h('li', null, h('a', { class: 'btn btn-small', href: tools.urlFor({}, full) }, added)))));
+  nav.hidden = false;
+}
+
 load();
+relatedChips().catch(() => {});

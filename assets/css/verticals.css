@@ -105,11 +105,34 @@
   .viewer-image { max-height: calc(100vh - 300px); }
 }
 
-/* Usage rights: All images / Free to reuse. The current one is pressed in. */
-.image-filters { display: flex; gap: 6px; margin: -4px 0 14px; padding-left: calc(var(--lead-in) - var(--page-margin)); }
+/* Image tools: usage rights (All images / Free to reuse, the current one
+   pressed in), then size, type and shape, then a line on reuse rights. */
+.image-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: -4px 0 12px;
+  padding-left: calc(var(--lead-in) - var(--page-margin));
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+.image-filters { display: flex; gap: 6px; }
+.image-menus { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.image-rights-note { flex-basis: 100%; max-width: 70ch; color: var(--meta); }
+.image-related { margin: 0 0 14px; padding-left: calc(var(--lead-in) - var(--page-margin)); }
+.image-related[hidden] { display: none; }
+.image-related-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.viewer-size { color: var(--meta); }
+@media (max-width: 759px) {
+  .image-tools, .image-related { padding-left: 0; }
+}
 .image-filters .btn[aria-current="page"] {
   background: var(--pressed);
   border-color: var(--bevel-deep) var(--bevel-hi) var(--bevel-hi) var(--bevel-deep);
   box-shadow: inset 1px 1px 0 var(--bevel-lo);
   font-weight: 700;
 }
+
+/* Video filters: length and upload date. */
+.video-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: -4px 0 14px; font-family: var(--font-ui); font-size: var(--text-sm); }

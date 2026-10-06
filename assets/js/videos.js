@@ -7,6 +7,7 @@ import { h, svg, $, getJSON, hostOf } from './dom.js';
 import { icon } from './icons.js';
 import { setupPage } from './page.js';
 import { BACKEND } from './config.js';
+import { filterRow } from './searchtools.js';
 
 const { query, ctx, track, target } = setupPage({
   page: 'videos.html',
@@ -50,6 +51,42 @@ const siteOf = (url) => {
 const STOP = new Set(['a', 'an', 'the', 'to', 'in', 'of', 'on', 'at', 'by', 'for', 'and', 'or', 'is', 'how', 'what', 'video', 'videos']);
 const meaningful = query.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 1 && !STOP.has(w));
 
+// Whether a video is about the search: its title, description or channel has
+// the words that matter (all of them for one or two, most of a longer search).
+// Bing Videos, asked by a server, sometimes answers with unrelated videos.
+const norm = (text) => String(text ?? '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
+const escape = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const wordTests = meaningful.map((w) => new RegExp(`(?<![\\p{L}\\p{N}])${escape(norm(w))}`, 'u'));
+const needed = wordTests.length <= 2 ? wordTests.length : Math.ceil(wordTests.length * 0.6);
+const about = (v) => {
+  const text = norm(`${v.title} ${v.snippet} ${v.channel ?? ''} ${v.url}`);
+  return wordTests.filter((t) => t.test(text)).length >= needed;
+};
+
+// Filters, in the address: length and upload date.
+const tools = filterRow({
+  query,
+  page: 'videos.html',
+  filters: [
+    ['duration', 'Duration', [['', 'Any length'], ['short', 'Under 4 minutes'], ['medium', '4–20 minutes'], ['long', 'Over 20 minutes']]],
+    ['time', 'Upload date', [['', 'Any time'], ['day', 'Past 24 hours'], ['week', 'Past week'], ['month', 'Past month'], ['year', 'Past year']]],
+  ],
+});
+const { duration: wantLength, time: wantTime } = tools.current;
+const LENGTHS = { short: (s) => s < 240, medium: (s) => s >= 240 && s <= 1200, long: (s) => s > 1200 };
+const DAYS = { day: 1, week: 7, month: 31, year: 366 };
+const since = wantTime ? Date.now() - DAYS[wantTime] * 864e5 : 0;
+// A video's length must be known to pass a length filter. Its date must be
+// known to pass a date filter, unless its source was asked for that range.
+const fits = (v) => {
+  if (wantLength && !(Number.isFinite(v.duration) && LENGTHS[wantLength]?.(v.duration))) return false;
+  if (wantTime) {
+    const known = v.date instanceof Date && !Number.isNaN(v.date.getTime());
+    if (known ? v.date.getTime() < since : !v.ranged) return false;
+  }
+  return true;
+};
+
 const SOURCES = [
   {
     name: 'Webshelf search server',
@@ -58,7 +95,8 @@ const SOURCES = [
     lead: true,
     async fetch(page) {
       if (!BACKEND.searxngUrl) return [];
-      const data = await getJSON(`${BACKEND.searxngUrl}/search?q=${q}&format=json&categories=videos&language=en&safesearch=1&pageno=${page}`, { ...ctx, timeout: 8000 });
+      const range = wantTime ? `&time_range=${wantTime}` : '';
+      const data = await getJSON(`${BACKEND.searxngUrl}/search?q=${q}&format=json&categories=videos&language=en&safesearch=1&pageno=${page}${range}`, { ...ctx, timeout: 8000 });
       return (data.results ?? []).filter((r) => /^https?:\/\//.test(r.url ?? '')).map((r) => ({
         url: r.url,
         title: clean(r.title),
@@ -68,6 +106,7 @@ const SOURCES = [
         channel: r.author || null,
         date: r.publishedDate && r.publishedDate !== 'None' ? new Date(r.publishedDate) : null,
         site: siteOf(r.url),
+        ranged: Boolean(wantTime),
       }));
     },
   },
@@ -93,7 +132,8 @@ const SOURCES = [
     pages: 5,
     async fetch(page) {
       const fields = 'id,title,thumbnail_360_url,duration,owner.screenname,created_time,url,description';
-      const data = await getJSON(`https://api.dailymotion.com/videos?search=${q}&fields=${fields}&limit=10&page=${page}&sort=relevance`, ctx);
+      const after = since ? `&created_after=${Math.floor(since / 1000)}` : '';
+      const data = await getJSON(`https://api.dailymotion.com/videos?search=${q}&fields=${fields}&limit=10&page=${page}&sort=relevance${after}`, ctx);
       return (data.list ?? []).map((v) => ({
         url: v.url, title: v.title, snippet: clean(v.description), thumb: v.thumbnail_360_url,
         duration: v.duration, channel: v['owner.screenname'], date: new Date(v.created_time * 1000), site: 'Dailymotion',
@@ -105,7 +145,8 @@ const SOURCES = [
     backup: true,
     pages: 5,
     async fetch(page) {
-      const data = await getJSON(`https://sepiasearch.org/api/v1/search/videos?search=${q}&start=${(page - 1) * 10}&count=10&nsfw=false`, ctx);
+      const after = since ? `&startDate=${new Date(since).toISOString()}` : '';
+      const data = await getJSON(`https://sepiasearch.org/api/v1/search/videos?search=${q}&start=${(page - 1) * 10}&count=10&nsfw=false${after}`, ctx);
       return (data.data ?? []).map((v) => ({
         url: v.url, title: v.name, snippet: clean(v.description), thumb: v.thumbnailUrl,
         duration: v.duration, channel: v.channel?.displayName ?? v.account?.displayName, date: new Date(v.publishedAt), site: `PeerTube (${v.channel?.host ?? hostOf(v.url)})`,
@@ -195,7 +236,7 @@ async function refill() {
     s.page += 1;
     try {
       const got = await s.fetch(s.page);
-      const fresh = got.filter((v) => v.url && v.title && !seen.has(v.url));
+      const fresh = got.filter((v) => v.url && v.title && !seen.has(v.url) && about(v) && fits(v));
       s.queue.push(...fresh);
       if (!got.length || s.page >= s.pages) s.done = true;
     } catch (err) {
@@ -215,6 +256,10 @@ async function refill() {
 async function showMore(count = 12) {
   moreBox.replaceChildren();
   await track(refill());
+  // Filters and the relevance check leave fewer: look a little further.
+  for (let round = 0; round < 2 && state.reduce((n, s) => n + s.queue.length, 0) < count && state.some((s) => !s.done && (!s.backup || serverDown)); round += 1) {
+    await track(refill());
+  }
   const batch = [];
   while (batch.length < count && state.some((s) => s.queue.length)) {
     for (const s of state) {
@@ -228,7 +273,8 @@ async function showMore(count = 12) {
   list.append(...batch.map(card));
   shownCount += batch.length;
   if (!shownCount) {
-    status.replaceChildren('No videos found for ', h('b', null, query), '. Try fewer or different words.');
+    status.replaceChildren('No videos found for ', h('b', null, query),
+      tools.active ? ['. ', h('a', { href: tools.urlFor({ duration: '', time: '' }) }, 'Search without filters'), '.'] : '. Try fewer or different words.');
     return;
   }
   status.replaceChildren('Videos for ', h('b', null, query), ` · ${shownCount} shown`);
@@ -239,4 +285,5 @@ async function showMore(count = 12) {
   }
 }
 
+list.before(h('div', { class: 'video-tools' }, tools.menus));
 showMore();

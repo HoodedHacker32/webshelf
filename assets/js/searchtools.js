@@ -24,6 +24,31 @@ export function pageUrl(query, tools, n = 1, page = 'search.html') {
   return `${searchUrl(query, page)}${rest ? `&${rest}` : ''}`;
 }
 
+// The Images and Videos tabs' filters: a row of menus whose choices live in
+// the address too. `filters` is [[key, label, [[value, text], …]], …];
+// `keep` lists other address keys to carry over (such as rights).
+export function filterRow({ query, page, filters, keep = [] }) {
+  const params = new URLSearchParams(location.search);
+  const current = Object.fromEntries([...filters.map(([key]) => key), ...keep].map((k) => [k, params.get(k) ?? '']));
+  // The address with these choices changed (and, optionally, another search).
+  const urlFor = (change, q = query) => {
+    const next = new URLSearchParams();
+    for (const [k, v] of Object.entries({ ...current, ...change })) if (v) next.set(k, v);
+    const rest = next.toString();
+    return `${searchUrl(q, page)}${rest ? `&${rest}` : ''}`;
+  };
+  const go = (change) => location.assign(urlFor(change));
+  const menus = filters.map(([key, label, options]) => {
+    const el = h('select', { class: 'field tools-select', 'aria-label': label },
+      options.map(([v, text]) => h('option', { value: v, selected: current[key] === v }, text)));
+    el.addEventListener('change', () => go({ [key]: el.value }));
+    return el;
+  });
+  const active = filters.some(([key]) => current[key]);
+  const clear = active ? h('a', { class: 'tools-clear', href: urlFor(Object.fromEntries(filters.map(([key]) => [key, '']))) }, 'Clear') : '';
+  return { current, active, menus: [...menus, clear], urlFor };
+}
+
 // supports: what the results provider can do ({ timeRange, dates }); tools it
 // can't honour aren't offered.
 export function mountTools({ query, tools, settings, supports = {} }) {
