@@ -186,13 +186,15 @@ async function renderShare(args, signal) {
     .toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
   const fmt = (v) => (Number.isFinite(v) ? v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '–');
   return card({
-    name: q.name,
-    sub: { line: `${q.exchange}: ${q.symbol}`, currency: q.currency },
+    name: q.name ?? share.instrument_name,
+    sub: { line: `${q.exchange ?? share.exchange}: ${q.symbol ?? share.symbol}`, currency: q.currency ?? share.currency },
     price,
     change: n('change'),
     pct: n('percent_change'),
     when: `${when} · ${q.is_market_open ? 'Market open' : 'Market closed'}`,
-    credit: h('span', null, 'Prices from ', h('a', { href: 'https://twelvedata.com', rel: 'noreferrer' }, 'Twelve Data'), ', may be delayed'),
+    credit: q.source === 'finnhub'
+      ? h('span', null, 'Price from ', h('a', { href: 'https://finnhub.io', rel: 'noreferrer' }, 'Finnhub'), ', chart from ', h('a', { href: 'https://twelvedata.com', rel: 'noreferrer' }, 'Twelve Data'), ', may be delayed')
+      : h('span', null, 'Prices from ', h('a', { href: 'https://twelvedata.com', rel: 'noreferrer' }, 'Twelve Data'), ', may be delayed'),
     baseline: n('previous_close'),
     stats: [
       ['Open', fmt(n('open'))], ['High', fmt(n('high'))], ['Low', fmt(n('low'))], ['Prev close', fmt(n('previous_close'))],
