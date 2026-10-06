@@ -1,0 +1,15 @@
+# Webshelf's click counter. Steps in README.md.
+name = "webshelf-clicks"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# No request logs.
+[observability]
+enabled = false
+
+[[d1_databases]]
+binding = "DB"
+database_name = "webshelf-clicks"
+# Paste the database_id that `npx wrangler d1 create webshelf-clicks` prints.
+database_id = "PASTE-THE-DATABASE-ID-HERE"

@@ -17,6 +17,7 @@ export const DEFAULTS = {
   safeSearch: 1,           // 0 off | 1 moderate | 2 strict
   language: 'en',          // results language, a SearXNG language code
   dorking: false,          // the operator form on the results page
+  shareClicks: false,      // opt-in click counts (clicks.js)
 };
 
 function read(key, fallback) {

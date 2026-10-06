@@ -89,3 +89,17 @@ test('one site gets at most two places before the others have had a turn', async
   const site = await rank('sourdough starter', [{ engine: 'bing', results: list }], { data, crowd: false });
   assert.equal(site.results[2].url, 'https://a.com/3');
 });
+
+test('pages people chose often move up, but not past an official site', async () => {
+  const lists = [{ engine: 'server', results: [
+    result('https://www.radiohead.com/', 'Radiohead', 'Radiohead'),
+    result('https://en.wikipedia.org/wiki/Radiohead', 'Radiohead - Wikipedia', 'Radiohead'),
+    result('https://www.example-fans.net/radiohead', 'Radiohead fan site', 'Radiohead'),
+  ] }];
+  const without = await rank('radiohead', lists, { officialHosts: ['radiohead.com'], data: data() });
+  assert.equal(urls(without)[2], 'https://www.example-fans.net/radiohead');
+  const shares = new Map([['https://www.example-fans.net/radiohead', 0.9], ['https://www.radiohead.com/', 0.1]]);
+  const withClicks = await rank('radiohead', lists, { officialHosts: ['radiohead.com'], data: data(), clicks: (url) => shares.get(url) ?? 0 });
+  assert.deepEqual(urls(withClicks).slice(0, 2), ['https://www.radiohead.com/', 'https://www.example-fans.net/radiohead']);
+  assert.ok(WEIGHTS.clicks < WEIGHTS.officialHome);
+});

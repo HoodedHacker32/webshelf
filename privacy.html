@@ -52,7 +52,7 @@
       <h2 id="p-short">In short</h2>
       <ul class="settings-prose">
         <li>Webshelf has no accounts, no ads, no analytics and no cookies.</li>
-        <li>Webshelf keeps no record of your searches. Its search server passes each search on and forgets it.</li>
+        <li>Webshelf keeps no record of your searches. Its search server passes each search on and forgets it. (If you turn on click counts, a scrambled code for the search and the page you chose are counted, with nothing that identifies you: <a href="#clicks">see below</a>.)</li>
         <li>To find results and answers, your searches are sent to the search engines and open-data services listed below. Each of them sees your search and your IP address, as any website you visit would, and has its own privacy policy.</li>
         <li>Your settings and (if you choose) your search history stay in your browser.</li>
       </ul>
@@ -92,6 +92,18 @@
         <div class="privacy-item"><dt>The websites in your results</dt><dd>Only when you click a result. Webshelf’s links don’t tell them which search you came from.</dd></div>
       </dl>
       <p class="settings-prose">Your country, for questions like “who is the current president”, is worked out on your device from its time zone or your saved location. Nothing is looked up to find it.</p>
+    </section>
+
+    <section class="settings-section" id="clicks" aria-labelledby="p-clicks">
+      <h2 id="p-clicks">Click counts (off unless you turn them on)</h2>
+      <p class="settings-prose">Settings has a switch, “Help improve results by counting my clicks”, which is off unless you turn it on. Only when it’s on:</p>
+      <ul class="settings-prose">
+        <li>Clicking a web result sends Webshelf’s click counter a scrambled code made from your search (the first half of a SHA-256 hash of it), the address of the page you chose without anything after “?” or “#”, and its place in the list.</li>
+        <li>The counter adds one to that page’s count for that code, at most 20 a day. It also notes the date of the latest click, for that daily limit. That is all it stores: no IP address, cookie, account, ID, time of day or anything about your browser, and it keeps no request logs.</li>
+        <li>Your searches fetch the counts for their code, and pages people chose often move up a little. Visitors who leave the switch off send nothing and get no counts.</li>
+        <li>The code hides your search’s words, but a common search (“weather”) could be guessed by making codes for likely searches and comparing. Leave the switch off, or turn it off for a while, for anything private.</li>
+        <li>The counter runs on Cloudflare (a Worker with a D1 database). Like any host, Cloudflare sees the IP address of each request as it arrives; Webshelf’s code never reads or keeps it.</li>
+      </ul>
     </section>
 
     <section class="settings-section" id="contact" aria-labelledby="p-contact">
