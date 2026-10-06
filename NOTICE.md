@@ -34,6 +34,7 @@ Each card names its source on the page.
 | [Frankfurter](https://frankfurter.dev) | European Central Bank reference exchange rates | Free use with attribution |
 | [Openverse](https://openverse.org) | Images tab (openly licensed images; the viewer names each creator and licence) | Per image, Creative Commons or public domain |
 | [Flickr](https://www.flickr.com), [DeviantArt](https://www.deviantart.com), [ArtStation](https://www.artstation.com), [Pinterest](https://www.pinterest.com), [Imgur](https://imgur.com), [Pixabay](https://pixabay.com), [Pexels](https://www.pexels.com), Bing Images, through Webshelf's SearXNG server | Images tab and image row | Each image belongs to its creator; thumbnails link to the page they come from |
+| [Open Library](https://openlibrary.org) | Books tab: books, covers, opening lines; links to read or borrow at the Internet Archive | Catalogue data CC0; covers shown as Open Library serves them |
 | [Dailymotion](https://www.dailymotion.com), [SepiaSearch](https://sepiasearch.org) (PeerTube), [Internet Archive](https://archive.org) | Videos tab | Results link to each video's page |
 | YouTube thumbnails (`i.ytimg.com`) | Videos tab, for YouTube links found in the web results | Thumbnails link to the video |
 | [Yahoo Finance](https://finance.yahoo.com) | Share prices, charts and symbol search (public feeds, no key) | Display with attribution |

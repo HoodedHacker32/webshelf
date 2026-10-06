@@ -27,4 +27,5 @@ export const TABS = [
   { id: 'all', label: 'All', page: 'search.html' },
   { id: 'images', label: 'Images', page: 'images.html' },
   { id: 'videos', label: 'Videos', page: 'videos.html' },
+  { id: 'books', label: 'Books', page: 'books.html' },
 ];

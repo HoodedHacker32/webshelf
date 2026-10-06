@@ -136,3 +136,32 @@
 
 /* Video filters: length and upload date. */
 .video-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: -4px 0 14px; font-family: var(--font-ui); font-size: var(--text-sm); }
+
+/* Book results: a cover beside the title, facts, opening line and links. */
+.is-books .vertical { max-width: calc(var(--lead-in) + var(--center-width)); box-sizing: content-box; }
+.book-body { display: flex; gap: 14px; }
+.book-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 80px;
+  height: 120px;
+  overflow: hidden;
+  background: var(--image-ground);
+  border: 2px solid;
+  border-color: var(--bevel-lo) var(--bevel-lit) var(--bevel-lit) var(--bevel-lo);
+}
+.book-cover img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.book-cover:hover { border-color: var(--link); }
+.book-cover.is-blank span { padding: 6px; color: var(--meta); font-size: var(--text-xs); line-height: 1.25; text-align: center; overflow-wrap: anywhere; }
+.book-text { min-width: 0; }
+.book-facts { margin-top: 2px; color: var(--ink-2); font-family: var(--font-ui); font-size: var(--text-sm); }
+.book-text .result-snippet { margin-top: 6px; }
+.book-subjects { margin-top: 4px; color: var(--meta); font-family: var(--font-ui); font-size: var(--text-sm); }
+.book-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; font-family: var(--font-ui); font-size: var(--text-sm); }
+.book-actions:empty { display: none; }
+.book-rating { color: var(--ink-2); }
+@media (max-width: 559px) {
+  .book-cover { width: 64px; height: 96px; }
+}
