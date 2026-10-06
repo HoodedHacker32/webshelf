@@ -576,3 +576,36 @@
 .lyrics-by { color: var(--ink-2); }
 .lyrics-note { margin-top: 8px; color: var(--meta); font-size: var(--text-sm); }
 .lyrics-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+/* Sports: the team, then its matches as scorelines, home side first. ---- */
+
+.sport { padding: 12px 16px 14px; }
+.sport-head { display: flex; align-items: center; gap: 12px; }
+.sport-logo { flex: none; width: 44px; height: 44px; object-fit: contain; }
+.sport-name { color: var(--ink); font-size: var(--text-lg); font-weight: 700; line-height: 1.25; }
+.sport-standing { color: var(--meta); font-family: var(--font-ui); font-size: var(--text-sm); }
+.sport-heading { margin-top: 14px; color: var(--ink-2); font-family: var(--font-ui); font-size: var(--text-sm); font-weight: 700; }
+.sport-list { margin-top: 4px; }
+.sport-match { padding: 8px 0; border-bottom: 1px solid var(--bevel-lit); }
+.sport-match:last-child { border-bottom: 0; }
+.sport-match.is-featured { margin-top: 10px; padding: 10px 12px; background: var(--field); border: 1px solid var(--bevel-lo); }
+.sport-when { color: var(--meta); font-family: var(--font-ui); font-size: var(--text-xs); }
+.sport-live { color: var(--negative); font-weight: 700; }
+.sport-line { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: center; gap: 4px 16px; margin-top: 4px; }
+.sport-side { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.sport-side img { flex: none; width: 24px; height: 24px; object-fit: contain; }
+.sport-team { min-width: 0; overflow: hidden; color: var(--ink-2); text-overflow: ellipsis; white-space: nowrap; }
+.sport-side.is-winner .sport-team { color: var(--ink); font-weight: 700; }
+.sport-score { margin-left: auto; color: var(--ink); font-size: var(--text-lg); font-weight: 700; }
+.sport-outcome { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; color: #ffffff; font: 700 12px/1 var(--font-ui); }
+.sport-outcome.is-W { background: var(--positive); }
+.sport-outcome.is-L { background: var(--negative); }
+.sport-outcome.is-D { background: var(--meta); }
+.sport-venue { margin-top: 2px; color: var(--meta); font-size: var(--text-xs); }
+
+@media (max-width: 559px) {
+  .sport { padding: 12px; }
+  .sport-line { grid-template-columns: minmax(0, 1fr) auto; }
+  .sport-side.is-away { grid-row: 2; }
+  .sport-outcome { grid-column: 2; grid-row: 1 / span 2; }
+}

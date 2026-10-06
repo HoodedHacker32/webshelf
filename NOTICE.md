@@ -40,6 +40,7 @@ Each card names its source on the page.
 | [Dailymotion](https://www.dailymotion.com), [SepiaSearch](https://sepiasearch.org) (PeerTube), [Internet Archive](https://archive.org) | Videos tab | Results link to each video's page |
 | YouTube thumbnails (`i.ytimg.com`) | Videos tab, for YouTube links found in the web results | Thumbnails link to the video |
 | [Yahoo Finance](https://finance.yahoo.com) | Share prices, charts and symbol search (public feeds, no key) | Display with attribution |
+| [ESPN](https://www.espn.com) | Sports scores, fixtures and team badges (public site feeds, no key) | Display with attribution; badges belong to their clubs |
 | [CoinGecko](https://www.coingecko.com) | Cryptocurrency prices and charts | Free API, with attribution |
 | [Bing](https://www.bing.com), through Webshelf's SearXNG server | Web results | Results link to third-party pages |
 | [MusicBrainz](https://musicbrainz.org) | Band and artist panels, official websites | CC0 (core data) |
