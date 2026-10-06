@@ -770,13 +770,21 @@ function initials(name) {
   return name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('');
 }
 
-async function fillTopic(title, ent, panel, subject) {
+async function fillTopic(title, ent, panel, subject, works = Promise.resolve([])) {
   const [sum, data, images] = await Promise.all([
     wiki.summary(title, ctx),
     loadEntity(title, { ...ctx, subject }).catch(() => null),
     wiki.commonsImages(title, { ...ctx, limit: 6 }).catch(() => []),
   ]);
   if (!sum) { removeTopic(); return null; }
+  // "Known for": a person's three most-linked works of their main kind (the
+  // kind they have most of: films for an actor, books for a writer), from
+  // Wikidata, which lists works by how many pages link to them.
+  if (data?.isHuman) {
+    const groups = await Promise.race([works, wait(1500).then(() => [])]);
+    const main = [...groups].sort((a, b) => b.items.length - a.items.length)[0];
+    if (main?.items.length >= 3) data.rows.splice(1, 0, { label: 'Known for', parts: main.items.slice(0, 3).map((w) => ({ text: w.title, link: true })) });
+  }
   const page = sum.content_urls?.desktop?.page ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`;
   const commons = `https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(sum.title)}&title=Special:MediaSearch&type=image`;
 
@@ -922,22 +930,47 @@ function placeInList(slot, after) {
   if (anchor) anchor.after(slot);
 }
 
+// Before the first result, or after result `after`.
+function placeAt(slot, after) {
+  const results = list.querySelectorAll('.result');
+  if (after === 0 && results[0]) { results[0].before(slot); return; }
+  const anchor = results[after - 1] ?? results[results.length - 1];
+  if (anchor) anchor.after(slot);
+}
+
 function placePending() {
   resultsOnScreen = true;
-  for (const [slot, after] of pendingBlocks) {
-    const results = list.querySelectorAll('.result');
-    const anchor = results[after - 1] ?? results[results.length - 1];
-    if (anchor) anchor.after(slot);
-  }
+  for (const [slot, after] of pendingBlocks) placeAt(slot, after);
   pendingBlocks.length = 0;
 }
+
+// "tom hanks movies", "sally rooney books", "taylor swift albums": the
+// person's works of that kind lead the page, the person's panel beside them.
+const WORKS_ASKS = [
+  [/^(.+?)(?:'s|’s)? (?:movies|films|filmography)$/i, ['film', 'tv']],
+  [/^(.+?)(?:'s|’s)? (?:tv shows|tv series|shows)$/i, ['tv']],
+  [/^(.+?)(?:'s|’s)? (?:books|novels|bibliography)$/i, ['books']],
+  [/^(.+?)(?:'s|’s)? (?:albums|discography)$/i, ['albums']],
+  [/^(.+?)(?:'s|’s)? songs$/i, ['songs']],
+];
+const worksAsk = (() => {
+  for (const [pattern, kinds] of WORKS_ASKS) {
+    const m = pattern.exec(query.trim());
+    if (m) return { subject: m[1], kinds };
+  }
+  return null;
+})();
 
 async function loadWorksFor(worksPromise, onScreenPromise) {
   let [groups, onScreenWork] = await Promise.all([worksPromise, onScreenPromise]);
   if (!topicTitle) return;
-  if (!onScreenWork) groups = groups.filter((g) => g.id !== 'tv' && g.id !== 'film');
-  if (!groups.length) return;
-  placeInList(h('li', { class: 'result-works' }, groups.map(worksGroup)), 3);
+  const asked = (g) => worksAsk?.kinds.includes(g.id);
+  if (!onScreenWork) groups = groups.filter((g) => asked(g) || (g.id !== 'tv' && g.id !== 'film'));
+  // In the order asked: films before TV for "movies".
+  const first = groups.filter(asked).sort((a, b) => worksAsk.kinds.indexOf(a.id) - worksAsk.kinds.indexOf(b.id));
+  const rest = groups.filter((g) => !asked(g)).map((g) => ({ ...g, items: g.items.slice(0, 12) }));
+  if (first.length) placeInList(h('li', { class: 'result-works is-asked' }, first.map(worksGroup)), 0);
+  if (rest.length) placeInList(h('li', { class: 'result-works' }, rest.map(worksGroup)), 3);
 }
 
 let panelDecided;
@@ -954,14 +987,14 @@ const questionsKnown = new Promise((resolve) => { questionsDecided = resolve; })
 async function loadWiki(answering) {
   let info;
   try {
-    info = await track(wiki.lookup(query, ctx));
+    info = await track(wiki.lookup(worksAsk?.subject ?? query, ctx));
   } catch {
     panelDecided();
     worksDecided();
     questionsDecided();
     return;
   }
-  const title = wiki.panelTitle(query, info.hits);
+  const title = wiki.panelTitle(worksAsk?.subject ?? query, info.hits);
   // Wikipedia suggests respellings even for correct queries ("photo synthesis"),
   // so only offer one when none of its top articles shares a word with the search.
   const typed = contentTerms(query);
@@ -984,9 +1017,9 @@ async function loadWiki(answering) {
     const qid = info.ids?.[title] ?? null;
     const subject = fetchSubject({ qid, title }, ctx).catch(() => null);
     const works = (qid ? Promise.resolve(qid) : entityId(title, ctx))
-      .then((id) => (id ? loadWorks(id, { ...ctx, onScreen: true }) : [])).catch(() => []);
+      .then((id) => (id ? loadWorks(id, { ...ctx, onScreen: true, limit: worksAsk ? 40 : 12 }) : [])).catch(() => []);
     subject.then((entity) => (entity ? queueQuestions({ title, entity }, [...kindsShown(entity, shownProps(entity)), 'whois', 'whatis']) : null)).finally(questionsDecided);
-    const filling = track(fillTopic(title, ent, panel, subject)).catch(() => { removeTopic(); return null; });
+    const filling = track(fillTopic(title, ent, panel, subject, works)).catch(() => { removeTopic(); return null; });
     await loadWorksFor(works, subject.then(worksOnScreen));
     worksDecided();
     await filling;

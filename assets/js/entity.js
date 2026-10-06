@@ -234,7 +234,7 @@ const WORK_KINDS = [
   ['songs', 'Songs', /\bsong\b|single/i],
 ];
 
-export async function loadWorks(qid, { signal, onScreen = true } = {}) {
+export async function loadWorks(qid, { signal, onScreen = true, limit = 12 } = {}) {
   const search = (q) => getJSON(`${WD}?${qs({ action: 'query', list: 'search', srsearch: q, srlimit: 50 })}`, { signal, timeout: 6000 })
     .then((d) => (d?.query?.search ?? []).map((s) => s.title))
     .catch(() => []);
@@ -300,6 +300,6 @@ export async function loadWorks(qid, { signal, onScreen = true } = {}) {
     await Promise.race([posters, new Promise((resolve) => setTimeout(resolve, 2500))]);
   }
 
-  return WORK_KINDS.map(([id, heading]) => ({ id, heading, items: works.filter((w) => w.kind === id).slice(0, 12) }))
+  return WORK_KINDS.map(([id, heading]) => ({ id, heading, items: works.filter((w) => w.kind === id).slice(0, limit) }))
     .filter((g) => g.items.length >= 2);
 }
