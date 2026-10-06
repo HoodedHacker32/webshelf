@@ -40,7 +40,7 @@ Entirely AI-free. There is no AI tab, AI mode or AI summary, now or later. Every
 - **Tabs:** All, Images (size, type and shape filters, related-search chips), Videos (length and upload-date filters), Books (Open Library: read or borrow free), Maps (OpenStreetMap and Nominatim, Leaflet vendored).
 - **Sports:** a team's standing, results and fixtures from ESPN's public feeds, only for searches with a sports word ("arsenal score").
 - **Filmographies:** "tom hanks movies", "sally rooney books" lead with that person's works; people's panels say what they're known for.
-- **Click counts (opt-in, off by default):** a Cloudflare Worker (`server/clicks`) counts which result was chosen for a hashed search; dormant until `CLICKS.url` is set in `config.js`.
+- **No click tracking:** the owner decided against counting clicks, even opt-in. Results are ranked by open rules only.
 - **Open data sources in use:** Wikipedia and Wikidata (knowledge panel, facts, office holders, spelling fallback), MusicBrainz (bands, lyrics cards), TVmaze (TV posters), Wiktionary (definitions), Open-Meteo (weather, geocoding, time zones), Frankfurter (ECB exchange rates), Openverse and Wikimedia Commons (images). The Privacy page lists every service and when it's asked.
 - **Search operators and Easy dorking:** operators work in every search and are checked against each result; Easy dorking (opt-in in Settings) adds a form that writes them, for research and finding pages directly.
 - **Name lives in one config value** so a rename is a one-line change.

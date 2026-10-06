@@ -14,7 +14,6 @@ import { loadEntity, loadWorks, entityId, fetchSubject, worksOnScreen, values, s
 import { parseQuestion, parseDefinition, resolveSubject, factAnswer, questionsFor, kindsShown, leadSentences, contentTerms, highlight, KINDS, looksLikeQuestion, EXACT_SUBJECT, subjectMatches } from './qa.js';
 import { icon } from './icons.js';
 import { musicArtist } from './rank.js';
-import { recordClick } from './clicks.js';
 import { mountTabs } from './page.js';
 import { parseQuery, plainQuery, applyOperators } from './operators.js';
 import { findSnippet } from './snippet.js';
@@ -83,16 +82,6 @@ const list = $('#results');
 const moreBox = $('#serp-more');
 let all = [];
 let shown = 0;
-
-// Opt-in click counts (clicks.js): which web result was chosen, and where it was.
-const counted = (e) => {
-  const link = e.target.closest?.('.result-title a');
-  const item = link?.closest('.result');
-  if (!item || (e.type === 'auxclick' && e.button !== 1)) return;
-  recordClick(plain, link.href, [...list.querySelectorAll('.result')].indexOf(item) + 1);
-};
-list.addEventListener('click', counted);
-list.addEventListener('auxclick', counted);
 
 const runs = (parts) => parts.map((r) => (r.bold ? h('b', null, r.text) : r.text));
 

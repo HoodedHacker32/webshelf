@@ -4,7 +4,6 @@
 
 import { BACKEND } from '../config.js';
 import { rank, musicArtist } from '../rank.js';
-import { clickShares, pageOf } from '../clicks.js';
 import { lookup } from '../wiki.js';
 import { fetchSubject, values } from '../entity.js';
 import searxng from './searxng.js';
@@ -71,8 +70,6 @@ export default {
       : Promise.resolve(null);
     // Mwmbl has one page of results, so it only stands in on the first.
     const fromMwmbl = page === 1 ? mwmbl.search(query, ctx).catch(() => null) : Promise.resolve(null);
-    // Click counts, for visitors who turned them on (nothing is sent otherwise).
-    const shares = clickShares(rankQuery);
 
     // The server already includes Mwmbl, so Mwmbl alone is only used without it.
     const server = await fromServer;
@@ -97,12 +94,7 @@ export default {
 
     const sites = await Promise.race([official, wait(2500).then(() => [])]);
     const host = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; } };
-    const counted = await shares;
-    const { results, left } = await rank(rankQuery, lists, {
-      officialHosts: sites.map((s) => host(s.url)),
-      crowd: !/(?:^|\s)site:/i.test(query),
-      clicks: counted ? (url) => counted.get(pageOf(url)) ?? 0 : null,
-    });
+    const { results, left } = await rank(rankQuery, lists, { officialHosts: sites.map((s) => host(s.url)), crowd: !/(?:^|\s)site:/i.test(query) });
     this.last = { server: Boolean(server), left, meta: server?.meta ?? { corrections: [], suggestions: [] } };
     // An official site no engine found still belongs first: add it, credited to
     // the open database that names it.

@@ -20,15 +20,6 @@ export const SITE = {
   resultsPerLoad: 10,
 };
 
-// Click counts (opt-in, clicks.js): the address of Webshelf's click counter,
-// a Cloudflare Worker (server/clicks/README.md). While it's null the feature
-// is off and its setting is hidden.
-export const CLICKS = {
-  url: null,
-  // Fewer clicks than this on a search say nothing yet.
-  minClicks: 5,
-};
-
 export const searchUrl = (q, page = 'search.html') => `${page}?q=${encodeURIComponent(q)}`;
 
 // The tabs above the results. Each is its own page with the same toolbar.

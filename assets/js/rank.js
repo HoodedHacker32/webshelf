@@ -13,8 +13,6 @@
 //      ("gordonramsay.com" for "gordon ramsay").
 //   4. Identity: the official website of the thing searched for, from Wikidata
 //      or MusicBrainz, goes first, as it does on Google.
-//   5. Choice (only for visitors who turned on click counts): pages people
-//      chose often for this same search move up a little (clicks.js).
 // Sites on the AI content-farm blocklist are left out.
 
 import { getJSON } from './dom.js';
@@ -27,7 +25,6 @@ import { getJSON } from './dom.js';
 // + WEIGHTS.navigational               if the address spells the search ("gordonramsay.com")
 // + WEIGHTS.officialHome / officialPage if it's the official site (home page / other page)
 // + WEIGHTS.severalEngines             if more than one engine found it
-// + clickShare × WEIGHTS.clicks        (share of this search's counted clicks; opt-in, see clicks.js)
 // Engine weight is scaled, per search, by trust = (share of the search's words
 // its top results contain, on average) ^ WEIGHTS.trustPower, at least trustMin.
 export const WEIGHTS = {
@@ -47,9 +44,6 @@ export const WEIGHTS = {
   officialHome: 6,
   officialPage: 3,
   severalEngines: 0.3,
-  // A page that got every counted click for this search gains this much: as
-  // much as the address spelling the search, far less than being official.
-  clicks: 1.5,
   // How many of an engine's top results its trust is judged on, how sharply
   // missing words reduce it, and the least it can fall to.
   trustDepth: 10,
@@ -142,7 +136,7 @@ const words = (text) => String(text ?? '').toLowerCase().split(/[^\p{L}\p{N}]+/u
 // lists: [{ engine, results }] where each result is { url, title, snippet, ... }.
 // data (optional, for tests): { rank: Map(host -> place), farms: Set(host), size }.
 // Returns { results, left } with left = how many AI-farm results were removed.
-export async function rank(query, lists, { officialHosts = [], data = null, crowd = true, clicks = null } = {}) {
+export async function rank(query, lists, { officialHosts = [], data = null, crowd = true } = {}) {
   const { rank: top, farms, size } = data ?? await loadLists();
   // Little words ("to", "in", "the") match almost any page, so only the words
   // that carry meaning count; the address check still uses them all
@@ -213,8 +207,7 @@ export async function rank(query, lists, { officialHosts = [], data = null, crow
       - (1 - covered) * WEIGHTS.missingWords
       + (navigational ? WEIGHTS.navigational : 0)
       + (isOfficial ? (path.length <= 1 ? WEIGHTS.officialHome : WEIGHTS.officialPage) : 0)
-      + (entry.engines.size > 1 ? WEIGHTS.severalEngines : 0)
-      + (clicks ? clicks(entry.url) * WEIGHTS.clicks : 0);
+      + (entry.engines.size > 1 ? WEIGHTS.severalEngines : 0);
     scored.push({ ...entry, engines: [...entry.engines], score });
   }
   scored.sort((a, b) => b.score - a.score);

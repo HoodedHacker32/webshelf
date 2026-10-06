@@ -7,7 +7,6 @@ import { LANGUAGES } from './searchtools.js';
 import { geocode, locateMe } from './answers/geo.js';
 import { mountLogos } from './logo.js';
 import { applyTheme } from './theme.js';
-import { clicksAvailable } from './clicks.js';
 
 document.title = `Settings - ${SITE.name}`;
 $('#settings-search').replaceChildren(createSearchbox());
@@ -39,9 +38,6 @@ $('#provider-options').replaceChildren(...Object.values(PROVIDERS).map((p) => {
 }));
 
 /* Switches ------------------------------------------------------------ */
-
-// Click counts are offered only once the site has a click counter.
-$('#clicks').hidden = !clicksAvailable();
 
 const settings = getSettings();
 for (const input of $$('[data-setting]')) {
