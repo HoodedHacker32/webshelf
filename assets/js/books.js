@@ -129,7 +129,7 @@ async function load() {
   shown += batch.length;
   if (!shown) {
     status.replaceChildren('No books found for ', h('b', null, query),
-      tools.active ? ['. ', h('a', { href: tools.urlFor({ read: '', published: '' }) }, 'Search without filters'), '.'] : '. Try fewer or different words.');
+      ...(tools.active ? ['. ', h('a', { href: tools.urlFor({ read: '', published: '' }) }, 'Search without filters'), '.'] : ['. Try fewer or different words.']));
     return;
   }
   status.replaceChildren('Books for ', h('b', null, query), ` · ${shown} shown`);

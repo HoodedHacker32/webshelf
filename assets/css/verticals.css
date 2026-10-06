@@ -165,3 +165,69 @@
 @media (max-width: 559px) {
   .book-cover { width: 64px; height: 96px; }
 }
+
+/* Maps: the places on the left, the map beside them, held in view while the
+   list scrolls. On a phone the map comes first, then the list. */
+.is-maps .vertical.map-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 380px) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  gap: 0 24px;
+  padding-right: var(--page-margin);
+}
+.map-layout .serp-status { grid-column: 1; grid-row: 1; }
+.map-list { grid-column: 1; grid-row: 2; min-width: 0; }
+.map {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  position: sticky;
+  top: calc(var(--toolbar-h, 120px) + 12px);
+  height: calc(100vh - var(--toolbar-h, 120px) - 32px);
+  min-height: 360px;
+  border: 2px solid;
+  border-color: var(--bevel-lo) var(--bevel-lit) var(--bevel-lit) var(--bevel-lo);
+  background: var(--image-ground);
+  font-family: var(--font-ui);
+}
+.place-list .result::before { content: none; }
+.place { padding: 8px 10px; margin: 0 -10px 10px; border: 1px solid transparent; }
+.place.is-current { background: var(--pressed); border-color: var(--bevel-lo); }
+.place-title { display: flex; align-items: baseline; gap: 8px; }
+.place-num { flex: none; min-width: 1.6em; padding: 0 4px; background: var(--ink); color: var(--field); font-family: var(--font-ui); font-size: var(--text-sm); font-weight: 700; text-align: center; }
+.place-open { padding: 0; border: 0; background: none; color: var(--link); font: inherit; text-align: left; text-decoration: underline; cursor: pointer; overflow-wrap: anywhere; }
+.place-kind { margin-top: 2px; color: var(--ink-2); font-family: var(--font-ui); font-size: var(--text-sm); }
+.place-address { margin-top: 2px; color: var(--meta); font-size: var(--text-sm); }
+.place-detail { margin-top: 4px; color: var(--ink-2); font-size: var(--text-sm); }
+.place-label { color: var(--meta); font-family: var(--font-ui); }
+.place-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-family: var(--font-ui); font-size: var(--text-sm); }
+
+/* Numbered pins in the page's ink, the chosen one in the link colour. */
+.map-pin { background: none; border: 0; }
+.map-pin span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #ffffff;
+  border-radius: 50% 50% 50% 0;
+  background: #333333;
+  color: #ffffff;
+  font: 700 13px/1 var(--font-ui);
+  transform: rotate(-45deg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+.map-pin b { transform: rotate(45deg); }
+.map-pin.is-current span { background: #c5221f; }
+.map-outline { stroke: #c5221f; fill: #c5221f; }
+.leaflet-container a { color: var(--link); }
+/* Dark theme: the map's paper darkens too, its colours kept. */
+:root[data-theme="dark"] .map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92); }
+
+@media (max-width: 759px) {
+  .is-maps .vertical.map-layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr; padding-right: var(--page-margin); }
+  .map { grid-column: 1; grid-row: 2; position: relative; top: 0; height: 52vh; min-height: 280px; margin-bottom: 16px; }
+  .map-layout .serp-status { grid-row: 1; }
+  .map-list { grid-row: 3; }
+}
+.map-ask-note { color: var(--meta); font-family: var(--font-ui); font-size: var(--text-sm); }

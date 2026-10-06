@@ -225,7 +225,7 @@ async function load() {
   grid.append(...batch.map((item, i) => tile(item, start + i)));
   if (!items.length) {
     status.replaceChildren('No images found for ', h('b', null, query),
-      tools.active ? ['. ', h('a', { href: tools.urlFor({ size: '', type: '', shape: '' }) }, 'Search without filters'), '.'] : '. Try fewer or different words.');
+      ...(tools.active ? ['. ', h('a', { href: tools.urlFor({ size: '', type: '', shape: '' }) }, 'Search without filters'), '.'] : ['. Try fewer or different words.']));
     return;
   }
   status.replaceChildren('Images for ', h('b', null, query),

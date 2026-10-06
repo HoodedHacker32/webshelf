@@ -274,7 +274,7 @@ async function showMore(count = 12) {
   shownCount += batch.length;
   if (!shownCount) {
     status.replaceChildren('No videos found for ', h('b', null, query),
-      tools.active ? ['. ', h('a', { href: tools.urlFor({ duration: '', time: '' }) }, 'Search without filters'), '.'] : '. Try fewer or different words.');
+      ...(tools.active ? ['. ', h('a', { href: tools.urlFor({ duration: '', time: '' }) }, 'Search without filters'), '.'] : ['. Try fewer or different words.']));
     return;
   }
   status.replaceChildren('Videos for ', h('b', null, query), ` · ${shownCount} shown`);

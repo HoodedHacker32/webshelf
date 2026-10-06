@@ -6,11 +6,11 @@
   <title>Webshelf</title>
   <meta name="referrer" content="no-referrer">
   <meta name="color-scheme" content="light dark">
-  <meta name="description" content="Webshelf book search.">
+  <meta name="description" content="Webshelf map search.">
   <meta name="robots" content="noindex">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Webshelf">
-  <meta property="og:title" content="Webshelf Books">
+  <meta property="og:title" content="Webshelf Maps">
   <meta property="og:description" content="Webshelf is a free, open-source search engine with no AI: web results, images, videos and instant answers, ranked by rules anyone can read.">
   <meta property="og:image" content="https://hoodedhacker32.github.io/webshelf/assets/icons/og-image.png">
   <meta property="og:image:width" content="1200">
@@ -37,10 +37,12 @@
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/serp.css">
   <link rel="stylesheet" href="assets/css/verticals.css">
-  <script type="module" src="assets/js/books.js"></script>
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
+  <script src="assets/vendor/leaflet/leaflet.js" defer></script>
+  <script type="module" src="assets/js/maps.js"></script>
 </head>
-<body class="serp is-books">
-  <a class="skip-link" href="#results">Skip to books</a>
+<body class="serp is-maps">
+  <a class="skip-link" href="#results">Skip to places</a>
 
   <header class="toolbar" id="toolbar">
     <a class="toolbar-logo logo" href="index.html" data-logo="pixel-lockup" data-label="Webshelf home">
@@ -52,17 +54,20 @@
       <a class="tab" href="search.html" data-page="search.html">All</a>
       <a class="tab" href="images.html" data-page="images.html">Images</a>
       <a class="tab" href="videos.html" data-page="videos.html">Videos</a>
-      <a class="tab" href="books.html" data-page="books.html" aria-current="page">Books</a>
-      <a class="tab" href="maps.html" data-page="maps.html">Maps</a>
+      <a class="tab" href="books.html" data-page="books.html">Books</a>
+      <a class="tab" href="maps.html" data-page="maps.html" aria-current="page">Maps</a>
     </nav>
   </header>
 
   <main class="serp-main" id="main">
-    <div class="vertical">
-      <h1 class="visually-hidden" id="serp-h1">Books</h1>
+    <div class="vertical map-layout">
+      <h1 class="visually-hidden" id="serp-h1">Maps</h1>
       <p class="serp-status" id="serp-status" aria-live="polite"></p>
-      <ol class="results book-list" id="results" tabindex="-1"></ol>
-      <div id="serp-more"></div>
+      <div class="map-list">
+        <ol class="results place-list" id="results" tabindex="-1"></ol>
+        <div id="serp-more"></div>
+      </div>
+      <div class="map" id="map" role="region" aria-label="Map"></div>
     </div>
   </main>
 

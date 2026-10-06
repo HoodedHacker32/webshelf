@@ -17,6 +17,7 @@ The Webshelf name and logos are not covered by that licence: they are all rights
 - **Logo files** in `logos/` and the icons made from them in `assets/icons/` are the Webshelf owner's own work and are not covered by the code licence (see `BRAND.md`).
 - **UI icons** in `assets/js/icons.js` use path data from Google's [Material Icons](https://github.com/google/material-design-icons), Apache License 2.0.
 - **Fonts** in `assets/fonts/`: Redaction and Redaction 35 (MCKL Inc., SIL Open Font License 1.1 / LGPL 2.1) and Courier Prime (The Courier Prime Project Authors, SIL Open Font License 1.1). Licence texts sit beside the font files.
+- **Libraries** in `assets/vendor/`: [Leaflet](https://leafletjs.com) 1.9.4 for the Maps tab (BSD 2-Clause, licence beside it in `assets/vendor/leaflet/`) and qrcode-generator by Kazuhiko Arase for QR codes (MIT).
 - Weather icons, dice outlines and everything else in `assets/` were written for Webshelf.
 
 ## Data shown on results pages
@@ -34,6 +35,7 @@ Each card names its source on the page.
 | [Frankfurter](https://frankfurter.dev) | European Central Bank reference exchange rates | Free use with attribution |
 | [Openverse](https://openverse.org) | Images tab (openly licensed images; the viewer names each creator and licence) | Per image, Creative Commons or public domain |
 | [Flickr](https://www.flickr.com), [DeviantArt](https://www.deviantart.com), [ArtStation](https://www.artstation.com), [Pinterest](https://www.pinterest.com), [Imgur](https://imgur.com), [Pixabay](https://pixabay.com), [Pexels](https://www.pexels.com), Bing Images, through Webshelf's SearXNG server | Images tab and image row | Each image belongs to its creator; thumbnails link to the page they come from |
+| [OpenStreetMap](https://www.openstreetmap.org) map tiles, and [Nominatim](https://nominatim.org) for finding places | Maps tab | Map data © OpenStreetMap contributors, ODbL; credited on the map |
 | [Open Library](https://openlibrary.org) | Books tab: books, covers, opening lines; links to read or borrow at the Internet Archive | Catalogue data CC0; covers shown as Open Library serves them |
 | [Dailymotion](https://www.dailymotion.com), [SepiaSearch](https://sepiasearch.org) (PeerTube), [Internet Archive](https://archive.org) | Videos tab | Results link to each video's page |
 | YouTube thumbnails (`i.ytimg.com`) | Videos tab, for YouTube links found in the web results | Thumbnails link to the video |
